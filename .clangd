@@ -1,0 +1,6 @@
+CompileFlags:
+  Add: [
+    "-std=c++17",
+    "-I/usr/local/lib/erlang/erts-15.2.7.2/include",
+    "-fPIC"
+  ]
