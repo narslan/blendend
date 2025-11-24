@@ -65,16 +65,16 @@ There is a separate web playground for live editing and rendering, and for brows
 
 ## Gallery
 
-### Roaring tiger (vector tracing)
+### Fierce and adorable tiger (vector tracing)
 ![Vector tiger head with dynamic strokes](docs/images/tiger.png "Vector tiger head rendered with Blend2D")
 
-### Cartesian plot (sine vs. cosine)
+### Cartesian plot 
 ![Sine and cosine waves on cartesian axes](docs/images/sine_wave.png "Cartesian plot generated with Blendend.Cartesian")
 
-### Layered petal burst
+### Layered fills
 ![Overlapping colorful flowers on black background](docs/images/flower_field.png "Randomized flower field rendered with layered fills")
 
-### Logo with jittered strokes
+### Effects on glyph outlines
 ![Rainbow Blendend logo with noisy stroke outlines](docs/images/blendend_logo.png "Blendend logo drawn with jittered path flattening")
 
 ## Licenses 
