@@ -860,8 +860,9 @@ defmodule Blendend.Path do
           end_i = if include_ends?, do: steps, else: steps - 1
           nx = -dy / len
           ny = dx / len
+          range = if start_i <= end_i, do: start_i..end_i//1, else: []
 
-          for i <- start_i..end_i,
+          for i <- range,
               i >= 0 and i <= steps,
               t = min(1.0, i / steps) do
             {{x0 + dx * t, y0 + dy * t}, {nx, ny}}
