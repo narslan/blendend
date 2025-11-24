@@ -860,7 +860,8 @@ defmodule Blendend.Path do
           end_i = if include_ends?, do: steps, else: steps - 1
           nx = -dy / len
           ny = dx / len
-          range = if start_i <= end_i, do: start_i..end_i//1, else: []
+          step = if start_i <= end_i, do: 1, else: -1
+          range = Range.new(start_i, end_i, step)
 
           for i <- range,
               i >= 0 and i <= steps,
