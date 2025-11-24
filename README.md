@@ -13,7 +13,7 @@ Elixir bindings to [Blend2D](https://blend2d.com/) – a fast 2D renderer – fo
 
 ## Status
 
-**Early, experimental.** APIs change definetely; feedback and bug reports are welcome.
+**Early, experimental.** APIs change definitely; feedback and bug reports are welcome.
 
 ## Requirements
 
@@ -57,8 +57,6 @@ draw 200, 200, "priv/basic_line.png" do
   line 0, 100, 200, 100, stroke: rgb(255, 255, 255)
 end
 ```
-For examples, please browse in:
-[blendend_playground](https://github.com/narslan/blendend_playground).
 
 ## Playground
 
@@ -67,12 +65,19 @@ There is a separate web playground for live editing and rendering, and for brows
 
 ## Gallery
 
-![Blendend logo](docs/images/blendend_logo.png)
-![Flower field](docs/images/flower_field.png)
-![Sine waves](docs/images/sine_wave.png)
-![Tiger demo](docs/images/tiger.png)
+### Roaring tiger (vector tracing)
+![Vector tiger head with dynamic strokes](docs/images/tiger.png "Vector tiger head rendered with Blend2D")
 
-## Licenses & Assets
+### Cartesian plot (sine vs. cosine)
+![Sine and cosine waves on cartesian axes](docs/images/sine_wave.png "Cartesian plot generated with Blendend.Cartesian")
+
+### Layered petal burst
+![Overlapping colorful flowers on black background](docs/images/flower_field.png "Randomized flower field rendered with layered fills")
+
+### Logo with jittered strokes
+![Rainbow Blendend logo with noisy stroke outlines](docs/images/blendend_logo.png "Blendend logo drawn with jittered path flattening")
+
+## Licenses 
 
 - This project is released under the MIT License (see `LICENSE`).
 - `blend2d` is licensed under the zlib license.

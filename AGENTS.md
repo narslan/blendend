@@ -17,7 +17,7 @@
 - Modules are CamelCase; functions/vars snake_case; tests named `*_test.exs`.
 - Keep NIF wrappers thin and return updated structs for piping.
 - C++ builds with `-std=c++17 -Wall -Wextra -fPIC`; keep files scoped to a domain.
-
+- Use the snak_case convention of latest `blend2d`
 ## Testing Guidelines
 - ExUnit only; `test/support/` is already on the test path.
 - Use descriptive strings in `describe` blocks; add regressions for NIF safety (see `test/nif_*_test.exs`).
