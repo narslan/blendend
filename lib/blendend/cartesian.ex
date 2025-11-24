@@ -29,13 +29,6 @@ defmodule Blendend.Cartesian do
       c = Canvas.new!(400, 300)
       Line.plot_function(c, frame, points, stroke: Style.color(0, 155, 255))
 
-  Examples (let the frame auto-fit your points):
-      {:ok, frame, points} =
-        Cartesian.frame_from_y(&:math.sin/1, -:math.pi(), :math.pi(), 400, 300, 400,
-          padding: 0.08, preserve_aspect: true)
-
-      Line.plot_function(c, frame, points, stroke: Style.color(0, 155, 255), stroke_width: 2.0)
-
   Examples (parametric curve):
       curve = fn t ->
         x = :math.cos(t)

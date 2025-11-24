@@ -1,5 +1,9 @@
 # blendend
 
+<p align="center">
+  <img src="docs/images/piriform.png" alt="Blendend logo" width="320">
+</p>
+
 Elixir bindings to [Blend2D](https://blend2d.com/) – a fast 2D renderer – for drawing shapes, text, and gradients into images.
 
 - Blend2D's rendering engine from plain Elixir.
@@ -63,7 +67,6 @@ There is a separate web playground for live editing and rendering, and for brows
 
 ![Blendend logo](docs/images/blendend_logo.png)
 ![Flower field](docs/images/flower_field.png)
-![Piriform curve](docs/images/piriform.png)
 ![Sine waves](docs/images/sine_wave.png)
 ![Tiger demo](docs/images/tiger.png)
 
