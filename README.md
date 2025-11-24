@@ -8,12 +8,12 @@ Elixir bindings to [Blend2D](https://blend2d.com/) – a fast 2D renderer – fo
 
 - Blend2D's rendering engine from plain Elixir.
 - Composable drawing pipeline: `Canvas`, `Path`, `Matrix2D`, `Text`, `Style` modules.
-- A concise DSL (`Blendend.Draw`) for scripts/playgrounds 
-- Support for PNG/QOI export plus masking, gradients, patterns, and text shaping.
+- A DSL (`Blendend.Draw`) for concise scripts. 
+- Support for PNG/QOI export. 
 
 ## Status
 
-**Early, experimental.** APIs may change; feedback and bug reports are welcome.
+**Early, experimental.** APIs change definetely; feedback and bug reports are welcome.
 
 ## Requirements
 
@@ -54,9 +54,11 @@ Using the DSL:
 use Blendend.Draw
 
 draw 200, 200, "priv/basic_line.png" do
-  line 0, 100, 200, 100, stroke: color(255, 255, 255)
+  line 0, 100, 200, 100, stroke: rgb(255, 255, 255)
 end
 ```
+For examples, please browse in:
+[blendend_playground](https://github.com/narslan/blendend_playground).
 
 ## Playground
 
