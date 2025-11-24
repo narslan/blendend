@@ -699,10 +699,6 @@ defmodule Blendend.Path do
     end
   end
 
-  # ===========================================================================
-  # Equality / fitting / debug
-  # ===========================================================================
-
   @doc """
   Returns `true` if two paths are *exactly* equal.
 
@@ -875,8 +871,6 @@ defmodule Blendend.Path do
   @doc """
   Dumps internal path representation for debugging.
 
-  The exact format is defined by the NIF and subject to change.
-
   On success, returns `:ok`.
 
   On failure, returns `{:error, reason}`.
@@ -890,6 +884,16 @@ defmodule Blendend.Path do
   On success, returns `:ok`.
 
   On failure, raises `Blendend.Error`.
+
+  ## Examples
+
+      iex> p = Blendend.Path.new!()
+      iex> p = Blendend.Path.move_to!(p, 247, 97)
+      iex> Path.debug_dump!(p)
+      :ok
+      # prints:
+      # [path_debug_dump] path size = 1
+      # [  0] cmd=0 x=247.000000 y=97.000000
   """
   @spec debug_dump!(t()) :: :ok
   def debug_dump!(path) do
