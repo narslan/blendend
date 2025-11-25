@@ -838,6 +838,19 @@ defmodule Blendend.Draw do
     end
   end
 
+  @doc """
+  Convenience macro to fetch a color scheme as a list of color resources.
+
+      colors = scheme(:hokusai)
+      [c1, c2, c3 | _] = scheme("Hokusai Blue")
+      palette = scheme(:random)
+  """
+  defmacro scheme(name_ast) do
+    quote do
+      Blendend.Style.Color.scheme(unquote(name_ast))
+    end
+  end
+
   # ------------------------------------------------------------------
   # Effects
   # ------------------------------------------------------------------
