@@ -139,6 +139,12 @@ defmodule Blendend.Draw do
     end
   end
 
+  defmacro hsv(h, s, v, a \\ 255) do
+    quote bind_quoted: [h: h, s: s, v: v, a: a] do
+      Blendend.Style.Color.hsv(h, s, v, a)
+    end
+  end
+
   # ------------------------------------------------------------------
   # Cartesian helpers (sugar around Blendend.Cartesian + Line)
   # ------------------------------------------------------------------
