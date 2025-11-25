@@ -90,6 +90,7 @@ MAKE_TERM(canvas_clear)
 MAKE_TERM(canvas_set_comp_op)
 MAKE_TERM(canvas_clip_to_rect)
 MAKE_TERM(canvas_fill_mask)
+MAKE_TERM(canvas_blur_path)
 
 MAKE_TERM(canvas_to_png_base64)
 MAKE_TERM(canvas_to_png)
@@ -101,6 +102,7 @@ MAKE_TERM(image_read_from_file)
 MAKE_TERM(image_read_from_data)
 MAKE_TERM(image_read_mask_from_data)
 MAKE_TERM(image_decode_qoi)
+MAKE_TERM(image_blur)
 
 // Cartesian
 MAKE_TERM(cartesian)
@@ -240,6 +242,8 @@ MAKE_DRAW_GLYPH(stroke_glyph_run)
   X(canvas_clip_to_rect, 5, 0) \
   X(canvas_fill_mask, 4, 0) \
   X(canvas_fill_mask, 5, 0) \
+  X(canvas_blur_path, 3, ERL_NIF_DIRTY_JOB_CPU_BOUND) \
+  X(canvas_blur_path, 4, ERL_NIF_DIRTY_JOB_CPU_BOUND) \
   X(canvas_set_stroke_width, 2, 0) \
   X(canvas_set_stroke_style, 2, 0) \
   X(canvas_set_fill_rule, 2, 0) \
@@ -256,6 +260,7 @@ MAKE_DRAW_GLYPH(stroke_glyph_run)
   X(image_read_from_data, 1, ERL_NIF_DIRTY_JOB_CPU_BOUND) \
   X(image_read_mask_from_data, 2, ERL_NIF_DIRTY_JOB_CPU_BOUND) \
   X(image_decode_qoi, 1, ERL_NIF_DIRTY_JOB_CPU_BOUND) \
+  X(image_blur, 2, ERL_NIF_DIRTY_JOB_CPU_BOUND) \
   /* Cartesian */ \
   X(cartesian, 6, 0) \
   X(cartesian_to_canvas, 3, 0) \

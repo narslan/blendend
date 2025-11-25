@@ -104,6 +104,26 @@ defmodule Blendend.Image do
   end
 
   @doc """
+  Returns a blurred copy of `image` using a Gaussian approximation.
+
+  `sigma` controls blur strength in pixels (roughly 3×sigma is the visible radius).
+  Supports PRGB32 and A8 images; other formats are converted to PRGB32 first.
+  """
+  @spec blur(t(), number()) :: {:ok, t()} | {:error, term()}
+  def blur(image, sigma) when is_number(sigma), do: Native.image_blur(image, sigma * 1.0)
+
+  @doc """
+  Same as `blur/2`, but returns the blurred image or raises on failure.
+  """
+  @spec blur!(t(), number()) :: t()
+  def blur!(image, sigma) do
+    case blur(image, sigma) do
+      {:ok, img} -> img
+      {:error, reason} -> raise Error.new(:image_blur, reason)
+    end
+  end
+
+  @doc """
   Loads an image from `path` and converts it to an 8-bit mask using the given channel.
 
   Channel can be `:red` (default), `:green`, `:blue`, `:alpha`, or `:luma`.

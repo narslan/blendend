@@ -66,6 +66,31 @@ defmodule Blendend.Draw do
   def to_f(v) when is_float(v), do: v
   def to_f(v), do: v
 
+  # trig helpers (radian input)
+  defmacro sin(angle) do
+    quote do
+      :math.sin(unquote(angle))
+    end
+  end
+
+  defmacro cos(angle) do
+    quote do
+      :math.cos(unquote(angle))
+    end
+  end
+
+  defmacro tan(angle) do
+    quote do
+      :math.tan(unquote(angle))
+    end
+  end
+
+  defmacro atan2(y, x) do
+    quote do
+      :math.atan2(unquote(y), unquote(x))
+    end
+  end
+
   # defp to_f_list(list), do: Enum.map(list, &to_f/1)
 
   defp to_f_points(points) do
@@ -682,11 +707,43 @@ defmodule Blendend.Draw do
     end
   end
 
+  defmacro translate(tx, ty, do: body) do
+    quote do
+      c = Blendend.Draw.get_canvas()
+      :ok = Blendend.Canvas.save_state(c)
+      :ok = Blendend.Canvas.translate(c, unquote(tx), unquote(ty))
+
+      try do
+        unquote(body)
+      after
+        :ok = Blendend.Canvas.restore_state(c)
+      end
+
+      c
+    end
+  end
+
   # scale (canvas only)
   defmacro scale(sx, sy) do
     quote bind_quoted: [sx: sx, sy: sy] do
       c = get_canvas()
       Blendend.Canvas.scale(c, sx, sy)
+    end
+  end
+
+  defmacro scale(sx, sy, do: body) do
+    quote do
+      c = Blendend.Draw.get_canvas()
+      :ok = Blendend.Canvas.save_state(c)
+      :ok = Blendend.Canvas.scale(c, unquote(sx), unquote(sy))
+
+      try do
+        unquote(body)
+      after
+        :ok = Blendend.Canvas.restore_state(c)
+      end
+
+      c
     end
   end
 
@@ -698,11 +755,43 @@ defmodule Blendend.Draw do
     end
   end
 
+  defmacro skew(kx, ky, do: body) do
+    quote do
+      c = Blendend.Draw.get_canvas()
+      :ok = Blendend.Canvas.save_state(c)
+      :ok = Blendend.Canvas.skew(c, unquote(kx), unquote(ky))
+
+      try do
+        unquote(body)
+      after
+        :ok = Blendend.Canvas.restore_state(c)
+      end
+
+      c
+    end
+  end
+
   # rotate (canvas only)
   defmacro rotate(angle) do
     quote bind_quoted: [angle: angle] do
       c = get_canvas()
       Blendend.Canvas.rotate(c, angle)
+    end
+  end
+
+  defmacro rotate(angle, do: body) do
+    quote do
+      c = Blendend.Draw.get_canvas()
+      :ok = Blendend.Canvas.save_state(c)
+      :ok = Blendend.Canvas.rotate(c, unquote(angle))
+
+      try do
+        unquote(body)
+      after
+        :ok = Blendend.Canvas.restore_state(c)
+      end
+
+      c
     end
   end
 
@@ -741,5 +830,23 @@ defmodule Blendend.Draw do
         :ok = Blendend.Canvas.restore_state(c)
       end
     end
+  end
+
+  # ------------------------------------------------------------------
+  # Effects
+  # ------------------------------------------------------------------
+
+  @doc "Blur a path and composite it onto the current canvas."
+  def blur_path(path, sigma, opts \\ []) do
+    canvas = get_canvas()
+    Blendend.Effects.blur_path!(canvas, path, sigma, opts)
+    canvas
+  end
+
+  @doc "Apply a soft shadow (blur + offset) for a path on the current canvas."
+  def shadow_path(path, dx, dy, sigma, opts \\ []) do
+    canvas = get_canvas()
+    Blendend.Effects.shadow_path!(canvas, path, dx, dy, sigma, opts)
+    canvas
   end
 end

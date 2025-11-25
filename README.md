@@ -65,17 +65,29 @@ There is a separate web playground for live editing and rendering, and for brows
 
 ## Gallery
 
-### Fierce and adorable tiger (vector tracing)
-![Vector tiger head with dynamic strokes](docs/images/tiger.png "Vector tiger head rendered with Blend2D")
+<table>
+  <tr>
+    <td width="50%">
+      <strong>Adorable tiger (vector tracing)</strong><br>
+      <img src="docs/images/tiger.png" alt="Vector tiger head with dynamic strokes" title="Vector tiger head rendered with blendend" />
+    </td>
+    <td width="50%">
+      <strong>Flower waves (blur effect)</strong><br>
+      <img src="docs/images/floral_waves.png" alt="Layered flower waves with blur" title="Flower waves rendered with blendend" />
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <strong>Cartesian plot</strong><br>
+      <img src="docs/images/sine_wave.png" alt="Sine and cosine waves on cartesian axes" title="Cartesian plot generated with Blendend.Cartesian" />
+    </td>
+    <td width="50%">
+      <strong>Blendend logo (path flattening)</strong><br>
+      <img src="docs/images/blendend_logo.png" alt="Rainbow Blendend logo with noisy stroke outlines" title="Path flattening on the letters of blendend" />
+    </td>
+  </tr>
+</table>
 
-### Cartesian plot 
-![Sine and cosine waves on cartesian axes](docs/images/sine_wave.png "Cartesian plot generated with Blendend.Cartesian")
-
-### Layered fills
-![Overlapping colorful flowers on black background](docs/images/flower_field.png "Randomized flower field rendered with layered fills")
-
-### Effects on glyph outlines
-![Rainbow Blendend logo with noisy stroke outlines](docs/images/blendend_logo.png "Blendend logo drawn with jittered path flattening")
 
 ## Licenses 
 

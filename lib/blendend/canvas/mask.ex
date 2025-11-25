@@ -16,9 +16,13 @@ defmodule Blendend.Canvas.Mask do
           color: Color.rgb!(255, 200, 255),
           alpha: 1.0)
       :ok = Canvas.save!(canvas, "priv/images/masked_canvas.png")
+
+  To blur a mask (e.g. soft shadows), use `blur_fill/6` and set `sigma` in pixels.
+  A `sigma` of 3.0 produces a visible blur radius around ~9 px.
   """
 
   alias Blendend.{Native, Error}
+  alias Blendend.Image
 
   @type canvas :: Blendend.Canvas.t()
   @type image :: Blendend.Image.t()
@@ -48,6 +52,30 @@ defmodule Blendend.Canvas.Mask do
     case fill(canvas, img, x, y, opts) do
       :ok -> canvas
       {:error, reason} -> raise Error.new(:canvas_fill_mask, reason)
+    end
+  end
+
+  @doc """
+  Blurs a mask image with `sigma` and fills it at `{x, y}`.
+
+  Returns `:ok` on success or `{:error, reason}`. Uses the same options as `fill/5`.
+  """
+  @spec blur_fill(canvas, image, number(), number(), number(), keyword()) ::
+          :ok | {:error, term()}
+  def blur_fill(canvas, img, x, y, sigma, opts \\ []) do
+    with {:ok, blurred} <- Image.blur(img, sigma) do
+      fill(canvas, blurred, x, y, opts)
+    end
+  end
+
+  @doc """
+  Same as `blur_fill/6`, but raises and returns the canvas on success.
+  """
+  @spec blur_fill!(canvas, image, number(), number(), number(), keyword()) :: canvas
+  def blur_fill!(canvas, img, x, y, sigma, opts \\ []) do
+    case blur_fill(canvas, img, x, y, sigma, opts) do
+      :ok -> canvas
+      {:error, reason} -> raise Error.new(:canvas_blur_mask, reason)
     end
   end
 end

@@ -39,6 +39,8 @@ defmodule Blendend.Native do
   def canvas_clip_to_rect(_c, _x, _y, _w, _h), do: :erlang.nif_error(:nif_not_loaded)
   def canvas_fill_mask(_c, _img, _x, _y), do: :erlang.nif_error(:nif_not_loaded)
   def canvas_fill_mask(_c, _img, _x, _y, _opts), do: :erlang.nif_error(:nif_not_loaded)
+  def canvas_blur_path(_canvas, _path, _sigma), do: :erlang.nif_error(:nif_not_loaded)
+  def canvas_blur_path(_canvas, _path, _sigma, _opts), do: :erlang.nif_error(:nif_not_loaded)
   def canvas_set_fill_rule(_canvas, _rule), do: :erlang.nif_error(:nif_not_loaded)
   def canvas_set_comp_op(_canvas, _op), do: :erlang.nif_error(:nif_not_loaded)
 
@@ -53,6 +55,7 @@ defmodule Blendend.Native do
   def image_read_from_data(_binary), do: :erlang.nif_error(:nif_not_loaded)
   def image_read_mask_from_data(_binary, _channel), do: :erlang.nif_error(:nif_not_loaded)
   def image_decode_qoi(_binary), do: :erlang.nif_error(:nif_not_loaded)
+  def image_blur(_image, _sigma), do: :erlang.nif_error(:nif_not_loaded)
 
   # ------------------------
   # Cartesian

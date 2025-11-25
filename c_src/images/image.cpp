@@ -1,4 +1,5 @@
 #include "image.h"
+#include "blur.h"
 #include "../nif/nif_resource.h"
 #include "../nif/nif_util.h"
 
@@ -211,4 +212,64 @@ ERL_NIF_TERM image_decode_qoi(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[
   ERL_NIF_TERM data_term = out_term;
   ERL_NIF_TERM tuple = enif_make_tuple3(env, width, height, data_term);
   return make_result_ok(env, tuple);
+}
+
+// image_blur(Image, Sigma) -> {:ok, Image} | {:error, reason}
+ERL_NIF_TERM image_blur(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
+{
+  if(argc != 2)
+    return enif_make_badarg(env);
+
+  auto img = NifResource<Image>::get(env, argv[0]);
+  double sigma = 0.0;
+  if(!img || !enif_get_double(env, argv[1], &sigma)) {
+    return make_result_error(env, "image_blur_invalid_args");
+  }
+
+  if(sigma <= 0.0) {
+    return make_result_error(env, "image_blur_sigma_must_be_positive");
+  }
+
+  BLFormat fmt = img->value.format();
+  BLSizeI sz = img->value.size();
+  BLFormat target_fmt = (fmt == BL_FORMAT_PRGB32 || fmt == BL_FORMAT_A8) ? fmt : BL_FORMAT_PRGB32;
+
+  BLImage work;
+  BLResult r = work.create(sz.w, sz.h, target_fmt);
+  if(r != BL_SUCCESS) {
+    return make_result_error(env, "image_blur_alloc_failed");
+  }
+
+  if(target_fmt == fmt && (fmt == BL_FORMAT_PRGB32 || fmt == BL_FORMAT_A8)) {
+    // Straight copy (deep)
+    BLImageData src{};
+    BLImageData dst{};
+    if(img->value.get_data(&src) != BL_SUCCESS || work.get_data(&dst) != BL_SUCCESS) {
+      return make_result_error(env, "image_blur_data_failed");
+    }
+    size_t row_bytes = static_cast<size_t>(sz.w) * ((fmt == BL_FORMAT_A8) ? 1u : 4u);
+    for(int y = 0; y < sz.h; ++y) {
+      memcpy(static_cast<uint8_t*>(dst.pixel_data) + static_cast<size_t>(y) * dst.stride,
+                  static_cast<const uint8_t*>(src.pixel_data) + static_cast<size_t>(y) * src.stride,
+                  row_bytes);
+    }
+  }
+  else {
+    // Convert via blit into PRGB32 surface.
+    BLContext ctx(work);
+    r = ctx.blit_image(BLPointI(0, 0), img->value);
+    ctx.end();
+    if(r != BL_SUCCESS) {
+      return make_result_error(env, "image_blur_convert_failed");
+    }
+  }
+
+  r = blur_image_inplace(work, sigma);
+  if(r != BL_SUCCESS) {
+    return make_result_error(env, "image_blur_failed");
+  }
+
+  auto out = NifResource<Image>::alloc();
+  out->value = work;
+  return make_result_ok(env, NifResource<Image>::make(env, out));
 }
