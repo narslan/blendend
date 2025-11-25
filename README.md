@@ -88,15 +88,15 @@ There is a separate web playground for live editing and rendering, and for brows
   </tr>
   <tr>
     <td width="50%">
-      <strong>Burn grid (p5.js port)</strong><br>
-      <img src="docs/images/p5_burn_grid.png" alt="Grid of neon gradients with burn blend" title="p5.js burn grid port rendered with blendend" />
+      <strong> Color Burn gradients</strong><br>
+      <img src="docs/images/p5_burn_grid.png" alt="Grid of gradients with burn blend" title="p5.js burn grid port rendered with blendend" />
     </td>
     <td width="50%">
-      <strong>Piriform curve</strong><br>
-      <img src="docs/images/piriform.png" alt="Piriform curve illustration" title="Piriform curve rendered with blendend" />
     </td>
   </tr>
 </table>
+
+Attribution: The burn grid demo and flower waves (which are available in `blendend_playground`)is adapted from takawo's original p5.js sketch (https://openprocessing.org/user/6533) and shared under the Creative Commons BY-NC-SA 3.0 license (https://creativecommons.org/licenses/by-nc-sa/3.0/).
 
 
 ## Licenses 
