@@ -73,6 +73,7 @@ MAKE_TERM(canvas_save_state)
 MAKE_TERM(canvas_restore_state)
 MAKE_TERM(canvas_set_stroke_width)
 MAKE_TERM(canvas_set_stroke_style)
+MAKE_TERM(canvas_disable_stroke_style)
 // Canvas transform
 MAKE_TERM(canvas_set_transform)
 MAKE_TERM(canvas_reset_transform)
@@ -91,6 +92,7 @@ MAKE_TERM(canvas_set_comp_op)
 MAKE_TERM(canvas_clip_to_rect)
 MAKE_TERM(canvas_fill_mask)
 MAKE_TERM(canvas_blur_path)
+MAKE_TERM(canvas_set_fill_style)
 
 MAKE_TERM(canvas_to_png_base64)
 MAKE_TERM(canvas_to_png)
@@ -244,8 +246,10 @@ MAKE_DRAW_GLYPH(stroke_glyph_run)
   X(canvas_fill_mask, 5, 0) \
   X(canvas_blur_path, 3, ERL_NIF_DIRTY_JOB_CPU_BOUND) \
   X(canvas_blur_path, 4, ERL_NIF_DIRTY_JOB_CPU_BOUND) \
+  X(canvas_set_fill_style, 2, 0) \
   X(canvas_set_stroke_width, 2, 0) \
   X(canvas_set_stroke_style, 2, 0) \
+  X(canvas_disable_stroke_style, 1, 0) \
   X(canvas_set_fill_rule, 2, 0) \
   X(canvas_set_comp_op, 2, 0) \
   X(canvas_to_png_base64, 1, ERL_NIF_DIRTY_JOB_CPU_BOUND) \
@@ -268,7 +272,7 @@ MAKE_DRAW_GLYPH(stroke_glyph_run)
   /* Styles */ \
   X(color, 4, 0) \
   X(gradient_linear, 4, 0) \
-  X(gradient_radial, 5, 0) \
+  X(gradient_radial, 6, 0) \
   X(gradient_conic, 3, 0) \
   X(gradient_add_stop, 3, 0) \
   X(gradient_set_extend, 2, 0) \

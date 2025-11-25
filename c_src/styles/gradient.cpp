@@ -27,20 +27,21 @@ ERL_NIF_TERM gradient_linear(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]
 
 ERL_NIF_TERM gradient_radial(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
 {
-  double x0, y0, x1, y1, r;
+  // Arguments match BLRadialGradientValues: x0, y0, x1, y1, r0, r1
+  double x0, y0, x1, y1, r0, r1;
 
-  if(argc != 5) {
+  if(argc != 6) {
     return enif_make_badarg(env);
   }
 
   if(!enif_get_double(env, argv[0], &x0) || !enif_get_double(env, argv[1], &y0) ||
      !enif_get_double(env, argv[2], &x1) || !enif_get_double(env, argv[3], &y1) ||
-     !enif_get_double(env, argv[4], &r)) {
+     !enif_get_double(env, argv[4], &r0) || !enif_get_double(env, argv[5], &r1)) {
     return make_result_error(env, "invalid_radial_gradient_component");
   }
 
   Gradient* res = NifResource<Gradient>::alloc();
-  res->value = BLGradient(BLRadialGradientValues(x0, y0, x1, y1, r));
+  res->value = BLGradient(BLRadialGradientValues(x0, y0, x1, y1, r0, r1));
 
   return make_result_ok(env, NifResource<Gradient>::make(env, res));
 }

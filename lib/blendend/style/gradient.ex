@@ -90,29 +90,28 @@ defmodule Blendend.Style.Gradient do
 
   The gradient is defined by:
 
-    * `cx`, `cy` – center of the gradient
-    * `r`        – radius
-    * `fx`, `fy` – focal point (where the 0.0 stop is located)
+    * `cx0`, `cy0`, `r0` – inner circle (focal) center and radius
+    * `cx1`, `cy1`, `r1` – outer circle center and radius
 
   On success, returns `{:ok, gradient}`.
 
   On failure, returns `{:error, reason}`.
   """
-  @spec radial(number(), number(), number(), number(), number()) ::
+  @spec radial(number(), number(), number(), number(), number(), number()) ::
           {:ok, t()} | {:error, term()}
-  def radial(cx, cy, r, fx, fy),
-    do: Native.gradient_radial(cx * 1.0, cy * 1.0, r * 1.0, fx * 1.0, fy * 1.0)
+  def radial(cx0, cy0, r0, cx1, cy1, r1),
+    do: Native.gradient_radial(cx0 * 1.0, cy0 * 1.0, cx1 * 1.0, cy1 * 1.0, r0 * 1.0, r1 * 1.0)
 
   @doc """
-  Same as `radial/5`, but returns the gradient directly.
+  Same as `radial/6`, but returns the gradient directly.
 
   On success, returns `gradient`.
 
   On failure, raises `Blendend.Error`.
   """
-  @spec radial!(number(), number(), number(), number(), number()) :: t()
-  def radial!(cx, cy, r, fx, fy) do
-    case radial(cx, cy, r, fx, fy) do
+  @spec radial!(number(), number(), number(), number(), number(), number()) :: t()
+  def radial!(cx0, cy0, r0, cx1, cy1, r1) do
+    case radial(cx0, cy0, r0, cx1, cy1, r1) do
       {:ok, grad} -> grad
       {:error, reason} -> raise Error.new(:gradient_radial, reason)
     end
@@ -334,8 +333,8 @@ defmodule Blendend.Style.Gradient do
           [{number(), Blended.Style.Color.t()}],
           keyword()
         ) :: t()
-  def radial_from_stops({cx, cy, r, fx, fy}, stops, opts \\ []) do
-    radial!(cx, cy, r, fx, fy)
+  def radial_from_stops({cx0, cy0, r0, cx1, cy1, r1}, stops, opts \\ []) do
+    radial!(cx0, cy0, r0, cx1, cy1, r1)
     |> set_extend!(Keyword.get(opts, :extend, :pad))
     |> with_stops(stops)
   end

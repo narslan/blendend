@@ -250,6 +250,52 @@ ERL_NIF_TERM canvas_set_stroke_style(ErlNifEnv* env, int argc, const ERL_NIF_TER
   return make_result_error(env, "canvas_set_stroke_style_invalid_style");
 }
 
+ERL_NIF_TERM canvas_set_fill_style(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
+{
+  if(argc != 2)
+    return enif_make_badarg(env);
+
+  Canvas* canvas = NifResource<Canvas>::get(env, argv[0]);
+  if(!canvas)
+    return make_result_error(env, "canvas_set_fill_style_invalid_canvas");
+
+  if(auto color = NifResource<Color>::get(env, argv[1])) {
+    if(canvas->ctx.set_fill_style(color->value) != BL_SUCCESS)
+      return make_result_error(env, "canvas_set_fill_style_failed");
+    return enif_make_atom(env, "ok");
+  }
+
+  if(auto grad = NifResource<Gradient>::get(env, argv[1])) {
+    if(canvas->ctx.set_fill_style(grad->value) != BL_SUCCESS)
+      return make_result_error(env, "canvas_set_fill_style_failed");
+    return enif_make_atom(env, "ok");
+  }
+
+  if(auto pat = NifResource<Pattern>::get(env, argv[1])) {
+    if(canvas->ctx.set_fill_style(pat->value) != BL_SUCCESS)
+      return make_result_error(env, "canvas_set_fill_style_failed");
+    return enif_make_atom(env, "ok");
+  }
+
+  return make_result_error(env, "canvas_set_fill_style_invalid_style");
+}
+
+ERL_NIF_TERM canvas_disable_stroke_style(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
+{
+  if(argc != 1)
+    return enif_make_badarg(env);
+
+  Canvas* canvas = NifResource<Canvas>::get(env, argv[0]);
+  if(!canvas)
+    return make_result_error(env, "canvas_disable_stroke_style_invalid_canvas");
+
+  BLResult r = canvas->ctx.disable_stroke_style();
+  if(r != BL_SUCCESS)
+    return make_result_error(env, "canvas_disable_stroke_style_failed");
+
+  return enif_make_atom(env, "ok");
+}
+
 ERL_NIF_TERM canvas_translate(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
 {
   if(argc != 3)

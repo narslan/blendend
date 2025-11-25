@@ -23,6 +23,7 @@ defmodule Blendend.Native do
 
   def canvas_set_stroke_width(_canvas, _width), do: :erlang.nif_error(:nif_not_loaded)
   def canvas_set_stroke_style(_canvas, _style), do: :erlang.nif_error(:nif_not_loaded)
+  def canvas_disable_stroke_style(_canvas), do: :erlang.nif_error(:nif_not_loaded)
 
   def canvas_translate(_canvas, _x, _y), do: :erlang.nif_error(:nif_not_loaded)
   def canvas_post_translate(_canvas, _x, _y), do: :erlang.nif_error(:nif_not_loaded)
@@ -41,6 +42,7 @@ defmodule Blendend.Native do
   def canvas_fill_mask(_c, _img, _x, _y, _opts), do: :erlang.nif_error(:nif_not_loaded)
   def canvas_blur_path(_canvas, _path, _sigma), do: :erlang.nif_error(:nif_not_loaded)
   def canvas_blur_path(_canvas, _path, _sigma, _opts), do: :erlang.nif_error(:nif_not_loaded)
+  def canvas_set_fill_style(_canvas, _style), do: :erlang.nif_error(:nif_not_loaded)
   def canvas_set_fill_rule(_canvas, _rule), do: :erlang.nif_error(:nif_not_loaded)
   def canvas_set_comp_op(_canvas, _op), do: :erlang.nif_error(:nif_not_loaded)
 
@@ -69,7 +71,7 @@ defmodule Blendend.Native do
   # ------------------------
   def color(_r, _g, _b, _a), do: :erlang.nif_error(:nif_not_loaded)
   def gradient_linear(_x0, _y0, _x1, _y1), do: :erlang.nif_error(:nif_not_loaded)
-  def gradient_radial(_cx, _cy, _r, _fx, _fy), do: :erlang.nif_error(:nif_not_loaded)
+  def gradient_radial(_x0, _y0, _x1, _y1, _r0, _r1), do: :erlang.nif_error(:nif_not_loaded)
   def gradient_conic(_cx, _cy, _angle), do: :erlang.nif_error(:nif_not_loaded)
   def gradient_add_stop(_grad, _offset, _color), do: :erlang.nif_error(:nif_not_loaded)
   def gradient_set_extend(_grad, _extend_mode), do: :erlang.nif_error(:nif_not_loaded)

@@ -318,6 +318,44 @@ defmodule Blendend.Canvas do
   end
 
   @doc """
+  Sets the fill style on the current context.
+
+  Accepts the same resources as `set_stroke_style/2` (color, gradient, pattern).
+  """
+  @spec set_fill_style(t(), term()) :: :ok | {:error, term()}
+  def set_fill_style(canvas, style), do: Native.canvas_set_fill_style(canvas, style)
+
+  @doc """
+  Same as `set_fill_style/2`, but returns the canvas and raises on error.
+  """
+  @spec set_fill_style!(t(), term()) :: t()
+  def set_fill_style!(canvas, style) do
+    case set_fill_style(canvas, style) do
+      :ok -> canvas
+      {:error, reason} -> raise Error.new(:canvas_set_fill_style, reason)
+    end
+  end
+
+  @doc """
+  Disables the stroke style on the current context.
+
+  Equivalent to Blend2D's `disableStrokeStyle/0`.
+  """
+  @spec disable_stroke_style(t()) :: :ok | {:error, term()}
+  def disable_stroke_style(canvas), do: Native.canvas_disable_stroke_style(canvas)
+
+  @doc """
+  Same as `disable_stroke_style/1`, but returns the canvas and raises on error.
+  """
+  @spec disable_stroke_style!(t()) :: t()
+  def disable_stroke_style!(canvas) do
+    case disable_stroke_style(canvas) do
+      :ok -> canvas
+      {:error, reason} -> raise Error.new(:canvas_disable_stroke_style, reason)
+    end
+  end
+
+  @doc """
   Translates the canvas' user transform by `(tx, ty)` in user coordinates.
 
   This mutates the canvas in-place.
