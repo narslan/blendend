@@ -86,6 +86,16 @@ There is a separate web playground for live editing and rendering, and for brows
       <img src="docs/images/blendend_logo.png" alt="Rainbow Blendend logo with noisy stroke outlines" title="Path flattening on the letters of blendend" />
     </td>
   </tr>
+  <tr>
+    <td width="50%">
+      <strong>Burn grid (p5.js port)</strong><br>
+      <img src="docs/images/p5_burn_grid.png" alt="Grid of neon gradients with burn blend" title="p5.js burn grid port rendered with blendend" />
+    </td>
+    <td width="50%">
+      <strong>Piriform curve</strong><br>
+      <img src="docs/images/piriform.png" alt="Piriform curve illustration" title="Piriform curve rendered with blendend" />
+    </td>
+  </tr>
 </table>
 
 
