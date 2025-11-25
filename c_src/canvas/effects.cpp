@@ -15,10 +15,10 @@ namespace {
 struct BlurOpts {
   bool fill = true;
   bool stroke = false;
-  double padding = 0.0;
   double offset_x = 0.0;
   double offset_y = 0.0;
   bool valid = true;
+  bool mode_set = false;
 };
 
 bool parse_blur_opts(ErlNifEnv* env, const ERL_NIF_TERM argv[], int argc, int opts_index, BlurOpts& out)
@@ -50,14 +50,20 @@ bool parse_blur_opts(ErlNifEnv* env, const ERL_NIF_TERM argv[], int argc, int op
         if(strcmp(val, "fill") == 0) {
           out.fill = true;
           out.stroke = false;
+          out.mode_set = true;
         }
         else if(strcmp(val, "stroke") == 0) {
           out.fill = false;
           out.stroke = true;
+          out.mode_set = true;
         }
         else if(strcmp(val, "fill_and_stroke") == 0 || strcmp(val, "both") == 0) {
           out.fill = true;
           out.stroke = true;
+          out.mode_set = true;
+        }
+        else if(strcmp(val, "auto") == 0) {
+          out.mode_set = false;
         }
         else {
           out.valid = false;
@@ -65,19 +71,6 @@ bool parse_blur_opts(ErlNifEnv* env, const ERL_NIF_TERM argv[], int argc, int op
       }
       else {
         out.valid = false;
-      }
-    }
-    else if(strcmp(key, "padding") == 0) {
-      double p = 0.0;
-      if(enif_get_double(env, tup[1], &p)) {
-        out.padding = std::max(0.0, p);
-      }
-      else {
-        long p_int = 0;
-        if(enif_get_long(env, tup[1], &p_int))
-          out.padding = std::max(0.0, static_cast<double>(p_int));
-        else
-          out.valid = false;
       }
     }
     else if(strcmp(key, "offset") == 0) {
@@ -135,7 +128,7 @@ ERL_NIF_TERM canvas_blur_path(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[
       if(enif_get_tuple(env, head, &arity, &tup) && arity == 2) {
         char key[64];
         if(enif_get_atom(env, tup[0], key, sizeof(key), ERL_NIF_UTF8)) {
-          if(strcmp(key, "mode") == 0 || strcmp(key, "padding") == 0 || strcmp(key, "offset") == 0) {
+          if(strcmp(key, "mode") == 0 || strcmp(key, "offset") == 0) {
             // skip blur-specific keys
           }
           else {
@@ -162,6 +155,14 @@ ERL_NIF_TERM canvas_blur_path(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[
     return make_result_error(env, "canvas_blur_path_invalid_style");
   }
 
+  if(!opts.mode_set) {
+    opts.fill = style.has_fill();
+    opts.stroke = style.has_stroke();
+    if(!opts.fill && !opts.stroke) {
+      opts.fill = true;
+    }
+  }
+
   BLBox bbox{};
   if(path->value.get_bounding_box(&bbox) != BL_SUCCESS) {
     return make_result_error(env, "canvas_blur_path_bounds_failed");
@@ -169,11 +170,12 @@ ERL_NIF_TERM canvas_blur_path(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[
 
   const double stroke_pad =
       (opts.stroke && style.has_stroke()) ? std::max(0.0, style.stroke_opts.width * 0.5) : 0.0;
-  const double radius_pad = std::ceil(std::max(0.0, sigma * 3.0 + opts.padding));
-  const double pad = radius_pad + stroke_pad;
+  const double blur_pad = std::ceil(std::max(0.0, sigma * 3.0));
+  const double pad_x = blur_pad + stroke_pad + std::abs(opts.offset_x);
+  const double pad_y = blur_pad + stroke_pad + std::abs(opts.offset_y);
 
-  const double width_d = bbox.x1 - bbox.x0 + pad * 2.0;
-  const double height_d = bbox.y1 - bbox.y0 + pad * 2.0;
+  const double width_d = bbox.x1 - bbox.x0 + pad_x * 2.0;
+  const double height_d = bbox.y1 - bbox.y0 + pad_y * 2.0;
 
   const int w = static_cast<int>(std::ceil(std::max(1.0, width_d)));
   const int h = static_cast<int>(std::ceil(std::max(1.0, height_d)));
@@ -193,7 +195,7 @@ ERL_NIF_TERM canvas_blur_path(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[
 
   tmp_ctx.clear_all();
   tmp_ctx.save();
-  tmp_ctx.translate(pad - bbox.x0 + opts.offset_x, pad - bbox.y0 + opts.offset_y);
+  tmp_ctx.translate(pad_x - bbox.x0 + opts.offset_x, pad_y - bbox.y0 + opts.offset_y);
   style.apply(&tmp_ctx);
 
   if(opts.fill)
@@ -209,8 +211,8 @@ ERL_NIF_TERM canvas_blur_path(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[
     return make_result_error(env, "canvas_blur_path_blur_failed");
   }
 
-  const int dst_x = static_cast<int>(std::floor(bbox.x0 - pad));
-  const int dst_y = static_cast<int>(std::floor(bbox.y0 - pad));
+  const int dst_x = static_cast<int>(std::floor(bbox.x0 - pad_x));
+  const int dst_y = static_cast<int>(std::floor(bbox.y0 - pad_y));
 
   canvas->ctx.save();
   if(style.has_comp_op)

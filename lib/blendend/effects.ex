@@ -12,7 +12,7 @@ defmodule Blendend.Effects do
 
   alias Blendend.{Canvas, Error, Native, Path}
 
-  @type blur_mode :: :fill | :stroke | :fill_and_stroke
+  @type blur_mode :: :auto | :fill | :stroke | :fill_and_stroke
 
   @doc """
   Blur a `path` and composite it back onto `canvas`.
@@ -20,9 +20,8 @@ defmodule Blendend.Effects do
   * `sigma` controls blur strength (in pixels).
   * style options match `Blendend.Canvas.Fill.path/3` (e.g. `fill: color`, `stroke: color`, `stroke_width: w`).
   * extra options:
-    * `:mode` – `:fill` (default), `:stroke`, or `:fill_and_stroke`
-    * `:padding` – extra pixels around the shape (auto-added padding already accounts for blur radius and stroke width)
-    * `:offset` – `{dx, dy}` shift before compositing (useful for shadows)
+    * `:mode` – `:auto` (default; follows provided `fill`/`stroke` styles), `:fill`, `:stroke`, or `:fill_and_stroke`
+    * `:offset` – `{dx, dy}` shift before compositing (useful for shadows; padding is inferred from blur radius, stroke, and offset)
   """
   @spec blur_path(Canvas.t(), Path.t(), number(), keyword()) :: :ok | {:error, term()}
   def blur_path(canvas, path, sigma, opts \\ []) do
