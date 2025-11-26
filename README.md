@@ -49,7 +49,10 @@ mix compile
 
 ## Quick start
 
-Using the DSL:
+Blendend is meant to feel like a sketchbook: open a canvas, write a few lines, get pixels back. After adding the dependency and compiling, you can start an IEx session or drop a script anywhere in your project. The `Blendend.Draw` DSL keeps things terse so you can focus on shapes and color rather than boilerplate.
+
+Below, we draw a single white line and write it to disk. Change the block to add circles, text, gradients, or any of the other helpers in `Blendend.Draw`.
+
 ```elixir
 use Blendend.Draw
 
@@ -57,6 +60,8 @@ draw 200, 200, "priv/basic_line.png" do
   line 0, 100, 200, 100, stroke: rgb(255, 255, 255)
 end
 ```
+
+Want to explore interactively? `draw/3` returns a base64 PNG string when you omit the filename; LiveView or any web socket consumer can show it immediately. For a richer starting point, clone the [blendend_playground](https://github.com/narslan/blendend_playground) repo and run it to browse and tweak the bundled examples in the browser.
 
 ## Playground
 
