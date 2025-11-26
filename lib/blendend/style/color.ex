@@ -131,14 +131,13 @@ defmodule Blendend.Style.Color do
     nizami: ["#034AA6", "#72B6F2", "#73BFB1", "#F2A30F", "#F26F63"],
     renoir: ["#303E8C", "#F2AE2E", "#F28705", "#D91414", "#F2F2F2"],
     vangogh: ["#424D8C", "#84A9BF", "#C1D9CE", "#F2B705", "#F25C05"],
-    mono: ["#D9D7D8", "#3B5159", "#5D848C", "#7CA2A6", "#262321"],
-    riverside: ["#906FA6", "#025951", "#252625", "#D99191", "#F2F2F2"]
+    mono: ["#D9D7D8", "#3B5159", "#5D848C", "#7CA2A6", "#262321"]
   }
 
   @doc """
   Returns a list of RGBA colors from a named scheme.
 
-  Accepts atoms or strings for the scheme name (e.g., `:hokusai_blue` or `"Hokusai Blue"`).
+  Accepts atoms for the scheme name (e.g., `:hokusai_blue`).
   Use `scheme_names/0` to see available options. Passing `:random` picks a random scheme.
 
       iex> Blendend.Style.Color.scheme(:hokusai) |> length()
@@ -146,13 +145,12 @@ defmodule Blendend.Style.Color do
       iex> Blendend.Style.Color.scheme(:random) |> is_list()
       true
   """
-  @spec scheme(atom() | String.t()) :: [t()]
-  def scheme(name) do
+  @spec scheme(atom()) :: [t()]
+  def scheme(name) when is_atom(name) do
     key =
       case name do
         :random -> random_scheme_key()
-        atom when is_atom(atom) -> atom
-        bin when is_binary(bin) -> sanitize_name(bin)
+        atom -> atom
       end
 
     palette =
@@ -165,18 +163,16 @@ defmodule Blendend.Style.Color do
     Enum.map(palette, &hex_to_color!/1)
   end
 
+  def scheme(name) do
+    raise ArgumentError,
+          "scheme/1 expects an atom scheme name such as :hokusai or :random, got: #{inspect(name)}"
+  end
+
   @doc """
   Lists available scheme names as atoms.
   """
   @spec scheme_names() :: [atom()]
   def scheme_names, do: Map.keys(@scheme_palette)
-
-  defp sanitize_name(bin) do
-    bin
-    |> String.downcase()
-    |> String.replace(" ", "_")
-    |> String.to_atom()
-  end
 
   defp random_scheme_key, do: Enum.random(Map.keys(@scheme_palette))
 

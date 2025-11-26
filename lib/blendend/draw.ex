@@ -294,6 +294,20 @@ defmodule Blendend.Draw do
     end
   end
 
+  defmacro set_stroke_style(style) do
+    quote bind_quoted: [style: style] do
+      c = Blendend.Draw.get_canvas()
+      :ok = Blendend.Canvas.set_stroke_style(c, style)
+    end
+  end
+
+  defmacro set_stroke_width(width) do
+    quote bind_quoted: [width: width] do
+      c = Blendend.Draw.get_canvas()
+      :ok = Blendend.Canvas.set_stroke_width(c, width)
+    end
+  end
+
   defmacro load_font(face, size) do
     quote bind_quoted: [face: face, size: size] do
       face = Blendend.Text.Face.load!(face)
@@ -842,7 +856,6 @@ defmodule Blendend.Draw do
   Convenience macro to fetch a color scheme as a list of color resources.
 
       colors = scheme(:hokusai)
-      [c1, c2, c3 | _] = scheme("Hokusai Blue")
       palette = scheme(:random)
   """
   defmacro scheme(name_ast) do
