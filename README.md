@@ -83,8 +83,8 @@ There is a separate web playground for live editing and rendering, and for brows
   </tr>
   <tr>
     <td width="50%">
-      <strong>Cartesian plot</strong><br>
-      <img src="docs/images/sine_wave.png" alt="Sine and cosine waves on cartesian axes" title="Cartesian plot generated with Blendend.Cartesian" />
+      <strong>Function plot</strong><br>
+      <img src="docs/images/sine_wave.png" alt="Sine and cosine waves on axes" title="Function plot rendered with Blendend.Draw" />
     </td>
     <td width="50%">
       <strong>Blendend logo (path flattening)</strong><br>

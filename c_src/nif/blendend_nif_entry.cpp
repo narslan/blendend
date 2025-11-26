@@ -1,5 +1,4 @@
 #include "../canvas/canvas.h"
-#include "../canvas/cartesian.h"
 #include "../geometries/matrix2d.h"
 #include "../geometries/path.h"
 #include "../images/image.h"
@@ -42,8 +41,6 @@ static int load(ErlNifEnv* env, void**, ERL_NIF_TERM)
   if(NifResource<Canvas>::open(env, "Elixir.Blendend.Native") < 0)
     return -1;
   if(NifResource<Image>::open(env, "Elixir.Blendend.Native") < 0)
-    return -1;
-  if(NifResource<Cartesian>::open(env, "Elixir.Blendend.Native") < 0)
     return -1;
   if(NifResource<Path>::open(env, "Elixir.Blendend.Native") < 0)
     return -1;
@@ -105,11 +102,6 @@ MAKE_TERM(image_read_from_data)
 MAKE_TERM(image_read_mask_from_data)
 MAKE_TERM(image_decode_qoi)
 MAKE_TERM(image_blur)
-
-// Cartesian
-MAKE_TERM(cartesian)
-MAKE_TERM(cartesian_to_canvas)
-MAKE_TERM(cartesian_to_math)
 
 // Styles
 MAKE_TERM(color)
@@ -267,10 +259,6 @@ MAKE_DRAW_GLYPH(stroke_glyph_run)
   X(image_read_mask_from_data, 2, ERL_NIF_DIRTY_JOB_CPU_BOUND) \
   X(image_decode_qoi, 1, ERL_NIF_DIRTY_JOB_CPU_BOUND) \
   X(image_blur, 2, ERL_NIF_DIRTY_JOB_CPU_BOUND) \
-  /* Cartesian */ \
-  X(cartesian, 6, 0) \
-  X(cartesian_to_canvas, 3, 0) \
-  X(cartesian_to_math, 3, 0) \
   /* Styles */ \
   X(color, 4, 0) \
   X(gradient_linear, 4, 0) \

@@ -145,63 +145,6 @@ defmodule Blendend.Draw do
     end
   end
 
-  # ------------------------------------------------------------------
-  # Cartesian helpers (sugar around Blendend.Cartesian + Line)
-  # ------------------------------------------------------------------
-  defmacro sample_function(fun, x_min, x_max, steps) do
-    quote bind_quoted: [fun: fun, x_min: x_min, x_max: x_max, steps: steps] do
-      Blendend.Cartesian.sample_function(fun, x_min, x_max, steps)
-    end
-  end
-
-  defmacro sample_parametric(fun, t0, t1, steps) do
-    quote bind_quoted: [fun: fun, t0: t0, t1: t1, steps: steps] do
-      Blendend.Cartesian.sample_parametric(fun, t0, t1, steps)
-    end
-  end
-
-  @deprecated "Use sample_function/4 for y=f(x)."
-  defmacro sample_y(fun, x_min, x_max, steps) do
-    quote bind_quoted: [fun: fun, x_min: x_min, x_max: x_max, steps: steps] do
-      sample_function(fun, x_min, x_max, steps)
-    end
-  end
-
-  defmacro frame_from_points(points, w, h, opts \\ []) do
-    quote bind_quoted: [points: points, w: w, h: h, opts: opts] do
-      {:ok, frame} = Blendend.Cartesian.from_points(points, w, h, opts)
-      frame
-    end
-  end
-
-  defmacro plot_function(frame, math_points, opts \\ []) do
-    quote bind_quoted: [frame: frame, math_points: math_points, opts: opts] do
-      c = Blendend.Draw.get_canvas()
-      Blendend.Cartesian.Line.plot_function(c, frame, math_points, opts)
-    end
-  end
-
-  defmacro plot_curve(frame, math_points, opts \\ []) do
-    quote bind_quoted: [frame: frame, math_points: math_points, opts: opts] do
-      c = Blendend.Draw.get_canvas()
-      Blendend.Cartesian.Line.plot_curve(c, frame, math_points, opts)
-    end
-  end
-
-  @deprecated "Use plot_function/3 for y=f(x)."
-  defmacro plot_y(frame, math_points, opts \\ []) do
-    quote bind_quoted: [frame: frame, math_points: math_points, opts: opts] do
-      plot_function(frame, math_points, opts)
-    end
-  end
-
-  @deprecated "Use plot_curve/3 for parametric curves."
-  defmacro plot_parametric(frame, math_points, opts \\ []) do
-    quote bind_quoted: [frame: frame, math_points: math_points, opts: opts] do
-      plot_curve(frame, math_points, opts)
-    end
-  end
-
   @doc """
   Top–level entry point for Blendend drawings.
 

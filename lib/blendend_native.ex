@@ -61,13 +61,6 @@ defmodule Blendend.Native do
   def image_blur(_image, _sigma), do: :erlang.nif_error(:nif_not_loaded)
 
   # ------------------------
-  # Cartesian
-  # ------------------------
-  def cartesian(_ox, _oy, _sx, _sy, _wx, _wy), do: :erlang.nif_error(:nif_not_loaded)
-  def cartesian_to_canvas(_canvas, _cartesian, _opts), do: :erlang.nif_error(:nif_not_loaded)
-  def cartesian_to_math(_canvas, _cartesian, _opts), do: :erlang.nif_error(:nif_not_loaded)
-
-  # ------------------------
   # Styles
   # ------------------------
   def color(_r, _g, _b, _a), do: :erlang.nif_error(:nif_not_loaded)
