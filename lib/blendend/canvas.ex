@@ -318,6 +318,25 @@ defmodule Blendend.Canvas do
   end
 
   @doc """
+  Sets the stroke join mode on the current context.
+
+  Accepted atoms: `:miter_clip`, `:round`, `:bevel`, `:miter_bevel`, `:miter_round`.
+  """
+  @spec set_stroke_join(t(), atom()) :: :ok | {:error, term()}
+  def set_stroke_join(canvas, join), do: Native.canvas_set_stroke_join(canvas, join)
+
+  @doc """
+  Same as `set_stroke_join/2`, but returns the canvas and raises on error.
+  """
+  @spec set_stroke_join!(t(), atom()) :: t()
+  def set_stroke_join!(canvas, join) do
+    case set_stroke_join(canvas, join) do
+      :ok -> canvas
+      {:error, reason} -> raise Error.new(:canvas_set_stroke_join, reason)
+    end
+  end
+
+  @doc """
   Sets the fill style on the current context.
 
   Accepts the same resources as `set_stroke_style/2` (color, gradient, pattern).

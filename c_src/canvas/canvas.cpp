@@ -250,6 +250,39 @@ ERL_NIF_TERM canvas_set_stroke_style(ErlNifEnv* env, int argc, const ERL_NIF_TER
   return make_result_error(env, "canvas_set_stroke_style_invalid_style");
 }
 
+ERL_NIF_TERM canvas_set_stroke_join(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
+{
+  if(argc != 2)
+    return enif_make_badarg(env);
+
+  Canvas* canvas = NifResource<Canvas>::get(env, argv[0]);
+  if(!canvas)
+    return make_result_error(env, "canvas_set_stroke_join_invalid_canvas");
+
+  char join[32];
+  if(!enif_get_atom(env, argv[1], join, sizeof(join), ERL_NIF_UTF8)) {
+    return make_result_error(env, "canvas_set_stroke_join_invalid_atom");
+  }
+
+  static const std::unordered_map<std::string, BLStrokeJoin> join_map = {
+      {"miter_clip", BL_STROKE_JOIN_MITER_CLIP},
+      {"round", BL_STROKE_JOIN_ROUND},
+      {"bevel", BL_STROKE_JOIN_BEVEL},
+      {"miter_bevel", BL_STROKE_JOIN_MITER_BEVEL},
+      {"miter_round", BL_STROKE_JOIN_MITER_ROUND}};
+
+  auto it = join_map.find(std::string(join));
+  if(it == join_map.end()) {
+    return make_result_error(env, "canvas_set_stroke_join_invalid_value");
+  }
+
+  BLResult r = canvas->ctx.set_stroke_join(it->second);
+  if(r != BL_SUCCESS)
+    return make_result_error(env, "canvas_set_stroke_join_failed");
+
+  return enif_make_atom(env, "ok");
+}
+
 ERL_NIF_TERM canvas_set_fill_style(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
 {
   if(argc != 2)

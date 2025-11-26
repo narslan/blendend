@@ -166,6 +166,7 @@ MAKE_TERM(matrix2d_scale)
 MAKE_TERM(matrix2d_skew)
 MAKE_TERM(matrix2d_rotate)
 MAKE_TERM(matrix2d_compose)
+MAKE_TERM(canvas_set_stroke_join)
 // Fill Geometry
 MAKE_DRAW_NIF(canvas_fill_box, BLBox, fill_box)
 MAKE_DRAW_NIF(canvas_fill_rect, BLRect, fill_rect)
@@ -241,6 +242,7 @@ MAKE_DRAW_GLYPH(stroke_glyph_run)
   X(canvas_scale, 3, 0) \
   X(canvas_rotate, 2, 0) \
   X(canvas_skew, 3, 0) \
+  X(canvas_set_stroke_join, 2, 0) \
   X(canvas_clip_to_rect, 5, 0) \
   X(canvas_fill_mask, 4, 0) \
   X(canvas_fill_mask, 5, 0) \

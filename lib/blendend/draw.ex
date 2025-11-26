@@ -308,6 +308,13 @@ defmodule Blendend.Draw do
     end
   end
 
+  defmacro set_stroke_join(join) do
+    quote bind_quoted: [join: join] do
+      c = Blendend.Draw.get_canvas()
+      :ok = Blendend.Canvas.set_stroke_join(c, join)
+    end
+  end
+
   defmacro load_font(face, size) do
     quote bind_quoted: [face: face, size: size] do
       face = Blendend.Text.Face.load!(face)

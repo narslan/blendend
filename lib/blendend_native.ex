@@ -23,6 +23,7 @@ defmodule Blendend.Native do
 
   def canvas_set_stroke_width(_canvas, _width), do: :erlang.nif_error(:nif_not_loaded)
   def canvas_set_stroke_style(_canvas, _style), do: :erlang.nif_error(:nif_not_loaded)
+  def canvas_set_stroke_join(_canvas, _join), do: :erlang.nif_error(:nif_not_loaded)
   def canvas_disable_stroke_style(_canvas), do: :erlang.nif_error(:nif_not_loaded)
 
   def canvas_translate(_canvas, _x, _y), do: :erlang.nif_error(:nif_not_loaded)
