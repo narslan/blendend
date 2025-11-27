@@ -230,6 +230,20 @@ defmodule Blendend.Draw do
     end
   end
 
+  defmacro global_alpha(alpha) do
+    quote bind_quoted: [alpha: alpha] do
+      c = Blendend.Draw.get_canvas()
+      :ok = Blendend.Canvas.set_global_alpha(c, alpha)
+    end
+  end
+
+  defmacro style_alpha(slot, alpha) do
+    quote bind_quoted: [slot: slot, alpha: alpha] do
+      c = Blendend.Draw.get_canvas()
+      :ok = Blendend.Canvas.set_style_alpha(c, slot, alpha)
+    end
+  end
+
   defmacro fill_rule(rule) do
     quote bind_quoted: [rule: rule] do
       c = Blendend.Draw.get_canvas()

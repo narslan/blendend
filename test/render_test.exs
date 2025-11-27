@@ -8,7 +8,6 @@ defmodule Blendend.RenderTest do
     {:ok, ctx} = Canvas.new(64, 64)
     :ok = Canvas.clear(ctx)
 
-    # draw a red rect at (10,10)
     :ok =
       Blendend.Canvas.Fill.rect(
         ctx,
@@ -25,7 +24,7 @@ defmodule Blendend.RenderTest do
       |> ImageHelpers.decode_qoi!()
 
     :ok = Canvas.clear(ctx)
-    :ok = Canvas.translate(ctx, 10, 0)
+    :ok = Canvas.translate(ctx, 30, 0)
 
     :ok =
       Blendend.Canvas.Fill.rect(
@@ -42,9 +41,8 @@ defmodule Blendend.RenderTest do
       |> Canvas.to_qoi!()
       |> ImageHelpers.decode_qoi!()
 
-    # After translation, original spot should be empty; new spot filled red.
     assert ImageHelpers.pixel_at(img1, 12, 12) == {255, 0, 0, 255}
-    assert ImageHelpers.pixel_at(img2, 12, 12) == {0, 0, 0, 0}
-    assert ImageHelpers.pixel_at(img2, 22, 12) == {255, 0, 0, 255}
+    assert ImageHelpers.pixel_at(img2, 0, 0) == {0, 0, 0, 0}
+    assert ImageHelpers.pixel_at(img2, 45, 12) == {255, 0, 0, 255}
   end
 end

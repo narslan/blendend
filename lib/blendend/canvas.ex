@@ -356,6 +356,48 @@ defmodule Blendend.Canvas do
   end
 
   @doc """
+  Sets the global alpha multiplier applied to all subsequent draw calls.
+
+  The value is a floating–point number (typically `0.0..1.0`); it multiplies
+  the alpha of both fill and stroke operations until changed again.
+  """
+  @spec set_global_alpha(t(), number()) :: :ok | {:error, term()}
+  def set_global_alpha(canvas, alpha),
+    do: Native.canvas_set_global_alpha(canvas, alpha * 1.0)
+
+  @doc """
+  Same as `set_global_alpha/2`, but returns the canvas and raises on error.
+  """
+  @spec set_global_alpha!(t(), number()) :: t()
+  def set_global_alpha!(canvas, alpha) do
+    case set_global_alpha(canvas, alpha) do
+      :ok -> canvas
+      {:error, reason} -> raise Error.new(:canvas_set_global_alpha, reason)
+    end
+  end
+
+  @doc """
+  Sets the alpha multiplier for a specific style slot.
+
+  `slot` is `:fill` or `:stroke`; `alpha` is a float (typically `0.0..1.0`).
+  This adjusts only the chosen slot while leaving the other untouched.
+  """
+  @spec set_style_alpha(t(), :fill | :stroke, number()) :: :ok | {:error, term()}
+  def set_style_alpha(canvas, slot, alpha),
+    do: Native.canvas_set_style_alpha(canvas, slot, alpha * 1.0)
+
+  @doc """
+  Same as `set_style_alpha/3`, but returns the canvas and raises on error.
+  """
+  @spec set_style_alpha!(t(), :fill | :stroke, number()) :: t()
+  def set_style_alpha!(canvas, slot, alpha) do
+    case set_style_alpha(canvas, slot, alpha) do
+      :ok -> canvas
+      {:error, reason} -> raise Error.new(:canvas_set_style_alpha, reason)
+    end
+  end
+
+  @doc """
   Disables the stroke style on the current context.
 
   Equivalent to Blend2D's `disableStrokeStyle/0`.

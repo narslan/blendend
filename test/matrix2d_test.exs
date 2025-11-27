@@ -11,8 +11,10 @@ defmodule Blendend.Matrix2DTest do
   end
 
   test "new/1 rejects invalid lists" do
-    assert {:error, _} = M.new([1, 2, 3])        # too short
-    assert {:error, _} = M.new([1, 2, 3, 4, 5, 6, 7])  # too long
+    # too short
+    assert {:error, _} = M.new([1, 2, 3])
+    # too long
+    assert {:error, _} = M.new([1, 2, 3, 4, 5, 6, 7])
     assert {:error, _} = M.new([:a, 0, 0, 1, 0, 0])
   end
 

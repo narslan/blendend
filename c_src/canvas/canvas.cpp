@@ -56,6 +56,7 @@ ERL_NIF_TERM canvas_clear(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
 
   if(!style.has_fill()) {
     canvas->ctx.clear_all();
+    canvas->ctx.flush(BL_CONTEXT_FLUSH_SYNC);
     return enif_make_atom(env, "ok");
   }
 
@@ -120,6 +121,59 @@ ERL_NIF_TERM canvas_set_comp_op(ErlNifEnv* env, int argc, const ERL_NIF_TERM arg
   BLResult r = canvas->ctx.set_comp_op(it->second);
   if(r != BL_SUCCESS)
     return make_result_error(env, "canvas_set_comp_op_failed");
+
+  return enif_make_atom(env, "ok");
+}
+
+ERL_NIF_TERM canvas_set_global_alpha(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
+{
+  if(argc != 2)
+    return enif_make_badarg(env);
+
+  auto canvas = NifResource<Canvas>::get(env, argv[0]);
+  if(canvas == nullptr)
+    return make_result_error(env, "canvas_set_global_alpha_invalid_canvas");
+
+  double alpha;
+  if(!enif_get_double(env, argv[1], &alpha))
+    return make_result_error(env, "canvas_set_global_alpha_invalid_alpha");
+
+  BLResult r = canvas->ctx.set_global_alpha(alpha);
+  if(r != BL_SUCCESS)
+    return make_result_error(env, "canvas_set_global_alpha_failed");
+
+  return enif_make_atom(env, "ok");
+}
+
+ERL_NIF_TERM canvas_set_style_alpha(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
+{
+  if(argc != 3)
+    return enif_make_badarg(env);
+
+  auto canvas = NifResource<Canvas>::get(env, argv[0]);
+  if(canvas == nullptr)
+    return make_result_error(env, "canvas_set_style_alpha_invalid_canvas");
+
+  char slot_atom[16];
+  if(!enif_get_atom(env, argv[1], slot_atom, sizeof(slot_atom), ERL_NIF_UTF8))
+    return make_result_error(env, "canvas_set_style_alpha_invalid_slot");
+
+  static const std::unordered_map<std::string, BLContextStyleSlot> slot_map = {
+      {"fill", BL_CONTEXT_STYLE_SLOT_FILL},
+      {"stroke", BL_CONTEXT_STYLE_SLOT_STROKE},
+  };
+
+  auto it = slot_map.find(std::string(slot_atom));
+  if(it == slot_map.end())
+    return make_result_error(env, "canvas_set_style_alpha_invalid_slot");
+
+  double alpha;
+  if(!enif_get_double(env, argv[2], &alpha))
+    return make_result_error(env, "canvas_set_style_alpha_invalid_alpha");
+
+  BLResult r = canvas->ctx.set_style_alpha(it->second, alpha);
+  if(r != BL_SUCCESS)
+    return make_result_error(env, "canvas_set_style_alpha_failed");
 
   return enif_make_atom(env, "ok");
 }

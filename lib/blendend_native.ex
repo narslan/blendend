@@ -46,6 +46,8 @@ defmodule Blendend.Native do
   def canvas_set_fill_style(_canvas, _style), do: :erlang.nif_error(:nif_not_loaded)
   def canvas_set_fill_rule(_canvas, _rule), do: :erlang.nif_error(:nif_not_loaded)
   def canvas_set_comp_op(_canvas, _op), do: :erlang.nif_error(:nif_not_loaded)
+  def canvas_set_global_alpha(_canvas, _alpha), do: :erlang.nif_error(:nif_not_loaded)
+  def canvas_set_style_alpha(_canvas, _slot, _alpha), do: :erlang.nif_error(:nif_not_loaded)
 
   def canvas_to_png_base64(_canvas), do: :erlang.nif_error(:nif_not_loaded)
   def canvas_to_png(_canvas), do: :erlang.nif_error(:nif_not_loaded)
