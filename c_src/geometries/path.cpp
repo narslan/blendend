@@ -5,9 +5,10 @@
 #include "../styles/styles.h"
 #include "matrix2d.h"
 
-#include <blend2d/core/path.h>
+#include <blend2d/blend2d.h>
 #include <cmath>
 #include <cstring>
+#include <vector>
 
 template <>
 const char* NifResource<Path>::resource_name = "Path";
@@ -70,6 +71,113 @@ bool cmd_from_term(ErlNifEnv* env, ERL_NIF_TERM term, uint32_t* out)
   }
 
   return false;
+}
+
+static bool parse_geometry_direction(ErlNifEnv* env, ERL_NIF_TERM term, BLGeometryDirection* out)
+{
+  char atom[16];
+  if(!enif_get_atom(env, term, atom, sizeof(atom), ERL_NIF_UTF8)) {
+    return false;
+  }
+
+  if(std::strcmp(atom, "cw") == 0) {
+    *out = BL_GEOMETRY_DIRECTION_CW;
+    return true;
+  }
+  if(std::strcmp(atom, "ccw") == 0) {
+    *out = BL_GEOMETRY_DIRECTION_CCW;
+    return true;
+  }
+  if(std::strcmp(atom, "none") == 0) {
+    *out = BL_GEOMETRY_DIRECTION_NONE;
+    return true;
+  }
+
+  return false;
+}
+
+static bool parse_optional_matrix(ErlNifEnv* env, ERL_NIF_TERM term, const Matrix2D** out)
+{
+  // Treat :nil as "no matrix"
+  if(enif_is_atom(env, term)) {
+    char atom[8];
+    if(enif_get_atom(env, term, atom, sizeof(atom), ERL_NIF_UTF8) && std::strcmp(atom, "nil") == 0) {
+      *out = nullptr;
+      return true;
+    }
+  }
+
+  auto matrix = NifResource<Matrix2D>::get(env, term);
+  if(matrix == nullptr) {
+    return false;
+  }
+
+  *out = matrix;
+  return true;
+}
+
+struct GeometryExtras {
+  const Matrix2D* matrix;
+  BLGeometryDirection dir;
+};
+
+static bool parse_geometry_extras(ErlNifEnv* env,
+                                  int argc,
+                                  const ERL_NIF_TERM argv[],
+                                  int extras_start,
+                                  GeometryExtras* extras)
+{
+  extras->matrix = nullptr;
+  extras->dir = BL_GEOMETRY_DIRECTION_CW;
+
+  // No extras provided, defaults remain
+  if(argc == extras_start) {
+    return true;
+  }
+
+  if(argc != extras_start + 2) {
+    return false;
+  }
+
+  if(!parse_optional_matrix(env, argv[extras_start], &extras->matrix)) {
+    return false;
+  }
+
+  if(!parse_geometry_direction(env, argv[extras_start + 1], &extras->dir)) {
+    return false;
+  }
+
+  return true;
+}
+
+static std::vector<BLPoint> parse_point_list(ErlNifEnv* env, ERL_NIF_TERM list)
+{
+  std::vector<BLPoint> out;
+  unsigned int len;
+  if(!enif_get_list_length(env, list, &len)) {
+    return out;
+  }
+
+  out.reserve(len);
+
+  ERL_NIF_TERM head, tail = list;
+  for(unsigned int i = 0; i < len; i++) {
+    if(!enif_get_list_cell(env, tail, &head, &tail)) {
+      break;
+    }
+
+    const ERL_NIF_TERM* tuple;
+    int arity;
+    double x, y;
+    if(!enif_get_tuple(env, head, &arity, &tuple) || arity != 2 ||
+       !enif_get_double(env, tuple[0], &x) || !enif_get_double(env, tuple[1], &y)) {
+      break;
+    }
+
+    out.emplace_back(x, y);
+  }
+
+  return out;
 }
 // -----------------------------------------------------------------------------
 // 4) path_vertex_count(path) → integer
@@ -421,9 +529,74 @@ ERL_NIF_TERM path_arc_quadrant_to(ErlNifEnv* env, int argc, const ERL_NIF_TERM a
   return enif_make_atom(env, "ok");
 }
 
+ERL_NIF_TERM path_add_box(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
+{
+  if(argc != 5 && argc != 7) {
+    return enif_make_badarg(env);
+  }
+
+  double x0, y0, x1, y1;
+  auto path = NifResource<Path>::get(env, argv[0]);
+  if(path == nullptr) {
+    return make_result_error(env, "path_add_box_invalid_path");
+  }
+
+  if(!enif_get_double(env, argv[1], &x0) || !enif_get_double(env, argv[2], &y0) ||
+     !enif_get_double(env, argv[3], &x1) || !enif_get_double(env, argv[4], &y1)) {
+    return make_result_error(env, "path_add_box_invalid_coords");
+  }
+
+  GeometryExtras extras;
+  if(!parse_geometry_extras(env, argc, argv, 5, &extras)) {
+    return make_result_error(env, "path_add_box_invalid_extras");
+  }
+
+  BLBox box(x0, y0, x1, y1);
+  BLResult rc = extras.matrix ? path->value.add_geometry(BL_GEOMETRY_TYPE_BOXD, &box, &extras.matrix->value, extras.dir)
+                              : path->value.add_box(box, extras.dir);
+
+  if(rc != BL_SUCCESS)
+    return make_result_error(env, "path_add_box_failed");
+
+  return enif_make_atom(env, "ok");
+}
+
+ERL_NIF_TERM path_add_rect(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
+{
+  if(argc != 5 && argc != 7) {
+    return enif_make_badarg(env);
+  }
+
+  double x, y, w, h;
+  auto path = NifResource<Path>::get(env, argv[0]);
+  if(path == nullptr) {
+    return make_result_error(env, "path_add_rect_invalid_path");
+  }
+
+  if(!enif_get_double(env, argv[1], &x) || !enif_get_double(env, argv[2], &y) ||
+     !enif_get_double(env, argv[3], &w) || !enif_get_double(env, argv[4], &h)) {
+    return make_result_error(env, "path_add_rect_invalid_coords");
+  }
+
+  GeometryExtras extras;
+  if(!parse_geometry_extras(env, argc, argv, 5, &extras)) {
+    return make_result_error(env, "path_add_rect_invalid_extras");
+  }
+
+  BLRect rect(x, y, w, h);
+  BLResult rc =
+    extras.matrix ? path->value.add_geometry(BL_GEOMETRY_TYPE_RECTD, &rect, &extras.matrix->value, extras.dir)
+                  : path->value.add_rect(rect, extras.dir);
+
+  if(rc != BL_SUCCESS)
+    return make_result_error(env, "path_add_rect_failed");
+
+  return enif_make_atom(env, "ok");
+}
+
 ERL_NIF_TERM path_add_circle(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
 {
-  if(argc != 4) {
+  if(argc != 4 && argc != 6) {
     return enif_make_badarg(env);
   }
 
@@ -439,11 +612,273 @@ ERL_NIF_TERM path_add_circle(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]
     return make_result_error(env, "path_add_circle_invalid_coords");
   }
 
+  GeometryExtras extras;
+  if(!parse_geometry_extras(env, argc, argv, 4, &extras)) {
+    return make_result_error(env, "path_add_circle_invalid_extras");
+  }
+
   BLCircle c(cx, cy, r);
 
-  BLResult rc = path->value.add_circle(c);
+  BLResult rc = extras.matrix ? path->value.add_circle(c, extras.matrix->value, extras.dir)
+                              : path->value.add_circle(c, extras.dir);
   if(rc != BL_SUCCESS)
     return make_result_error(env, "add_circle_failed");
+
+  return enif_make_atom(env, "ok");
+}
+
+ERL_NIF_TERM path_add_ellipse(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
+{
+  if(argc != 5 && argc != 7) {
+    return enif_make_badarg(env);
+  }
+
+  double cx, cy, rx, ry;
+  auto path = NifResource<Path>::get(env, argv[0]);
+  if(path == nullptr) {
+    return make_result_error(env, "path_add_ellipse_invalid_path");
+  }
+
+  if(!enif_get_double(env, argv[1], &cx) || !enif_get_double(env, argv[2], &cy) ||
+     !enif_get_double(env, argv[3], &rx) || !enif_get_double(env, argv[4], &ry)) {
+    return make_result_error(env, "path_add_ellipse_invalid_coords");
+  }
+
+  GeometryExtras extras;
+  if(!parse_geometry_extras(env, argc, argv, 5, &extras)) {
+    return make_result_error(env, "path_add_ellipse_invalid_extras");
+  }
+
+  BLEllipse ellipse(cx, cy, rx, ry);
+  BLResult rc = extras.matrix ? path->value.add_ellipse(ellipse, extras.matrix->value, extras.dir)
+                              : path->value.add_ellipse(ellipse, extras.dir);
+
+  if(rc != BL_SUCCESS)
+    return make_result_error(env, "path_add_ellipse_failed");
+
+  return enif_make_atom(env, "ok");
+}
+
+ERL_NIF_TERM path_add_round_rect(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
+{
+  if(argc != 7 && argc != 9) {
+    return enif_make_badarg(env);
+  }
+
+  double x, y, w, h, rx, ry;
+  auto path = NifResource<Path>::get(env, argv[0]);
+  if(path == nullptr) {
+    return make_result_error(env, "path_add_round_rect_invalid_path");
+  }
+
+  if(!enif_get_double(env, argv[1], &x) || !enif_get_double(env, argv[2], &y) ||
+     !enif_get_double(env, argv[3], &w) || !enif_get_double(env, argv[4], &h) ||
+     !enif_get_double(env, argv[5], &rx) || !enif_get_double(env, argv[6], &ry)) {
+    return make_result_error(env, "path_add_round_rect_invalid_coords");
+  }
+
+  GeometryExtras extras;
+  if(!parse_geometry_extras(env, argc, argv, 7, &extras)) {
+    return make_result_error(env, "path_add_round_rect_invalid_extras");
+  }
+
+  BLRoundRect rr(x, y, w, h, rx, ry);
+  BLResult rc = extras.matrix ? path->value.add_round_rect(rr, extras.matrix->value, extras.dir)
+                              : path->value.add_round_rect(rr, extras.dir);
+
+  if(rc != BL_SUCCESS)
+    return make_result_error(env, "path_add_round_rect_failed");
+
+  return enif_make_atom(env, "ok");
+}
+
+ERL_NIF_TERM path_add_arc(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
+{
+  if(argc != 7 && argc != 9) {
+    return enif_make_badarg(env);
+  }
+
+  double cx, cy, rx, ry, start, sweep;
+  auto path = NifResource<Path>::get(env, argv[0]);
+  if(path == nullptr) {
+    return make_result_error(env, "path_add_arc_invalid_path");
+  }
+
+  if(!enif_get_double(env, argv[1], &cx) || !enif_get_double(env, argv[2], &cy) ||
+     !enif_get_double(env, argv[3], &rx) || !enif_get_double(env, argv[4], &ry) ||
+     !enif_get_double(env, argv[5], &start) || !enif_get_double(env, argv[6], &sweep)) {
+    return make_result_error(env, "path_add_arc_invalid_coords");
+  }
+
+  GeometryExtras extras;
+  if(!parse_geometry_extras(env, argc, argv, 7, &extras)) {
+    return make_result_error(env, "path_add_arc_invalid_extras");
+  }
+
+  BLArc arc(cx, cy, rx, ry, start, sweep);
+  BLResult rc = extras.matrix ? path->value.add_arc(arc, extras.matrix->value, extras.dir)
+                              : path->value.add_arc(arc, extras.dir);
+
+  if(rc != BL_SUCCESS)
+    return make_result_error(env, "path_add_arc_failed");
+
+  return enif_make_atom(env, "ok");
+}
+
+ERL_NIF_TERM path_add_chord(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
+{
+  if(argc != 7 && argc != 9) {
+    return enif_make_badarg(env);
+  }
+
+  double cx, cy, rx, ry, start, sweep;
+  auto path = NifResource<Path>::get(env, argv[0]);
+  if(path == nullptr) {
+    return make_result_error(env, "path_add_chord_invalid_path");
+  }
+
+  if(!enif_get_double(env, argv[1], &cx) || !enif_get_double(env, argv[2], &cy) ||
+     !enif_get_double(env, argv[3], &rx) || !enif_get_double(env, argv[4], &ry) ||
+     !enif_get_double(env, argv[5], &start) || !enif_get_double(env, argv[6], &sweep)) {
+    return make_result_error(env, "path_add_chord_invalid_coords");
+  }
+
+  GeometryExtras extras;
+  if(!parse_geometry_extras(env, argc, argv, 7, &extras)) {
+    return make_result_error(env, "path_add_chord_invalid_extras");
+  }
+
+  BLArc chord(cx, cy, rx, ry, start, sweep);
+  BLResult rc = extras.matrix ? path->value.add_chord(chord, extras.matrix->value, extras.dir)
+                              : path->value.add_chord(chord, extras.dir);
+
+  if(rc != BL_SUCCESS)
+    return make_result_error(env, "path_add_chord_failed");
+
+  return enif_make_atom(env, "ok");
+}
+
+ERL_NIF_TERM path_add_line(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
+{
+  if(argc != 5 && argc != 7) {
+    return enif_make_badarg(env);
+  }
+
+  double x0, y0, x1, y1;
+  auto path = NifResource<Path>::get(env, argv[0]);
+  if(path == nullptr) {
+    return make_result_error(env, "path_add_line_invalid_path");
+  }
+
+  if(!enif_get_double(env, argv[1], &x0) || !enif_get_double(env, argv[2], &y0) ||
+     !enif_get_double(env, argv[3], &x1) || !enif_get_double(env, argv[4], &y1)) {
+    return make_result_error(env, "path_add_line_invalid_coords");
+  }
+
+  GeometryExtras extras;
+  if(!parse_geometry_extras(env, argc, argv, 5, &extras)) {
+    return make_result_error(env, "path_add_line_invalid_extras");
+  }
+
+  BLLine line(x0, y0, x1, y1);
+  BLResult rc = extras.matrix ? path->value.add_line(line, extras.matrix->value, extras.dir)
+                              : path->value.add_line(line, extras.dir);
+
+  if(rc != BL_SUCCESS)
+    return make_result_error(env, "path_add_line_failed");
+
+  return enif_make_atom(env, "ok");
+}
+
+ERL_NIF_TERM path_add_triangle(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
+{
+  if(argc != 7 && argc != 9) {
+    return enif_make_badarg(env);
+  }
+
+  double x0, y0, x1, y1, x2, y2;
+  auto path = NifResource<Path>::get(env, argv[0]);
+  if(path == nullptr) {
+    return make_result_error(env, "path_add_triangle_invalid_path");
+  }
+
+  if(!enif_get_double(env, argv[1], &x0) || !enif_get_double(env, argv[2], &y0) ||
+     !enif_get_double(env, argv[3], &x1) || !enif_get_double(env, argv[4], &y1) ||
+     !enif_get_double(env, argv[5], &x2) || !enif_get_double(env, argv[6], &y2)) {
+    return make_result_error(env, "path_add_triangle_invalid_coords");
+  }
+
+  GeometryExtras extras;
+  if(!parse_geometry_extras(env, argc, argv, 7, &extras)) {
+    return make_result_error(env, "path_add_triangle_invalid_extras");
+  }
+
+  BLTriangle tri(x0, y0, x1, y1, x2, y2);
+  BLResult rc = extras.matrix ? path->value.add_triangle(tri, extras.matrix->value, extras.dir)
+                              : path->value.add_triangle(tri, extras.dir);
+
+  if(rc != BL_SUCCESS)
+    return make_result_error(env, "path_add_triangle_failed");
+
+  return enif_make_atom(env, "ok");
+}
+
+ERL_NIF_TERM path_add_polyline(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
+{
+  if(argc != 2 && argc != 4) {
+    return enif_make_badarg(env);
+  }
+
+  auto path = NifResource<Path>::get(env, argv[0]);
+  if(path == nullptr) {
+    return make_result_error(env, "path_add_polyline_invalid_path");
+  }
+
+  auto points = parse_point_list(env, argv[1]);
+
+  GeometryExtras extras;
+  if(!parse_geometry_extras(env, argc, argv, 2, &extras)) {
+    return make_result_error(env, "path_add_polyline_invalid_extras");
+  }
+
+  BLArrayView<BLPoint> view;
+  view.reset(points.data(), points.size());
+
+  BLResult rc = extras.matrix ? path->value.add_polyline(view, extras.matrix->value, extras.dir)
+                              : path->value.add_polyline(view, extras.dir);
+
+  if(rc != BL_SUCCESS)
+    return make_result_error(env, "path_add_polyline_failed");
+
+  return enif_make_atom(env, "ok");
+}
+
+ERL_NIF_TERM path_add_polygon(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
+{
+  if(argc != 2 && argc != 4) {
+    return enif_make_badarg(env);
+  }
+
+  auto path = NifResource<Path>::get(env, argv[0]);
+  if(path == nullptr) {
+    return make_result_error(env, "path_add_polygon_invalid_path");
+  }
+
+  auto points = parse_point_list(env, argv[1]);
+
+  GeometryExtras extras;
+  if(!parse_geometry_extras(env, argc, argv, 2, &extras)) {
+    return make_result_error(env, "path_add_polygon_invalid_extras");
+  }
+
+  BLArrayView<BLPoint> view;
+  view.reset(points.data(), points.size());
+
+  BLResult rc = extras.matrix ? path->value.add_polygon(view, extras.matrix->value, extras.dir)
+                              : path->value.add_polygon(view, extras.dir);
+
+  if(rc != BL_SUCCESS)
+    return make_result_error(env, "path_add_polygon_failed");
 
   return enif_make_atom(env, "ok");
 }

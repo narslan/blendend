@@ -171,9 +171,20 @@ ERL_NIF_TERM canvas_set_style_alpha(ErlNifEnv* env, int argc, const ERL_NIF_TERM
   if(!enif_get_double(env, argv[2], &alpha))
     return make_result_error(env, "canvas_set_style_alpha_invalid_alpha");
 
-  BLResult r = canvas->ctx.set_style_alpha(it->second, alpha);
-  if(r != BL_SUCCESS)
+  BLResult r = BL_SUCCESS;
+  if(it->second == BL_CONTEXT_STYLE_SLOT_FILL) {
+    r = canvas->ctx.set_fill_alpha(alpha);
+  }
+  else if(it->second == BL_CONTEXT_STYLE_SLOT_STROKE) {
+    r = canvas->ctx.set_stroke_alpha(alpha);
+  }
+  else {
+    r = canvas->ctx.set_style_alpha(it->second, alpha);
+  }
+
+  if(r != BL_SUCCESS) {
     return make_result_error(env, "canvas_set_style_alpha_failed");
+  }
 
   return enif_make_atom(env, "ok");
 }

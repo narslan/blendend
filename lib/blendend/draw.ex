@@ -230,7 +230,7 @@ defmodule Blendend.Draw do
     end
   end
 
-  defmacro global_alpha(alpha) do
+  defmacro set_global_alpha(alpha) do
     quote bind_quoted: [alpha: alpha] do
       c = Blendend.Draw.get_canvas()
       :ok = Blendend.Canvas.set_global_alpha(c, alpha)

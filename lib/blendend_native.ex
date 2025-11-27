@@ -110,7 +110,41 @@ defmodule Blendend.Native do
     do: :erlang.nif_error(:nif_not_loaded)
 
   def path_arc_quadrant_to(_p, _x1, _y1, _x2, _y2), do: :erlang.nif_error(:nif_not_loaded)
-  def path_add_circle(_p, _cx, _cy, _r), do: :erlang.nif_error(:nif_not_loaded)
+  def path_add_box(_p, _x0, _y0, _x1, _y1, _matrix, _dir),
+    do: :erlang.nif_error(:nif_not_loaded)
+
+  def path_add_rect(_p, _x, _y, _w, _h, _matrix, _dir),
+    do: :erlang.nif_error(:nif_not_loaded)
+
+  def path_add_circle(_p, _cx, _cy, _r, _matrix, _dir),
+    do: :erlang.nif_error(:nif_not_loaded)
+
+  def path_add_circle(p, cx, cy, r), do: path_add_circle(p, cx, cy, r, nil, :cw)
+
+  def path_add_ellipse(_p, _cx, _cy, _rx, _ry, _matrix, _dir),
+    do: :erlang.nif_error(:nif_not_loaded)
+
+  def path_add_round_rect(_p, _x, _y, _w, _h, _rx, _ry, _matrix, _dir),
+    do: :erlang.nif_error(:nif_not_loaded)
+
+  def path_add_arc(_p, _cx, _cy, _rx, _ry, _start, _sweep, _matrix, _dir),
+    do: :erlang.nif_error(:nif_not_loaded)
+
+  def path_add_chord(_p, _cx, _cy, _rx, _ry, _start, _sweep, _matrix, _dir),
+    do: :erlang.nif_error(:nif_not_loaded)
+
+  def path_add_line(_p, _x0, _y0, _x1, _y1, _matrix, _dir),
+    do: :erlang.nif_error(:nif_not_loaded)
+
+  def path_add_triangle(_p, _x0, _y0, _x1, _y1, _x2, _y2, _matrix, _dir),
+    do: :erlang.nif_error(:nif_not_loaded)
+
+  def path_add_polyline(_p, _points, _matrix, _dir),
+    do: :erlang.nif_error(:nif_not_loaded)
+
+  def path_add_polygon(_p, _points, _matrix, _dir),
+    do: :erlang.nif_error(:nif_not_loaded)
+
   def path_add_path(_dst, _src), do: :erlang.nif_error(:nif_not_loaded)
   def path_add_path_transform(_dst, _src, _mtx), do: :erlang.nif_error(:nif_not_loaded)
 

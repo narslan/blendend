@@ -137,7 +137,17 @@ MAKE_TERM(path_arc_to)
 MAKE_TERM(path_elliptic_arc_to)
 MAKE_TERM(path_arc_quadrant_to)
 
+MAKE_TERM(path_add_box)
+MAKE_TERM(path_add_rect)
 MAKE_TERM(path_add_circle)
+MAKE_TERM(path_add_ellipse)
+MAKE_TERM(path_add_round_rect)
+MAKE_TERM(path_add_arc)
+MAKE_TERM(path_add_chord)
+MAKE_TERM(path_add_line)
+MAKE_TERM(path_add_triangle)
+MAKE_TERM(path_add_polyline)
+MAKE_TERM(path_add_polygon)
 MAKE_TERM(path_add_path)
 MAKE_TERM(path_add_path_transform)
 MAKE_TERM(path_close)
@@ -290,7 +300,17 @@ MAKE_DRAW_GLYPH(stroke_glyph_run)
   X(path_smooth_cubic_to, 5, 0) \
   X(path_arc_to, 8, 0) \
   X(path_elliptic_arc_to, 8, 0) \
-  X(path_add_circle, 4, 0) \
+  X(path_add_box, 7, 0) \
+  X(path_add_rect, 7, 0) \
+  X(path_add_circle, 6, 0) \
+  X(path_add_ellipse, 7, 0) \
+  X(path_add_round_rect, 9, 0) \
+  X(path_add_arc, 9, 0) \
+  X(path_add_chord, 9, 0) \
+  X(path_add_line, 7, 0) \
+  X(path_add_triangle, 9, 0) \
+  X(path_add_polyline, 4, 0) \
+  X(path_add_polygon, 4, 0) \
   X(path_add_path, 2, 0) \
   X(path_add_path_transform, 3, 0) \
   X(path_vertex_at, 2, 0) \

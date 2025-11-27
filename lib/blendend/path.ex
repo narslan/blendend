@@ -8,7 +8,10 @@ defmodule Blendend.Path do
     * construct a path with `new/0` (or `new!/0`)
     * add segments with `move_to/3`, `line_to/3`, `quad_to/5`,
       `cubic_to/7`, `arc_quadrant_to/5`, `conic_to/6`, `arc_to/8`,
-      `elliptic_arc_to/8`, or `add_circle/4`
+      `elliptic_arc_to/8`, or geometry helpers like `add_box/6`,
+      `add_rect/6`, `add_circle/5`, `add_ellipse/6`,
+      `add_round_rect/8`, `add_arc/8`, `add_chord/8`,
+      `add_line/6`, `add_triangle/8`, `add_polyline/3`, or `add_polygon/3`
     * optionally inspect or deform it with `vertex_count/1`,
       `vertex_at/2`, and `set_vertex_at/5`
     * derive straight segments or samples with `segments/1` and `sample/3`
@@ -23,6 +26,7 @@ defmodule Blendend.Path do
   @type segment :: {point(), point()}
   @type sampled_point :: {point(), {float(), float()}}
   @type hit_class :: :in | :out | :part
+  @type direction :: :cw | :ccw | :none
 
   alias Blendend.Native
   alias Blendend.Error
@@ -493,29 +497,392 @@ defmodule Blendend.Path do
   end
 
   @doc """
-  Adds a closed circular contour centered at `(cx, cy)` with radius `r`.
+  Adds a closed rectangular box defined by corners `(x0, y0)` and `(x1, y1)`.
+
+  Optional `opts`:
+
+    * `:matrix`    – `Blendend.Matrix2D.t()` transform to apply
+    * `:direction` – `:cw | :ccw | :none` (default: `:cw`)
 
   On success, returns `:ok`.
 
   On failure, returns `{:error, reason}`.
   """
-  @spec add_circle(t(), number(), number(), number()) :: :ok | {:error, term()}
-  def add_circle(path, cx, cy, r),
-    do: Native.path_add_circle(path, cx * 1.0, cy * 1.0, r * 1.0)
+  @spec add_box(t(), number(), number(), number(), number(), keyword()) :: :ok | {:error, term()}
+  def add_box(path, x0, y0, x1, y1, opts \\ []) do
+    {matrix, dir} = normalize_geometry_opts(opts)
+    Native.path_add_box(path, x0 * 1.0, y0 * 1.0, x1 * 1.0, y1 * 1.0, matrix || :nil, dir)
+  end
 
   @doc """
-  Same as `add_circle/4`, but returns the path for piping.
+  Same as `add_box/6`, but returns the path for piping.
 
   On success, returns `path`.
 
   On failure, raises `Blendend.Error`.
   """
-  @spec add_circle!(t(), number(), number(), number()) :: t()
-  def add_circle!(path, cx, cy, r) do
-    case add_circle(path, cx, cy, r) do
+  @spec add_box!(t(), number(), number(), number(), number(), keyword()) :: t()
+  def add_box!(path, x0, y0, x1, y1, opts \\ []) do
+    case add_box(path, x0, y0, x1, y1, opts) do
+      :ok -> path
+      {:error, reason} -> raise Error.new(:path_add_box, reason)
+    end
+  end
+
+  @doc """
+  Adds a closed rectangle `(x, y, w, h)`.
+
+  Accepts the same optional `opts` as `add_box/6`.
+
+  On success, returns `:ok`.
+
+  On failure, returns `{:error, reason}`.
+  """
+  @spec add_rect(t(), number(), number(), number(), number(), keyword()) :: :ok | {:error, term()}
+  def add_rect(path, x, y, w, h, opts \\ []) do
+    {matrix, dir} = normalize_geometry_opts(opts)
+    Native.path_add_rect(path, x * 1.0, y * 1.0, w * 1.0, h * 1.0, matrix || :nil, dir)
+  end
+
+  @doc """
+  Same as `add_rect/6`, but returns the path for piping.
+
+  On success, returns `path`.
+
+  On failure, raises `Blendend.Error`.
+  """
+  @spec add_rect!(t(), number(), number(), number(), number(), keyword()) :: t()
+  def add_rect!(path, x, y, w, h, opts \\ []) do
+    case add_rect(path, x, y, w, h, opts) do
+      :ok -> path
+      {:error, reason} -> raise Error.new(:path_add_rect, reason)
+    end
+  end
+
+  @doc """
+  Adds a closed circular contour centered at `(cx, cy)` with radius `r`.
+
+  Optional `opts`:
+
+    * `:matrix`    – `Blendend.Matrix2D.t()` transform to apply
+    * `:direction` – `:cw | :ccw | :none` (default: `:cw`)
+
+  On success, returns `:ok`.
+
+  On failure, returns `{:error, reason}`.
+  """
+  @spec add_circle(t(), number(), number(), number(), keyword()) :: :ok | {:error, term()}
+  def add_circle(path, cx, cy, r, opts \\ []) do
+    {matrix, dir} = normalize_geometry_opts(opts)
+    Native.path_add_circle(path, cx * 1.0, cy * 1.0, r * 1.0, matrix || :nil, dir)
+  end
+
+  @doc """
+  Same as `add_circle/5`, but returns the path for piping.
+
+  On success, returns `path`.
+
+  On failure, raises `Blendend.Error`.
+  """
+  @spec add_circle!(t(), number(), number(), number(), keyword()) :: t()
+  def add_circle!(path, cx, cy, r, opts \\ []) do
+    case add_circle(path, cx, cy, r, opts) do
       :ok -> path
       {:error, reason} -> raise Error.new(:path_add_circle, reason)
     end
+  end
+
+  @doc """
+  Adds an ellipse centered at `(cx, cy)` with radii `(rx, ry)`.
+
+  Accepts the same optional `opts` as `add_circle/5`.
+  """
+  @spec add_ellipse(t(), number(), number(), number(), number(), keyword()) ::
+          :ok | {:error, term()}
+  def add_ellipse(path, cx, cy, rx, ry, opts \\ []) do
+    {matrix, dir} = normalize_geometry_opts(opts)
+    Native.path_add_ellipse(path, cx * 1.0, cy * 1.0, rx * 1.0, ry * 1.0, matrix || :nil, dir)
+  end
+
+  @doc """
+  Same as `add_ellipse/6`, but returns the path for piping.
+  """
+  @spec add_ellipse!(t(), number(), number(), number(), number(), keyword()) :: t()
+  def add_ellipse!(path, cx, cy, rx, ry, opts \\ []) do
+    case add_ellipse(path, cx, cy, rx, ry, opts) do
+      :ok -> path
+      {:error, reason} -> raise Error.new(:path_add_ellipse, reason)
+    end
+  end
+
+  @doc """
+  Adds a rounded rectangle `(x, y, w, h, rx, ry)`.
+
+  Accepts the same optional `opts` as `add_circle/5`.
+  """
+  @spec add_round_rect(t(), number(), number(), number(), number(), number(), number(), keyword()) ::
+          :ok | {:error, term()}
+  def add_round_rect(path, x, y, w, h, rx, ry, opts \\ []) do
+    {matrix, dir} = normalize_geometry_opts(opts)
+    Native.path_add_round_rect(
+      path,
+      x * 1.0,
+      y * 1.0,
+      w * 1.0,
+      h * 1.0,
+      rx * 1.0,
+      ry * 1.0,
+      matrix || :nil,
+      dir
+    )
+  end
+
+  @doc """
+  Same as `add_round_rect/8`, but returns the path for piping.
+  """
+  @spec add_round_rect!(
+          t(),
+          number(),
+          number(),
+          number(),
+          number(),
+          number(),
+          number(),
+          keyword()
+        ) :: t()
+  def add_round_rect!(path, x, y, w, h, rx, ry, opts \\ []) do
+    case add_round_rect(path, x, y, w, h, rx, ry, opts) do
+      :ok -> path
+      {:error, reason} -> raise Error.new(:path_add_round_rect, reason)
+    end
+  end
+
+  @doc """
+  Adds an arc defined by `(cx, cy, rx, ry, start, sweep)`.
+
+  Accepts the same optional `opts` as `add_circle/5`.
+  """
+  @spec add_arc(t(), number(), number(), number(), number(), number(), number(), keyword()) ::
+          :ok | {:error, term()}
+  def add_arc(path, cx, cy, rx, ry, start, sweep, opts \\ []) do
+    {matrix, dir} = normalize_geometry_opts(opts)
+
+    Native.path_add_arc(
+      path,
+      cx * 1.0,
+      cy * 1.0,
+      rx * 1.0,
+      ry * 1.0,
+      start * 1.0,
+      sweep * 1.0,
+      matrix || :nil,
+      dir
+    )
+  end
+
+  @doc """
+  Same as `add_arc/8`, but returns the path for piping.
+  """
+  @spec add_arc!(
+          t(),
+          number(),
+          number(),
+          number(),
+          number(),
+          number(),
+          number(),
+          keyword()
+        ) :: t()
+  def add_arc!(path, cx, cy, rx, ry, start, sweep, opts \\ []) do
+    case add_arc(path, cx, cy, rx, ry, start, sweep, opts) do
+      :ok -> path
+      {:error, reason} -> raise Error.new(:path_add_arc, reason)
+    end
+  end
+
+  @doc """
+  Adds a chord (closed arc) defined by `(cx, cy, rx, ry, start, sweep)`.
+
+  Accepts the same optional `opts` as `add_circle/5`.
+  """
+  @spec add_chord(t(), number(), number(), number(), number(), number(), number(), keyword()) ::
+          :ok | {:error, term()}
+  def add_chord(path, cx, cy, rx, ry, start, sweep, opts \\ []) do
+    {matrix, dir} = normalize_geometry_opts(opts)
+
+    Native.path_add_chord(
+      path,
+      cx * 1.0,
+      cy * 1.0,
+      rx * 1.0,
+      ry * 1.0,
+      start * 1.0,
+      sweep * 1.0,
+      matrix || :nil,
+      dir
+    )
+  end
+
+  @doc """
+  Same as `add_chord/8`, but returns the path for piping.
+  """
+  @spec add_chord!(
+          t(),
+          number(),
+          number(),
+          number(),
+          number(),
+          number(),
+          number(),
+          keyword()
+        ) :: t()
+  def add_chord!(path, cx, cy, rx, ry, start, sweep, opts \\ []) do
+    case add_chord(path, cx, cy, rx, ry, start, sweep, opts) do
+      :ok -> path
+      {:error, reason} -> raise Error.new(:path_add_chord, reason)
+    end
+  end
+
+  @doc """
+  Adds a line segment between `(x0, y0)` and `(x1, y1)` as a figure.
+
+  Accepts the same optional `opts` as `add_circle/5`.
+  """
+  @spec add_line(t(), number(), number(), number(), number(), keyword()) :: :ok | {:error, term()}
+  def add_line(path, x0, y0, x1, y1, opts \\ []) do
+    {matrix, dir} = normalize_geometry_opts(opts)
+    Native.path_add_line(path, x0 * 1.0, y0 * 1.0, x1 * 1.0, y1 * 1.0, matrix || :nil, dir)
+  end
+
+  @doc """
+  Same as `add_line/6`, but returns the path for piping.
+  """
+  @spec add_line!(t(), number(), number(), number(), number(), keyword()) :: t()
+  def add_line!(path, x0, y0, x1, y1, opts \\ []) do
+    case add_line(path, x0, y0, x1, y1, opts) do
+      :ok -> path
+      {:error, reason} -> raise Error.new(:path_add_line, reason)
+    end
+  end
+
+  @doc """
+  Adds a closed triangle `(x0, y0)`, `(x1, y1)`, `(x2, y2)`.
+
+  Accepts the same optional `opts` as `add_circle/5`.
+  """
+  @spec add_triangle(
+          t(),
+          number(),
+          number(),
+          number(),
+          number(),
+          number(),
+          number(),
+          keyword()
+        ) :: :ok | {:error, term()}
+  def add_triangle(path, x0, y0, x1, y1, x2, y2, opts \\ []) do
+    {matrix, dir} = normalize_geometry_opts(opts)
+
+    Native.path_add_triangle(
+      path,
+      x0 * 1.0,
+      y0 * 1.0,
+      x1 * 1.0,
+      y1 * 1.0,
+      x2 * 1.0,
+      y2 * 1.0,
+      matrix || :nil,
+      dir
+    )
+  end
+
+  @doc """
+  Same as `add_triangle/8`, but returns the path for piping.
+  """
+  @spec add_triangle!(
+          t(),
+          number(),
+          number(),
+          number(),
+          number(),
+          number(),
+          number(),
+          keyword()
+        ) :: t()
+  def add_triangle!(path, x0, y0, x1, y1, x2, y2, opts \\ []) do
+    case add_triangle(path, x0, y0, x1, y1, x2, y2, opts) do
+      :ok -> path
+      {:error, reason} -> raise Error.new(:path_add_triangle, reason)
+    end
+  end
+
+  @doc """
+  Adds a polyline defined by `points` (`[{x, y}, ...]`).
+
+  Accepts the same optional `opts` as `add_circle/5`.
+  """
+  @spec add_polyline(t(), [point()], keyword()) :: :ok | {:error, term()}
+  def add_polyline(path, points, opts \\ []) do
+    {matrix, dir} = normalize_geometry_opts(opts)
+    float_points = normalize_points(points)
+    Native.path_add_polyline(path, float_points, matrix || :nil, dir)
+  end
+
+  @doc """
+  Same as `add_polyline/3`, but returns the path for piping.
+  """
+  @spec add_polyline!(t(), [point()], keyword()) :: t()
+  def add_polyline!(path, points, opts \\ []) do
+    case add_polyline(path, points, opts) do
+      :ok -> path
+      {:error, reason} -> raise Error.new(:path_add_polyline, reason)
+    end
+  end
+
+  @doc """
+  Adds a polygon defined by `points` (`[{x, y}, ...]`).
+
+  Accepts the same optional `opts` as `add_circle/5`.
+  """
+  @spec add_polygon(t(), [point()], keyword()) :: :ok | {:error, term()}
+  def add_polygon(path, points, opts \\ []) do
+    {matrix, dir} = normalize_geometry_opts(opts)
+    float_points = normalize_points(points)
+    Native.path_add_polygon(path, float_points, matrix || :nil, dir)
+  end
+
+  @doc """
+  Same as `add_polygon/3`, but returns the path for piping.
+  """
+  @spec add_polygon!(t(), [point()], keyword()) :: t()
+  def add_polygon!(path, points, opts \\ []) do
+    case add_polygon(path, points, opts) do
+      :ok -> path
+      {:error, reason} -> raise Error.new(:path_add_polygon, reason)
+    end
+  end
+
+  defp normalize_geometry_opts(opts) do
+    dir = Keyword.get(opts, :direction, :cw)
+
+    unless dir in [:cw, :ccw, :none] do
+      raise ArgumentError, "direction must be one of :cw, :ccw, :none"
+    end
+
+    matrix = Keyword.get(opts, :matrix)
+
+    if matrix != nil and not is_reference(matrix) do
+      raise ArgumentError, "matrix must be a Matrix2D.t() or nil"
+    end
+
+    {matrix, dir}
+  end
+
+  defp normalize_points(points) do
+    Enum.map(points, fn
+      {x, y} -> {x * 1.0, y * 1.0}
+      other -> raise ArgumentError, "point must be a {x, y} tuple, got: #{inspect(other)}"
+    end)
   end
 
   @doc """
