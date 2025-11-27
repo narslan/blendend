@@ -237,7 +237,7 @@ defmodule Blendend.Draw do
     end
   end
 
-  defmacro style_alpha(slot, alpha) do
+  defmacro set_style_alpha(slot, alpha) do
     quote bind_quoted: [slot: slot, alpha: alpha] do
       c = Blendend.Draw.get_canvas()
       :ok = Blendend.Canvas.set_style_alpha(c, slot, alpha)
