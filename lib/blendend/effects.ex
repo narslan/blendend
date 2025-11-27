@@ -22,6 +22,7 @@ defmodule Blendend.Effects do
   * extra options:
     * `:mode` – `:auto` (default; follows provided `fill`/`stroke` styles), `:fill`, `:stroke`, or `:fill_and_stroke`
     * `:offset` – `{dx, dy}` shift before compositing (useful for shadows; padding is inferred from blur radius, stroke, and offset)
+    * dx and dy are floating numbers.
   """
   @spec blur_path(Canvas.t(), Path.t(), number(), keyword()) :: :ok | {:error, term()}
   def blur_path(canvas, path, sigma, opts \\ []) do
@@ -47,7 +48,7 @@ defmodule Blendend.Effects do
   @spec shadow_path(Canvas.t(), Path.t(), number(), number(), number(), keyword()) ::
           :ok | {:error, term()}
   def shadow_path(canvas, path, dx, dy, sigma, opts \\ []) do
-    opts = Keyword.put(opts, :offset, {dx, dy})
+    opts = Keyword.put(opts, :offset, {dx * 1.0, dy * 1.0})
     blur_path(canvas, path, sigma, opts)
   end
 

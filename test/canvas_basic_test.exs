@@ -120,18 +120,41 @@ defmodule Blendend.CanvasBasicTest do
     :ok = Canvas.clear(c, fill: Blendend.Style.Color.rgb!(0, 0, 0, 0))
     :ok = Canvas.set_stroke_style(c, Blendend.Style.Color.rgb!(255, 0, 0, 255))
     :ok = Canvas.set_style_alpha(c, :stroke, 0.4)
-    :ok = Stroke.rect(c, 0, 0, 2, 2, stroke_width: 1.0)
+    :ok = Stroke.rect(c, 0, 0, 2, 2, stroke_width: 2.5)
 
     :ok = Canvas.set_style_alpha(c, :stroke, 1.0)
-    :ok = Stroke.rect(c, 4, 0, 2, 2, stroke_width: 1.0)
+    :ok = Stroke.rect(c, 4, 0, 2, 2, stroke_width: 2.5)
 
     img_stroke = decode_qoi!(c)
-    {sr0, sg0, sb0, sa0} = pixel!(img_stroke, 0, 0)
-    {sr1, _sg1, _sb1, sa1} = pixel!(img_stroke, 4, 0)
+    {sr0, sg0, sb0, sa0} = pixel!(img_stroke, 1, 1)
+    {sr1, _sg1, _sb1, sa1} = pixel!(img_stroke, 5, 1)
 
     assert sa0 <= sa1
     assert sr0 <= sr1
     assert sr1 > sg0 and sr1 > sb0
+  end
+
+  @tag :canvas
+  test "set_style_alpha does not leak between fill and stroke" do
+    {:ok, c} = Canvas.new(8, 4)
+
+    :ok = Canvas.clear(c, fill: Blendend.Style.Color.rgb!(0, 0, 0, 0))
+    :ok = Canvas.set_fill_style(c, Blendend.Style.Color.rgb!(0, 255, 0, 255))
+    :ok = Canvas.set_stroke_style(c, Blendend.Style.Color.rgb!(255, 0, 0, 255))
+
+    :ok = Canvas.set_style_alpha(c, :stroke, 0.2)
+    :ok = Canvas.set_style_alpha(c, :fill, 1.0)
+
+    :ok = Fill.rect(c, 0, 0, 2, 2)
+    :ok = Stroke.rect(c, 4, 0, 2, 2, stroke_width: 2.5)
+
+    img = decode_qoi!(c)
+    {_fr, _fg, _fb, fa} = pixel!(img, 0, 0)
+    {sr, sg, sb, sa} = pixel!(img, 5, 1)
+
+    assert sa < fa
+    assert sr > sg and sr > sb
+    assert fa == 255
   end
 
   @tag :canvas
