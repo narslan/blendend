@@ -131,6 +131,30 @@ defmodule Blendend.CanvasBasicTest do
 
     assert sa0 <= sa1
     assert sr0 <= sr1
-    assert sr0 > sg0 and sr0 > sb0
+    assert sr1 > sg0 and sr1 > sb0
+  end
+
+  @tag :canvas
+  test "disable_style clears fill and stroke independently" do
+    {:ok, c} = Canvas.new(8, 8)
+
+    :ok = Canvas.set_fill_style(c, Blendend.Style.Color.rgb!(255, 255, 255, 255))
+    :ok = Fill.rect(c, 0, 0, 8, 8)
+    :ok = Canvas.disable_style(c, :fill)
+    :ok = Fill.rect(c, 0, 0, 8, 8)
+
+    img = decode_qoi!(c)
+    px_fill = pixel!(img, 0, 0)
+    assert px_fill == {255, 255, 255, 255}
+
+    :ok = Canvas.set_stroke_style(c, Blendend.Style.Color.rgb!(0, 0, 0, 255))
+    :ok = Stroke.rect(c, 0, 0, 8, 8, stroke_width: 1.0)
+    img_after_stroke = decode_qoi!(c)
+    px_stroke = pixel!(img_after_stroke, 0, 0)
+    :ok = Canvas.disable_style(c, :stroke)
+    :ok = Stroke.rect(c, 0, 0, 8, 8, stroke_width: 1.0)
+
+    img2 = decode_qoi!(c)
+    assert pixel!(img2, 0, 0) == px_stroke
   end
 end

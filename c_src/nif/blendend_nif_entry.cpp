@@ -70,7 +70,6 @@ MAKE_TERM(canvas_save_state)
 MAKE_TERM(canvas_restore_state)
 MAKE_TERM(canvas_set_stroke_width)
 MAKE_TERM(canvas_set_stroke_style)
-MAKE_TERM(canvas_disable_stroke_style)
 // Canvas transform
 MAKE_TERM(canvas_set_transform)
 MAKE_TERM(canvas_reset_transform)
@@ -88,6 +87,7 @@ MAKE_TERM(canvas_clear)
 MAKE_TERM(canvas_set_comp_op)
 MAKE_TERM(canvas_set_global_alpha)
 MAKE_TERM(canvas_set_style_alpha)
+MAKE_TERM(canvas_disable_style)
 MAKE_TERM(canvas_clip_to_rect)
 MAKE_TERM(canvas_fill_mask)
 MAKE_TERM(canvas_blur_path)
@@ -245,7 +245,7 @@ MAKE_DRAW_GLYPH(stroke_glyph_run)
   X(canvas_set_fill_style, 2, 0) \
   X(canvas_set_stroke_width, 2, 0) \
   X(canvas_set_stroke_style, 2, 0) \
-  X(canvas_disable_stroke_style, 1, 0) \
+  X(canvas_disable_style, 2, 0) \
   X(canvas_set_fill_rule, 2, 0) \
   X(canvas_set_comp_op, 2, 0) \
   X(canvas_set_global_alpha, 2, 0) \

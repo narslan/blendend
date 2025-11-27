@@ -244,10 +244,24 @@ defmodule Blendend.Draw do
     end
   end
 
+  defmacro disable_style(slot) do
+    quote bind_quoted: [slot: slot] do
+      c = Blendend.Draw.get_canvas()
+      :ok = Blendend.Canvas.disable_style(c, slot)
+    end
+  end
+
   defmacro fill_rule(rule) do
     quote bind_quoted: [rule: rule] do
       c = Blendend.Draw.get_canvas()
       :ok = Blendend.Canvas.set_fill_rule(c, rule)
+    end
+  end
+
+  defmacro set_fill_style(style) do
+    quote bind_quoted: [style: style] do
+      c = Blendend.Draw.get_canvas()
+      :ok = Blendend.Canvas.set_fill_style(c, style)
     end
   end
 

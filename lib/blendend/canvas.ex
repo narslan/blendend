@@ -398,21 +398,21 @@ defmodule Blendend.Canvas do
   end
 
   @doc """
-  Disables the stroke style on the current context.
+  Disables either the `:fill` or `:stroke` style slot.
 
-  Equivalent to Blend2D's `disableStrokeStyle/0`.
+  Equivalent to Blend2D's `disableStyle/1`.
   """
-  @spec disable_stroke_style(t()) :: :ok | {:error, term()}
-  def disable_stroke_style(canvas), do: Native.canvas_disable_stroke_style(canvas)
+  @spec disable_style(t(), :fill | :stroke) :: :ok | {:error, term()}
+  def disable_style(canvas, slot), do: Native.canvas_disable_style(canvas, slot)
 
   @doc """
-  Same as `disable_stroke_style/1`, but returns the canvas and raises on error.
+  Same as `disable_style/2`, but returns the canvas and raises on error.
   """
-  @spec disable_stroke_style!(t()) :: t()
-  def disable_stroke_style!(canvas) do
-    case disable_stroke_style(canvas) do
+  @spec disable_style!(t(), :fill | :stroke) :: t()
+  def disable_style!(canvas, slot) do
+    case disable_style(canvas, slot) do
       :ok -> canvas
-      {:error, reason} -> raise Error.new(:canvas_disable_stroke_style, reason)
+      {:error, reason} -> raise Error.new(:canvas_disable_style, reason)
     end
   end
 

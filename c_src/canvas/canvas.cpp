@@ -178,6 +178,35 @@ ERL_NIF_TERM canvas_set_style_alpha(ErlNifEnv* env, int argc, const ERL_NIF_TERM
   return enif_make_atom(env, "ok");
 }
 
+ERL_NIF_TERM canvas_disable_style(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
+{
+  if(argc != 2)
+    return enif_make_badarg(env);
+
+  auto canvas = NifResource<Canvas>::get(env, argv[0]);
+  if(canvas == nullptr)
+    return make_result_error(env, "canvas_disable_style_invalid_canvas");
+
+  char slot_atom[16];
+  if(!enif_get_atom(env, argv[1], slot_atom, sizeof(slot_atom), ERL_NIF_UTF8))
+    return make_result_error(env, "canvas_disable_style_invalid_slot");
+
+  static const std::unordered_map<std::string, BLContextStyleSlot> slot_map = {
+      {"fill", BL_CONTEXT_STYLE_SLOT_FILL},
+      {"stroke", BL_CONTEXT_STYLE_SLOT_STROKE},
+  };
+
+  auto it = slot_map.find(std::string(slot_atom));
+  if(it == slot_map.end())
+    return make_result_error(env, "canvas_disable_style_invalid_slot");
+
+  BLResult r = canvas->ctx.disable_style(it->second);
+  if(r != BL_SUCCESS)
+    return make_result_error(env, "canvas_disable_style_failed");
+
+  return enif_make_atom(env, "ok");
+}
+
 ERL_NIF_TERM canvas_save_state(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
 {
   if(argc != 1)
@@ -365,22 +394,6 @@ ERL_NIF_TERM canvas_set_fill_style(ErlNifEnv* env, int argc, const ERL_NIF_TERM 
   }
 
   return make_result_error(env, "canvas_set_fill_style_invalid_style");
-}
-
-ERL_NIF_TERM canvas_disable_stroke_style(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
-{
-  if(argc != 1)
-    return enif_make_badarg(env);
-
-  Canvas* canvas = NifResource<Canvas>::get(env, argv[0]);
-  if(!canvas)
-    return make_result_error(env, "canvas_disable_stroke_style_invalid_canvas");
-
-  BLResult r = canvas->ctx.disable_stroke_style();
-  if(r != BL_SUCCESS)
-    return make_result_error(env, "canvas_disable_stroke_style_failed");
-
-  return enif_make_atom(env, "ok");
 }
 
 ERL_NIF_TERM canvas_translate(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])

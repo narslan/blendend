@@ -90,9 +90,10 @@ defmodule Blendend.Style.Gradient do
 
   The gradient is defined by:
 
-    * `cx0`, `cy0`, `r0` – inner circle (focal) center and radius
+    * `cx0`, `cy0`, `r0` – inner circle center and radius
     * `cx1`, `cy1`, `r1` – outer circle center and radius
 
+  https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/createRadialGradient
   On success, returns `{:ok, gradient}`.
 
   On failure, returns `{:error, reason}`.
