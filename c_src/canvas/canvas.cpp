@@ -582,6 +582,55 @@ ERL_NIF_TERM canvas_clip_to_rect(ErlNifEnv* env, int argc, const ERL_NIF_TERM ar
   return enif_make_atom(env, "ok");
 }
 
+ERL_NIF_TERM canvas_blit_image(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
+{
+  if(argc != 4)
+    return enif_make_badarg(env);
+
+  auto canvas = NifResource<Canvas>::get(env, argv[0]);
+  auto image = NifResource<Image>::get(env, argv[1]);
+  double x = 0.0, y = 0.0;
+
+  if(!canvas || !image) {
+    return make_result_error(env, "canvas_blit_image_invalid_args");
+  }
+
+  if(!enif_get_double(env, argv[2], &x) || !enif_get_double(env, argv[3], &y)) {
+    return make_result_error(env, "canvas_blit_image_invalid_args");
+  }
+
+  BLResult r = canvas->ctx.blit_image(BLPoint(x, y), image->value);
+  if(r != BL_SUCCESS)
+    return make_result_error(env, "canvas_blit_image_failed");
+
+  return enif_make_atom(env, "ok");
+}
+
+ERL_NIF_TERM canvas_blit_image_scaled(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
+{
+  if(argc != 6)
+    return enif_make_badarg(env);
+
+  auto canvas = NifResource<Canvas>::get(env, argv[0]);
+  auto image = NifResource<Image>::get(env, argv[1]);
+  double x = 0.0, y = 0.0, w = 0.0, h = 0.0;
+
+  if(!canvas || !image) {
+    return make_result_error(env, "canvas_blit_image_invalid_args");
+  }
+
+  if(!enif_get_double(env, argv[2], &x) || !enif_get_double(env, argv[3], &y) ||
+     !enif_get_double(env, argv[4], &w) || !enif_get_double(env, argv[5], &h)) {
+    return make_result_error(env, "canvas_blit_image_invalid_args");
+  }
+
+  BLResult r = canvas->ctx.blit_image(BLRect(x, y, w, h), image->value);
+  if(r != BL_SUCCESS)
+    return make_result_error(env, "canvas_blit_image_failed");
+
+  return enif_make_atom(env, "ok");
+}
+
 ERL_NIF_TERM canvas_fill_mask(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
 {
   if(argc < 4)

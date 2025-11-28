@@ -89,6 +89,8 @@ MAKE_TERM(canvas_set_global_alpha)
 MAKE_TERM(canvas_set_style_alpha)
 MAKE_TERM(canvas_disable_style)
 MAKE_TERM(canvas_clip_to_rect)
+MAKE_TERM(canvas_blit_image)
+MAKE_TERM(canvas_blit_image_scaled)
 MAKE_TERM(canvas_fill_mask)
 MAKE_TERM(canvas_blur_path)
 MAKE_TERM(canvas_set_fill_style)
@@ -260,6 +262,8 @@ MAKE_DRAW_GLYPH(stroke_glyph_run)
   X(canvas_set_comp_op, 2, 0) \
   X(canvas_set_global_alpha, 2, 0) \
   X(canvas_set_style_alpha, 3, 0) \
+  X(canvas_blit_image, 4, 0) \
+  X(canvas_blit_image_scaled, 6, 0) \
   X(canvas_to_png_base64, 1, ERL_NIF_DIRTY_JOB_CPU_BOUND) \
   X(canvas_to_png, 1, ERL_NIF_DIRTY_JOB_CPU_BOUND) \
   X(canvas_to_qoi, 1, ERL_NIF_DIRTY_JOB_CPU_BOUND) \

@@ -43,6 +43,7 @@ struct Style {
   Gradient* stroke_gradient = nullptr;
   Pattern* stroke_pattern = nullptr;
   double stroke_alpha = 1.0;
+  bool stroke_alpha_set = false;
 
   BLStrokeOptions stroke_opts;
   bool has_stroke_opts = false;
@@ -97,7 +98,7 @@ struct Style {
     if(has_stroke_opts)
       ctx->set_stroke_options(stroke_opts);
 
-    if(stroke_alpha != 1.0)
+    if(stroke_alpha_set)
       ctx->set_stroke_alpha(stroke_alpha);
 
     if(stroke_pattern)
@@ -187,7 +188,9 @@ parse_style(ErlNifEnv* env, const ERL_NIF_TERM argv[], int argc, int opts_index,
       }
     }
     else if(strcmp(key, "stroke_alpha") == 0) {
-      if(!enif_get_double(env, tup[1], &out->stroke_alpha))
+      if(enif_get_double(env, tup[1], &out->stroke_alpha))
+        out->stroke_alpha_set = true;
+      else
         ok = false;
     }
 

@@ -16,7 +16,7 @@ defmodule Blendend.Canvas do
   @typedoc "Canvas/context resource backed by a blend2d `BLContext`."
   @opaque t :: reference()
 
-  alias Blendend.{Native, Error, Matrix2D}
+  alias Blendend.{Native, Error, Matrix2D, Image}
 
   # ===========================================================================
   # Construction
@@ -596,6 +596,49 @@ defmodule Blendend.Canvas do
     case set_comp_op(canvas, op) do
       :ok -> canvas
       {:error, reason} -> raise Error.new(:canvas_set_comp_op, reason)
+    end
+  end
+
+  @doc """
+  Blits an image onto the canvas at the given coordinates.
+
+  This copies the pixels of `image` so its top-left lands on `{x, y}` without
+  scaling or tiling, using Blend2D's `blit_image/2`.
+  """
+  @spec blit_image(t(), Image.t(), number(), number()) :: :ok | {:error, term()}
+  def blit_image(canvas, image, x, y),
+    do: Native.canvas_blit_image(canvas, image, x * 1.0, y * 1.0)
+
+  @doc """
+  Same as `blit_image/4`, but raises on failure and returns the canvas.
+  """
+  @spec blit_image!(t(), Image.t(), number(), number()) :: t()
+  def blit_image!(canvas, image, x, y) do
+    case blit_image(canvas, image, x, y) do
+      :ok -> canvas
+      {:error, reason} -> raise Error.new(:canvas_blit_image, reason)
+    end
+  end
+
+  @doc """
+  Blits an image scaled to the rectangle `{x, y, w, h}`.
+
+  The image is resampled to fit the destination rectangle using
+  Blend2D's `blit_image/3` overload (no source sub-rect applied).
+  """
+  @spec blit_image(t(), Image.t(), number(), number(), number(), number()) ::
+          :ok | {:error, term()}
+  def blit_image(canvas, image, x, y, w, h),
+    do: Native.canvas_blit_image_scaled(canvas, image, x * 1.0, y * 1.0, w * 1.0, h * 1.0)
+
+  @doc """
+  Same as `blit_image/6`, but raises on failure and returns the canvas.
+  """
+  @spec blit_image!(t(), Image.t(), number(), number(), number(), number()) :: t()
+  def blit_image!(canvas, image, x, y, w, h) do
+    case blit_image(canvas, image, x, y, w, h) do
+      :ok -> canvas
+      {:error, reason} -> raise Error.new(:canvas_blit_image_scaled, reason)
     end
   end
 

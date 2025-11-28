@@ -52,6 +52,10 @@ defmodule Blendend.Native do
   def canvas_to_png_base64(_canvas), do: :erlang.nif_error(:nif_not_loaded)
   def canvas_to_png(_canvas), do: :erlang.nif_error(:nif_not_loaded)
   def canvas_to_qoi(_canvas), do: :erlang.nif_error(:nif_not_loaded)
+  def canvas_blit_image(_c, _img, _x, _y), do: :erlang.nif_error(:nif_not_loaded)
+
+  def canvas_blit_image_scaled(_c, _img, _x, _y, _w, _h),
+    do: :erlang.nif_error(:nif_not_loaded)
 
   # ------------------------
   # Image
@@ -110,6 +114,7 @@ defmodule Blendend.Native do
     do: :erlang.nif_error(:nif_not_loaded)
 
   def path_arc_quadrant_to(_p, _x1, _y1, _x2, _y2), do: :erlang.nif_error(:nif_not_loaded)
+
   def path_add_box(_p, _x0, _y0, _x1, _y1, _matrix, _dir),
     do: :erlang.nif_error(:nif_not_loaded)
 
