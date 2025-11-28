@@ -8,8 +8,8 @@ defmodule Blendend.Matrix2D do
       | m10  m11  ty |
       |  0    0   1  |
 
-  Most functions in this module either create such a matrix or
-  compose/inspect it.
+  Functions in this module either create such a matrix or
+  compose it.
 
   * `m00, m01, m10, m11` – linear part (scale, rotation, skew)
   * `tx, ty`             – translation

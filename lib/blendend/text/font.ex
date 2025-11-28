@@ -1,15 +1,17 @@
 defmodule Blendend.Text.Font do
   @moduledoc """
-  Low–level font handle used by Blendend's text pipeline.
+  Sized, stateful fonts used by Blendend's text pipeline.
 
-  A `t()` wraps a blend2d `BLFont` created from a `Blendend.Text.Face`.
-  It knows:
+  A `Font` wraps a blend2d `BLFont` instantiated from a `Blendend.Text.Face`
+  at a specific size. It exposes the operations needed to:
 
-    * which face it came from,
-    * the font size,
-    * OpenType feature settings.
+    * shape `GlyphBuffer`s (kerning, OpenType features, glyph IDs/positions),
+    * fetch scaled metrics and text measurement,
+    * extract outlines for glyph runs or single glyphs into `Blendend.Path`,
+    * read/write OpenType feature settings and the font transform matrix.
 
-  This module is useful when we need more control over custom glyph runs.
+  Use this module when you need to turn a loaded face into a drawable font,
+  measure shaped text, or emit vector outlines for custom rendering.
   """
 
   @opaque t :: reference()

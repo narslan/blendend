@@ -3,19 +3,14 @@ defmodule Blendend do
   `blendend` is an Elixir wrapper around the [blend2d](https://blend2d.com) 2D
   graphics engine.
 
-  blend2d is a high–performance vector renderer written in C/C++.
-  `blendend` exposes it as a set of composable Elixir modules.
+  At a high level you can:
 
-  At a high level:
-
-    * we create a **canvas** backed by a 32-bit RGBA image
-    * we draw **shapes**, **paths**, **text**, and **images** onto it
-    * we control how they are rendered using **styles**, **strokes** and
+    * create a **canvas** backed by a 32-bit RGBA image
+    * draw **shapes**, **paths**, **text**, and **images** onto it
+    * control how they are rendered using **styles**, **strokes** and
       **transforms**
-    * we export the result as PNG/QOI binaries
+    * export the result as PNG/QOI binaries
 
-  `blendend` aims to mirror blend2d's core concepts, while providing an API that
-  feels natural in Elixir.
 
   ## Core concepts
 

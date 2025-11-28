@@ -2,7 +2,7 @@ defmodule Blendend.Image do
   @moduledoc """
   Image loading functions for Blendend.
 
-  This module deals with **image resources** – opaque values that can be
+  This module deals with **image resources** that can be
   used as sources for patterns or other operations that need pixel data.
 
   The returned value is typically passed to `Blendend.Style.pattern/1`
@@ -18,7 +18,7 @@ defmodule Blendend.Image do
   Loads an image from `path`.
 
   This reads the file in Elixir and lets the NIF decode the bytes. The file
-  must be in a format blend2d understands (e.g. PNG, JPEG, BMP, QOI if enabled).
+  must be in a format blend2d understands (e.g. PNG, JPEG, BMP, QOI ).
 
   On success, returns `{:ok, image}` where `image` is an opaque resource.
 
@@ -50,7 +50,7 @@ defmodule Blendend.Image do
   @doc """
   Loads an image from an in-memory binary.
 
-  The binary is the raw image file contents (PNG, JPEG, etc.).
+  The binary is the raw image file contents.
 
   On success, returns `{:ok, image}`.
 

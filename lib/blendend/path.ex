@@ -18,7 +18,7 @@ defmodule Blendend.Path do
     * compose shapes with `add_path/2` and `add_path/3`
     * render it with `Blendend.Canvas.Fill.path/3` or
       `Blendend.Canvas.Stroke.path/3`
-
+    * apply blur/shadow effect on it via `Blendend.Effects.blur_path/4`
   """
 
   @opaque t :: reference()
@@ -511,7 +511,7 @@ defmodule Blendend.Path do
   @spec add_box(t(), number(), number(), number(), number(), keyword()) :: :ok | {:error, term()}
   def add_box(path, x0, y0, x1, y1, opts \\ []) do
     {matrix, dir} = normalize_geometry_opts(opts)
-    Native.path_add_box(path, x0 * 1.0, y0 * 1.0, x1 * 1.0, y1 * 1.0, matrix || :nil, dir)
+    Native.path_add_box(path, x0 * 1.0, y0 * 1.0, x1 * 1.0, y1 * 1.0, matrix || nil, dir)
   end
 
   @doc """
@@ -541,7 +541,7 @@ defmodule Blendend.Path do
   @spec add_rect(t(), number(), number(), number(), number(), keyword()) :: :ok | {:error, term()}
   def add_rect(path, x, y, w, h, opts \\ []) do
     {matrix, dir} = normalize_geometry_opts(opts)
-    Native.path_add_rect(path, x * 1.0, y * 1.0, w * 1.0, h * 1.0, matrix || :nil, dir)
+    Native.path_add_rect(path, x * 1.0, y * 1.0, w * 1.0, h * 1.0, matrix || nil, dir)
   end
 
   @doc """
@@ -574,7 +574,7 @@ defmodule Blendend.Path do
   @spec add_circle(t(), number(), number(), number(), keyword()) :: :ok | {:error, term()}
   def add_circle(path, cx, cy, r, opts \\ []) do
     {matrix, dir} = normalize_geometry_opts(opts)
-    Native.path_add_circle(path, cx * 1.0, cy * 1.0, r * 1.0, matrix || :nil, dir)
+    Native.path_add_circle(path, cx * 1.0, cy * 1.0, r * 1.0, matrix || nil, dir)
   end
 
   @doc """
@@ -601,7 +601,7 @@ defmodule Blendend.Path do
           :ok | {:error, term()}
   def add_ellipse(path, cx, cy, rx, ry, opts \\ []) do
     {matrix, dir} = normalize_geometry_opts(opts)
-    Native.path_add_ellipse(path, cx * 1.0, cy * 1.0, rx * 1.0, ry * 1.0, matrix || :nil, dir)
+    Native.path_add_ellipse(path, cx * 1.0, cy * 1.0, rx * 1.0, ry * 1.0, matrix || nil, dir)
   end
 
   @doc """
@@ -624,6 +624,7 @@ defmodule Blendend.Path do
           :ok | {:error, term()}
   def add_round_rect(path, x, y, w, h, rx, ry, opts \\ []) do
     {matrix, dir} = normalize_geometry_opts(opts)
+
     Native.path_add_round_rect(
       path,
       x * 1.0,
@@ -632,7 +633,7 @@ defmodule Blendend.Path do
       h * 1.0,
       rx * 1.0,
       ry * 1.0,
-      matrix || :nil,
+      matrix || nil,
       dir
     )
   end
@@ -675,7 +676,7 @@ defmodule Blendend.Path do
       ry * 1.0,
       start * 1.0,
       sweep * 1.0,
-      matrix || :nil,
+      matrix || nil,
       dir
     )
   end
@@ -718,7 +719,7 @@ defmodule Blendend.Path do
       ry * 1.0,
       start * 1.0,
       sweep * 1.0,
-      matrix || :nil,
+      matrix || nil,
       dir
     )
   end
@@ -751,7 +752,7 @@ defmodule Blendend.Path do
   @spec add_line(t(), number(), number(), number(), number(), keyword()) :: :ok | {:error, term()}
   def add_line(path, x0, y0, x1, y1, opts \\ []) do
     {matrix, dir} = normalize_geometry_opts(opts)
-    Native.path_add_line(path, x0 * 1.0, y0 * 1.0, x1 * 1.0, y1 * 1.0, matrix || :nil, dir)
+    Native.path_add_line(path, x0 * 1.0, y0 * 1.0, x1 * 1.0, y1 * 1.0, matrix || nil, dir)
   end
 
   @doc """
@@ -791,7 +792,7 @@ defmodule Blendend.Path do
       y1 * 1.0,
       x2 * 1.0,
       y2 * 1.0,
-      matrix || :nil,
+      matrix || nil,
       dir
     )
   end
@@ -825,7 +826,7 @@ defmodule Blendend.Path do
   def add_polyline(path, points, opts \\ []) do
     {matrix, dir} = normalize_geometry_opts(opts)
     float_points = normalize_points(points)
-    Native.path_add_polyline(path, float_points, matrix || :nil, dir)
+    Native.path_add_polyline(path, float_points, matrix || nil, dir)
   end
 
   @doc """
@@ -848,7 +849,7 @@ defmodule Blendend.Path do
   def add_polygon(path, points, opts \\ []) do
     {matrix, dir} = normalize_geometry_opts(opts)
     float_points = normalize_points(points)
-    Native.path_add_polygon(path, float_points, matrix || :nil, dir)
+    Native.path_add_polygon(path, float_points, matrix || nil, dir)
   end
 
   @doc """

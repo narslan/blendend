@@ -18,13 +18,8 @@ defmodule Blendend.Text do
 
   alias Blendend.Text.{Face, Font, GlyphBuffer, GlyphRun}
 
-  @typedoc "Opaque font face handle."
   @opaque face :: Face.t()
-
-  @typedoc "Opaque font handle."
   @opaque font :: Font.t()
-
-  @typedoc "Opaque glyph run handle."
   @opaque glyph_run :: GlyphRun.t()
 
   @doc """

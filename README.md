@@ -4,16 +4,14 @@
   <img src="docs/images/piriform.png" alt="Blendend logo" width="320">
 </p>
 
-Elixir bindings to [Blend2D](https://blend2d.com/) – a fast 2D renderer – for drawing shapes, text, and gradients into images.
+This project provides Elixir bindings to [Blend2D](https://github.com/blend2d/blend2d) .
+- `blendend` is currently in experimental stage. But most of the functionialties have been already implemented. 
 
 - Blend2D's rendering engine from plain Elixir.
 - Composable drawing pipeline: `Canvas`, `Path`, `Matrix2D`, `Text`, `Style` modules.
 - A DSL (`Blendend.Draw`) for concise scripts. 
 - Support for PNG/QOI export. 
 
-## Status
-
-**Early, experimental.** APIs change definitely; feedback and bug reports are welcome.
 
 ## Requirements
 
@@ -49,7 +47,7 @@ mix compile
 
 ## Quick start
 
-Blendend is meant to feel like a sketchbook: open a canvas, write a few lines, get pixels back. After adding the dependency and compiling, you can start an IEx session or drop a script anywhere in your project. The `Blendend.Draw` DSL keeps things terse so you can focus on shapes and color rather than boilerplate.
+`blendend` is meant to feel like a sketchbook: open a canvas, write a few lines, get pixels back. After adding the dependency and compiling, you can start an IEx session or drop a script anywhere in your project. The `Blendend.Draw` DSL keeps things terse so you can focus on shapes and color rather than boilerplate.
 
 Below, we draw a single white line and write it to disk. Change the block to add circles, text, gradients, or any of the other helpers in `Blendend.Draw`.
 
@@ -61,7 +59,7 @@ draw 200, 200, "priv/basic_line.png" do
 end
 ```
 
-Want to explore interactively? `draw/3` returns a base64 PNG string when you omit the filename; LiveView or any web socket consumer can show it immediately. For a richer starting point, clone the [blendend_playground](https://github.com/narslan/blendend_playground) repo and run it to browse and tweak the bundled examples in the browser.
+For a richer starting point, clone the [blendend_playground](https://github.com/narslan/blendend_playground) repo and run it to browse and tweak the bundled examples in the browser.
 
 ## Playground
 
@@ -93,7 +91,7 @@ There is a separate web playground for live editing and rendering, and for brows
   </tr>
   <tr>
     <td width="50%">
-      <strong> Color Burn gradients</strong><br>
+      <strong> Color burn gradients</strong><br>
       <img src="docs/images/p5_burn_grid.png" alt="Grid of gradients with burn blend" title="p5.js burn grid port rendered with blendend" />
     </td>
     <td width="50%">
@@ -101,11 +99,9 @@ There is a separate web playground for live editing and rendering, and for brows
   </tr>
 </table>
 
-Attribution: The burn grid demo and flower waves (which are available in `blendend_playground`)is adapted from takawo's original p5.js sketch (https://openprocessing.org/user/6533) and shared under the Creative Commons BY-NC-SA 3.0 license (https://creativecommons.org/licenses/by-nc-sa/3.0/).
-
-
 ## Licenses 
 
 - This project is released under the MIT License (see `LICENSE`).
 - `blend2d` is licensed under the zlib license.
 - `priv/fonts/Alegreya-Regular.otf` is distributed under the SIL Open Font License.
+- The burn grid demo and flower waves (which are available in `blendend_playground`) is adapted from takawo's original p5.js sketch (https://openprocessing.org/user/6533) and shared under the Creative Commons BY-NC-SA 3.0 license (https://creativecommons.org/licenses/by-nc-sa/3.0/).

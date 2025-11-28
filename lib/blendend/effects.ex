@@ -1,28 +1,47 @@
 defmodule Blendend.Effects do
   @moduledoc """
-  Shape–driven effects rendered via Blend2D.
+
+  This module contains functions to add effects to geometries.
+
+  It currently provides gaussian blur filter and shadow effects on top of it.
+  The NIF implementation is based on https://blog.ivank.net/fastest-gaussian-blur.html.
 
   Gaussian blur is applied after rasterizing a path into an offscreen image,
-  then composited back on the destination canvas. This lets us build glows,
-  soft shadows, or blurred strokes.
+  then composited back on the destination canvas. So applying a blur to a
+  shape is more expensive than most other operations in `blendend`.
 
-  Blur strength is set via `sigma` in pixels. As a rule of thumb, the visible
-  radius is about `3 * sigma` (e.g. `sigma: 4.0` yields ~12 px of softness).
+  Examples:
+
+      use Blendend.Draw
+      alias Blendend.Path
+
+      draw 720, 420, "blur_effect.png" do
+        clear(fill: rgb(100, 14, 18))
+
+        ring =
+          Path.new!()
+          |> Path.add_circle!(220, 210, 96.0)
+
+        blur_path ring, 3,
+          mode: :stroke,
+          stroke: rgb(90, 200, 255),
+          stroke_width: 10.0
+      end
+
   """
 
   alias Blendend.{Canvas, Error, Native, Path}
 
-  @type blur_mode :: :auto | :fill | :stroke | :fill_and_stroke
+  @type blur_mode :: :fill | :stroke | :fill_and_stroke | :both
 
   @doc """
-  Blur a `path` and composite it back onto `canvas`.
+  Render a blurred copy of `path` onto `canvas`.
 
-  * `sigma` controls blur strength (in pixels).
-  * style options match `Blendend.Canvas.Fill.path/3` (e.g. `fill: color`, `stroke: color`, `stroke_width: w`).
-  * extra options:
-    * `:mode` – `:auto` (default; follows provided `fill`/`stroke` styles), `:fill`, `:stroke`, or `:fill_and_stroke`
-    * `:offset` – `{dx, dy}` shift before compositing (useful for shadows; padding is inferred from blur radius, stroke, and offset)
-    * dx and dy are floating numbers.
+  * `sigma` controls blur strength in pixels (roughly `radius = 3 * sigma`).
+  * options:
+    * `:mode` – `:fill`, `:stroke`, or `:both` (alias `:fill_and_stroke`);
+      (defaults to fill if none set)
+    * `:offset` – `{dx, dy}` translation before compositing (useful for shadows); values are floats
   """
   @spec blur_path(Canvas.t(), Path.t(), number(), keyword()) :: :ok | {:error, term()}
   def blur_path(canvas, path, sigma, opts \\ []) do
@@ -30,7 +49,7 @@ defmodule Blendend.Effects do
   end
 
   @doc """
-  Same as `blur_path/4`, but raises on failure and returns the canvas for piping.
+  Same as `blur_path/4`, but raises on failure and returns the canvas.
   """
   @spec blur_path!(Canvas.t(), Path.t(), number(), keyword()) :: Canvas.t()
   def blur_path!(canvas, path, sigma, opts \\ []) do

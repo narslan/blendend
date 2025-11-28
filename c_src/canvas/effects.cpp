@@ -62,9 +62,6 @@ bool parse_blur_opts(ErlNifEnv* env, const ERL_NIF_TERM argv[], int argc, int op
           out.stroke = true;
           out.mode_set = true;
         }
-        else if(strcmp(val, "auto") == 0) {
-          out.mode_set = false;
-        }
         else {
           out.valid = false;
         }
