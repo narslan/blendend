@@ -1,6 +1,6 @@
 defmodule Blendend.Draw do
   @moduledoc """
-  DSL for writing Blendend drawings as Elixir code.
+  This module contains macros for writing `blendend` drawings as Elixir code.
 
   You typically `use` this module in a script, IEx, or a web playground and
   then drive everything through `draw/2` or `draw/3`:
@@ -65,33 +65,6 @@ defmodule Blendend.Draw do
   def to_f(v) when is_integer(v), do: v * 1.0
   def to_f(v) when is_float(v), do: v
   def to_f(v), do: v
-
-  # trig helpers (radian input)
-  defmacro sin(angle) do
-    quote do
-      :math.sin(unquote(angle))
-    end
-  end
-
-  defmacro cos(angle) do
-    quote do
-      :math.cos(unquote(angle))
-    end
-  end
-
-  defmacro tan(angle) do
-    quote do
-      :math.tan(unquote(angle))
-    end
-  end
-
-  defmacro atan2(y, x) do
-    quote do
-      :math.atan2(unquote(y), unquote(x))
-    end
-  end
-
-  # defp to_f_list(list), do: Enum.map(list, &to_f/1)
 
   defp to_f_points(points) do
     Enum.map(points, fn {x, y} -> {to_f(x), to_f(y)} end)

@@ -1,6 +1,6 @@
 defmodule Blendend.Path do
   @moduledoc """
-  A path is a collection of contours built from commands like
+  A path is a collection of contours built from commands such as
   `:move_to`, `:line_to`, `:quad_to`, `:cubic_to`, and `:close`.
 
   We typically:

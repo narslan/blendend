@@ -3,15 +3,6 @@ defmodule Blendend do
   `blendend` is an Elixir wrapper around the [blend2d](https://blend2d.com) 2D
   graphics engine.
 
-  At a high level you can:
-
-    * create a **canvas** backed by a 32-bit RGBA image
-    * draw **shapes**, **paths**, **text**, and **images** onto it
-    * control how they are rendered using **styles**, **strokes** and
-      **transforms**
-    * export the result as PNG/QOI binaries
-
-
   ## Core concepts
 
   ### Canvas
@@ -21,7 +12,7 @@ defmodule Blendend do
   A canvas owns:
 
     * an internal pixel buffer (32-bit RGBA, with alpha)
-    * a blend2d context that stores the **current graphics state**:
+    * a `blend2d` context that stores the **current graphics state**:
       stroke width, current style, transform matrix, composition mode, etc.
 
   Everything we draw goes through a canvas. Most `blendend` modules take a canvas
@@ -51,13 +42,12 @@ defmodule Blendend do
           `vertex_count/1`, `vertex_at/2`, `set_vertex_at/5`, `hit_test/3,4`,
           `equal?/2`, `fit_to/2`, debug helpers
 
-  A **path** is a sequence of lines and curves (quadratic and cubic Bézier
-  segments). We can fill or stroke paths just like simple shapes.
+  A **path** is a sequence of lines and curves. We can fill or stroke paths just like simple shapes.
 
   ### Styles, colors, gradients, patterns
 
-  Whenever we fill or stroke a geometry, we apply a **style**, not just a flat
-  color. `blendend` supports:
+  Whenever we fill or stroke a geometry, we apply a **style**
+  `blendend` has:
 
     * solid colors (`Blendend.Style.Color`)
     * gradients (`Blendend.Style.Gradient`)
@@ -78,7 +68,7 @@ defmodule Blendend do
   pass keyword lists like:
 
       Canvas.Fill.rect(canvas, 10, 10, 100, 40,
-        color: Style.color(240, 240, 255),
+        color: Color.rgb!(240, 240, 255),
         comp_op: :multiply
       )
 

@@ -1,7 +1,7 @@
 defmodule Blendend.Text.Face do
   @moduledoc """
   A face represents a loaded font family from a TTF/OTF file.
-  We can typically:
+  Typical workflow looks like:
 
     * load a face from disk,
     * create a `Blendend.Text.Font` from it for actual drawing.
