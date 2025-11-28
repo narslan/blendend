@@ -143,14 +143,12 @@ defmodule Blendend.Text.Font do
 
   The glyph buffer `gb` must already be shaped with `shape/2` or `shape!/2`.
 
-  On success, returns `{:ok, map}`. `map` includes values:
+  On success, returns `{:ok, map}`. The map contains:
 
-    * `"advance_x"`
-    * `"advance_y"`
-    * `"bbox_x0"`
-    * `"bbox_y0"`
-    * `"bbox_x1"`
-    * `"bbox_y1"`
+    * `"advance_x"` / `"advance_y"` – total pen movement after drawing the run
+    * `"bbox_x0"` / `"bbox_y0"` – lower-left corner of the run's tight bounding box
+    * `"bbox_x1"` / `"bbox_y1"` – upper-right corner of the run's tight bounding box
+
   On failure, returns `{:error, reason}`.
   """
   @spec get_text_metrics(t(), GlyphBuffer.t()) :: {:ok, map()} | {:error, term()}

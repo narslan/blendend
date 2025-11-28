@@ -9,9 +9,6 @@ defmodule Blendend.Text do
     * `Blendend.Text.GlyphBuffer` – input text / shaped glyph storage
     * `Blendend.Text.GlyphRun`    – view for shaped glyphs, ready to draw
 
-  The functions in this module go through the **glyph buffer -> shaping ->
-  glyph run** pipeline.
-
   For the most direct "just draw this UTF-8 text" call, see
   `Blendend.Canvas.Fill.utf8_text/6` and `Blendend.Canvas.Stroke.utf8_text/6`.
   """
