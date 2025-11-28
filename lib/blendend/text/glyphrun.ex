@@ -52,7 +52,7 @@ defmodule Blendend.Text.GlyphRun do
           keyword()
         ) :: :ok | {:error, term()}
   def fill(canvas, font, x0, y0, glyph_run, opts \\ []),
-    do: Native.fill_glyph_run(canvas, font, x0, y0, glyph_run, opts)
+    do: Native.fill_glyph_run(canvas, font, x0 * 1.0, y0 * 1.0, glyph_run, opts)
 
   @doc """
   Same as `fill/6`, but returns the canvas and raises on error.
@@ -124,7 +124,7 @@ defmodule Blendend.Text.GlyphRun do
           keyword()
         ) :: :ok | {:error, term()}
   def stroke(canvas, font, x0, y0, glyph_run, opts \\ []),
-    do: Native.stroke_glyph_run(canvas, font, x0, y0, glyph_run, opts)
+    do: Native.stroke_glyph_run(canvas, font, x0 * 1.0, y0 * 1.0, glyph_run, opts)
 
   @doc """
   Same as `stroke/6`, but returns the canvas and raises on error.
