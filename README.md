@@ -5,7 +5,7 @@
 </p>
 
 This project provides Elixir bindings to [Blend2D](https://github.com/blend2d/blend2d) .
-- `blendend` is currently in experimental stage. But most of the functionialties have been already implemented. 
+- `blendend` is currently in experimental stage. But most of the functionalities have been already implemented. 
 
 - Blend2D's rendering engine from plain Elixir.
 - Composable drawing pipeline: `Canvas`, `Path`, `Matrix2D`, `Text`, `Style` modules.

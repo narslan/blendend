@@ -84,19 +84,60 @@ defmodule Blendend.Draw do
 
   # fill vs stroke for shapes that support both
   def classify_mode(opts) do
-    stroke_val = Keyword.get(opts, :stroke_color) || Keyword.get(opts, :stroke)
+    mode = Keyword.get(opts, :mode)
+    style = Keyword.get(opts, :style)
+    opts = Keyword.drop(opts, [:mode, :style])
 
-    cond do
-      stroke_val ->
-        base_opts =
+    case mode do
+      :stroke ->
+        stroke_opts =
           opts
+          |> Keyword.delete(:fill)
           |> Keyword.delete(:stroke_color)
+          |> Keyword.update(:stroke, style, fn
+            nil -> style
+            v -> v || style
+          end)
+
+        {:stroke, stroke_opts}
+
+      :fill ->
+        fill_opts =
+          opts
           |> Keyword.delete(:stroke)
+          |> Keyword.delete(:stroke_color)
+          |> Keyword.update(:fill, style, fn
+            nil -> style
+            v -> v || style
+          end)
 
-        {:stroke, Keyword.put(base_opts, :stroke, stroke_val)}
+        {:fill, fill_opts}
 
-      true ->
-        {:fill, opts}
+      _ ->
+        stroke_val = Keyword.get(opts, :stroke_color) || Keyword.get(opts, :stroke)
+
+        if stroke_val do
+          base_opts =
+            opts
+            |> Keyword.delete(:stroke_color)
+            |> Keyword.delete(:stroke)
+
+          {:stroke, Keyword.put(base_opts, :stroke, stroke_val)}
+        else
+          fill_opts =
+            opts
+            |> Keyword.delete(:stroke_color)
+            |> Keyword.delete(:stroke)
+
+          fill_opts =
+            if style do
+              Keyword.put(fill_opts, :fill, style)
+            else
+              fill_opts
+            end
+
+          {:fill, fill_opts}
+        end
     end
   end
 
@@ -112,9 +153,10 @@ defmodule Blendend.Draw do
     end
   end
 
-  defmacro hsv(h, s, v, a \\ 255) do
+  # HSV helpers: tuple or positional forms.
+  defmacro hsv(h, s \\ nil, v \\ nil, a \\ 255) do
     quote bind_quoted: [h: h, s: s, v: v, a: a] do
-      Blendend.Style.Color.hsv(h, s, v, a)
+      Blendend.Style.Color.from_hsv(h, s, v, a)
     end
   end
 
@@ -533,6 +575,19 @@ defmodule Blendend.Draw do
     end
   end
 
+  @doc """
+  Draw a rectangle using its center point.
+
+  Mirrors p5.js `rectMode(CENTER)`: `(cx, cy)` is the center; `w`/`h` are size.
+  """
+  defmacro rect_center(cx, cy, w, h, opts \\ []) do
+    quote bind_quoted: [cx: cx, cy: cy, w: w, h: h, opts: opts] do
+      x0 = cx - w / 2
+      y0 = cy - h / 2
+      Blendend.Draw.__shape__(:rect, [x0, y0, w, h], opts)
+    end
+  end
+
   # circle (fill_circle / stroke_circle)
   defmacro circle(cx, cy, r, opts \\ []) do
     quote bind_quoted: [cx: cx, cy: cy, r: r, opts: opts] do
@@ -797,6 +852,26 @@ defmodule Blendend.Draw do
 
       try do
         unquote(body)
+      after
+        :ok = Blendend.Canvas.restore_state(c)
+      end
+    end
+  end
+
+  @doc """
+  Temporarily clip drawing to the rectangle `{x, y, w, h}` while executing the block.
+
+  This wraps `Canvas.save_state/1`, `Canvas.Clip.to_rect/5`, then restores state
+  after the block (even if it raises), mirroring `with_transform/2`.
+  """
+  defmacro with_clip(x, y, w, h, do: body) do
+    quote bind_quoted: [x: x, y: y, w: w, h: h, body: body] do
+      c = Blendend.Draw.get_canvas()
+      :ok = Blendend.Canvas.save_state(c)
+      :ok = Blendend.Canvas.Clip.to_rect(c, x, y, w, h)
+
+      try do
+        body
       after
         :ok = Blendend.Canvas.restore_state(c)
       end

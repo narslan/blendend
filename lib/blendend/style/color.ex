@@ -115,4 +115,13 @@ defmodule Blendend.Style.Color do
       Enum.random(0..255)
     )
   end
+
+  @doc """
+  Convenience helper that accepts either `{h, s, v}` or positional `h, s, v` (with optional alpha).
+  """
+  @spec from_hsv({number(), number(), number()}, nil | number(), nil | number(), 0..255) :: t()
+  def from_hsv({h, s, v}, nil, nil, a), do: hsv(h, s, v, a)
+
+  @spec from_hsv(number(), number(), number(), 0..255) :: t()
+  def from_hsv(h, s, v, a), do: hsv(h, s, v, a)
 end

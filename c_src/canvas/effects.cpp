@@ -19,7 +19,16 @@ struct BlurOpts {
   double offset_y = 0.0;
   bool valid = true;
   bool mode_set = false;
+  double resolution = 1.0;
 };
+
+struct BlurImageScratch {
+  BLImage img;
+  int w = 0;
+  int h = 0;
+};
+
+thread_local BlurImageScratch blur_image_scratch;
 
 bool parse_blur_opts(ErlNifEnv* env, const ERL_NIF_TERM argv[], int argc, int opts_index, BlurOpts& out)
 {
@@ -78,6 +87,15 @@ bool parse_blur_opts(ErlNifEnv* env, const ERL_NIF_TERM argv[], int argc, int op
          enif_get_double(env, arr[1], &oy)) {
         out.offset_x = ox;
         out.offset_y = oy;
+      }
+      else {
+        out.valid = false;
+      }
+    }
+    else if(strcmp(key, "resolution") == 0) {
+      double res = 1.0;
+      if(enif_get_double(env, tup[1], &res) && res > 0.0 && res <= 1.0) {
+        out.resolution = res;
       }
       else {
         out.valid = false;
@@ -174,25 +192,33 @@ ERL_NIF_TERM canvas_blur_path(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[
   const double width_d = bbox.x1 - bbox.x0 + pad_x * 2.0;
   const double height_d = bbox.y1 - bbox.y0 + pad_y * 2.0;
 
-  const int w = static_cast<int>(std::ceil(std::max(1.0, width_d)));
-  const int h = static_cast<int>(std::ceil(std::max(1.0, height_d)));
+  const double scale = std::max(0.0, std::min(opts.resolution, 1.0));
+  const int w = static_cast<int>(std::ceil(std::max(1.0, width_d * scale)));
+  const int h = static_cast<int>(std::ceil(std::max(1.0, height_d * scale)));
 
-  BLImage tmp_img;
-  BLResult r = tmp_img.create(w, h, BL_FORMAT_PRGB32);
-  if(r != BL_SUCCESS) {
-    return make_result_error(env, "canvas_blur_path_alloc_failed");
+  BlurImageScratch& scratch = blur_image_scratch;
+  BLResult r = BL_SUCCESS;
+  if(scratch.w != w || scratch.h != h || scratch.w <= 0 || scratch.h <= 0) {
+    scratch.img.reset();
+    r = scratch.img.create(w, h, BL_FORMAT_PRGB32);
+    if(r != BL_SUCCESS) {
+      return make_result_error(env, "canvas_blur_path_alloc_failed");
+    }
+    scratch.w = w;
+    scratch.h = h;
   }
 
   BLContextCreateInfo ci{};
   BLContext tmp_ctx;
-  r = tmp_ctx.begin(tmp_img, &ci);
+  r = tmp_ctx.begin(scratch.img, &ci);
   if(r != BL_SUCCESS) {
     return make_result_error(env, "canvas_blur_path_ctx_failed");
   }
 
   tmp_ctx.clear_all();
   tmp_ctx.save();
-  tmp_ctx.translate(pad_x - bbox.x0 + opts.offset_x, pad_y - bbox.y0 + opts.offset_y);
+  tmp_ctx.translate((pad_x - bbox.x0 + opts.offset_x) * scale, (pad_y - bbox.y0 + opts.offset_y) * scale);
+  tmp_ctx.scale(scale);
   style.apply(&tmp_ctx);
 
   if(opts.fill)
@@ -203,7 +229,8 @@ ERL_NIF_TERM canvas_blur_path(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[
   tmp_ctx.restore();
   tmp_ctx.end();
 
-  r = blur_image_inplace(tmp_img, sigma);
+  const double sigma_scaled = sigma * scale;
+  r = blur_image_inplace(scratch.img, sigma_scaled, w, h);
   if(r != BL_SUCCESS) {
     return make_result_error(env, "canvas_blur_path_blur_failed");
   }
@@ -214,7 +241,9 @@ ERL_NIF_TERM canvas_blur_path(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[
   canvas->ctx.save();
   if(style.has_comp_op)
     canvas->ctx.set_comp_op(style.comp_op);
-  r = canvas->ctx.blit_image(BLPointI(dst_x, dst_y), tmp_img);
+  const int dst_w = static_cast<int>(std::ceil(std::max(1.0, width_d)));
+  const int dst_h = static_cast<int>(std::ceil(std::max(1.0, height_d)));
+  r = canvas->ctx.blit_image(BLRectI(dst_x, dst_y, dst_w, dst_h), scratch.img);
   canvas->ctx.restore();
 
   if(r != BL_SUCCESS) {
