@@ -301,11 +301,91 @@ defmodule Blendend.Draw do
     end
   end
 
+  @doc """
+  Build a `Blendend.Path` with a concise DSL, hygienically.
+
+      p =
+        path do
+          move_to 0, 0
+          line_to 20, 0
+          line_to 20, 10
+        end
+
+      star =
+        path poly do
+          move_to 0, -10
+          line_to 3, -3
+          line_to 10, -3
+          close_path()
+        end
+
+  The macro:
+    * creates a fresh `Blendend.Path` (`Path.new!`)
+    * rewrites DSL calls (`move_to/2`, `line_to/2`, etc.) to `Blendend.Path.*!/…`
+      against that path (no reliance on `var!/1`)
+    * closes the path and returns it
+  """
+  defmacro path(do: body) do
+    path = Macro.unique_var(:path, __CALLER__)
+    rewritten = rewrite_path_dsl(body, path)
+
+    quote do
+      unquote(path) = Blendend.Path.new!()
+      _ = unquote(rewritten)
+      Blendend.Path.close!(unquote(path))
+      unquote(path)
+    end
+  end
+
+  defmacro path(var, do: body) when is_atom(var) do
+    path = Macro.var(var, nil)
+    rewritten = rewrite_path_dsl(body, path)
+
+    quote do
+      unquote(path) = Blendend.Path.new!()
+      _ = unquote(rewritten)
+      Blendend.Path.close!(unquote(path))
+      unquote(path)
+    end
+  end
+
   defmacro load_font(face, size) do
     quote bind_quoted: [face: face, size: size] do
       face = Blendend.Text.Face.load!(face)
       Blendend.Text.Font.create!(face, size)
     end
+  end
+
+  # Internal: rewrite path DSL calls inside a path macro body.
+  defp rewrite_path_dsl(ast, path_var) do
+    Macro.prewalk(ast, fn
+      {:move_to, meta, [x, y]} ->
+        {:Blendend.Path, meta, :move_to!, [path_var, x, y]}
+
+      {:line_to, meta, [x, y]} ->
+        {:Blendend.Path, meta, :line_to!, [path_var, x, y]}
+
+      {:quad_to, meta, [x1, y1, x2, y2]} ->
+        {:Blendend.Path, meta, :quad_to!, [path_var, x1, y1, x2, y2]}
+
+      {:cubic_to, meta, [x1, y1, x2, y2, x3, y3]} ->
+        {:Blendend.Path, meta, :cubic_to!, [path_var, x1, y1, x2, y2, x3, y3]}
+
+      {:conic_to, meta, [x1, y1, x2, y2, w]} ->
+        {:Blendend.Path, meta, :conic_to!, [path_var, x1, y1, x2, y2, w]}
+
+      {:smooth_quad_to, meta, [x2, y2]} ->
+        {:Blendend.Path, meta, :smooth_quad_to!, [path_var, x2, y2]}
+
+      {:smooth_cubic_to, meta, [x2, y2, x3, y3]} ->
+        {:Blendend.Path, meta, :smooth_cubic_to!, [path_var, x2, y2, x3, y3]}
+
+      {:close_path, meta, []} ->
+        {:Blendend.Path, meta, :close!, [path_var]}
+
+      other ->
+        other
+    end)
   end
 
   defmacro text(font, x, y, string, opts \\ []) do
