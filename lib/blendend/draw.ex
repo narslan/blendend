@@ -503,6 +503,24 @@ defmodule Blendend.Draw do
     end
   end
 
+  @doc """
+  Convenience macro for `Blendend.Text.Face.load!/1`.
+  """
+  defmacro font_face(path) do
+    quote bind_quoted: [path: path] do
+      Blendend.Text.Face.load!(path)
+    end
+  end
+
+  @doc """
+  Convenience macro for `Blendend.Text.Font.create!/2`.
+  """
+  defmacro font_create(face, size) do
+    quote bind_quoted: [face: face, size: size] do
+      Blendend.Text.Font.create!(face, size)
+    end
+  end
+
   defmacro text(font, x, y, string, opts \\ []) do
     quote bind_quoted: [x: x, y: y, font: font, string: string, opts: opts] do
       c = Blendend.Draw.get_canvas()
