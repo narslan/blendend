@@ -395,6 +395,100 @@ defmodule Blendend.Draw do
     path_impl(path, rewritten, true)
   end
 
+  # ------------------------------------------------------------------
+  # Gradient DSL
+  # ------------------------------------------------------------------
+
+  defp rewrite_grad_dsl(ast, grad_var) do
+    Macro.prewalk(ast, fn
+      {:add_stop, meta, [offset, color]} ->
+        {{:., meta, [{:__aliases__, [], [:Blendend, :Style, :Gradient]}, :add_stop!]}, meta,
+         [grad_var, offset, color]}
+
+      {:set_extend, meta, [mode]} ->
+        {{:., meta, [{:__aliases__, [], [:Blendend, :Style, :Gradient]}, :set_extend!]}, meta,
+         [grad_var, mode]}
+
+      {:set_transform, meta, [matrix]} ->
+        {{:., meta, [{:__aliases__, [], [:Blendend, :Style, :Gradient]}, :set_transform!]}, meta,
+         [grad_var, matrix]}
+
+      {:reset_transform, meta, []} ->
+        {{:., meta, [{:__aliases__, [], [:Blendend, :Style, :Gradient]}, :reset_transform!]},
+         meta, [grad_var]}
+
+      other ->
+        other
+    end)
+  end
+
+  @doc """
+  Build a linear gradient with a small DSL.
+
+      grad =
+        linear_gradient 0, 0, 0, 200 do
+          add_stop 0.0, rgb(255, 0, 0)
+          add_stop 1.0, rgb(0, 0, 255)
+        end
+  """
+  defmacro linear_gradient(x0, y0, x1, y1, do: body) do
+    grad = Macro.unique_var(:grad, __MODULE__)
+    rewritten = rewrite_grad_dsl(body, grad)
+
+    quote do
+      unquote(grad) = Blendend.Style.Gradient.linear!(unquote(x0), unquote(y0), unquote(x1), unquote(y1))
+      _ = unquote(rewritten)
+      unquote(grad)
+    end
+  end
+
+  @doc """
+  Build a radial gradient with a DSL.
+
+      radial_gradient cx0, cy0, r0, cx1, cy1, r1 do
+        add_stop 0.0, rgb(255, 255, 0)
+        add_stop 1.0, rgb(0, 0, 0)
+      end
+  """
+  defmacro radial_gradient(cx0, cy0, r0, cx1, cy1, r1, do: body) do
+    grad = Macro.unique_var(:grad, __MODULE__)
+    rewritten = rewrite_grad_dsl(body, grad)
+
+    quote do
+      unquote(grad) =
+        Blendend.Style.Gradient.radial!(
+          unquote(cx0),
+          unquote(cy0),
+          unquote(r0),
+          unquote(cx1),
+          unquote(cy1),
+          unquote(r1)
+        )
+
+      _ = unquote(rewritten)
+      unquote(grad)
+    end
+  end
+
+  @doc """
+  Build a conic gradient with a DSL.
+
+      conic_gradient cx, cy, angle do
+        add_stop 0.0, rgb(255, 0, 0)
+        add_stop 1.0, rgb(0, 255, 0)
+      end
+  """
+  defmacro conic_gradient(cx, cy, angle, do: body) do
+    grad = Macro.unique_var(:grad, __MODULE__)
+    rewritten = rewrite_grad_dsl(body, grad)
+
+    quote do
+      unquote(grad) = Blendend.Style.Gradient.conic!(unquote(cx), unquote(cy), unquote(angle))
+      _ = unquote(rewritten)
+      unquote(grad)
+    end
+  end
+
   defmacro path(var, opts, do: body) when is_atom(var) and is_list(opts) do
     path = Macro.var(var, nil)
     rewritten = rewrite_path_dsl(body, path)
