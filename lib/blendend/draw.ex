@@ -301,6 +301,55 @@ defmodule Blendend.Draw do
     end
   end
 
+  # Internal helpers for the path DSL (defined before macros for availability during expansion)
+  defp path_impl(path_var, rewritten_body, close?) do
+    quote do
+      unquote(path_var) = Blendend.Path.new!()
+      _ = unquote(rewritten_body)
+      if unquote(close?), do: Blendend.Path.close!(unquote(path_var))
+      unquote(path_var)
+    end
+  end
+
+  defp rewrite_path_dsl(ast, path_var) do
+    Macro.prewalk(ast, fn
+      {:move_to, meta, [x, y]} ->
+        {{:., meta, [{:__aliases__, [], [:Blendend, :Path]}, :move_to!]}, meta, [path_var, x, y]}
+
+      {:line_to, meta, [x, y]} ->
+        {{:., meta, [{:__aliases__, [], [:Blendend, :Path]}, :line_to!]}, meta, [path_var, x, y]}
+
+      {:quad_to, meta, [x1, y1, x2, y2]} ->
+        {{:., meta, [{:__aliases__, [], [:Blendend, :Path]}, :quad_to!]}, meta,
+         [path_var, x1, y1, x2, y2]}
+
+      {:cubic_to, meta, [x1, y1, x2, y2, x3, y3]} ->
+        {{:., meta, [{:__aliases__, [], [:Blendend, :Path]}, :cubic_to!]}, meta,
+         [path_var, x1, y1, x2, y2, x3, y3]}
+
+      {:conic_to, meta, [x1, y1, x2, y2, w]} ->
+        {{:., meta, [{:__aliases__, [], [:Blendend, :Path]}, :conic_to!]}, meta,
+         [path_var, x1, y1, x2, y2, w]}
+
+      {:smooth_quad_to, meta, [x2, y2]} ->
+        {{:., meta, [{:__aliases__, [], [:Blendend, :Path]}, :smooth_quad_to!]}, meta,
+         [path_var, x2, y2]}
+
+      {:smooth_cubic_to, meta, [x2, y2, x3, y3]} ->
+        {{:., meta, [{:__aliases__, [], [:Blendend, :Path]}, :smooth_cubic_to!]}, meta,
+         [path_var, x2, y2, x3, y3]}
+
+      {:close_path, meta, []} ->
+        {{:., meta, [{:__aliases__, [], [:Blendend, :Path]}, :close!]}, meta, [path_var]}
+
+      {:close, meta, []} ->
+        {{:., meta, [{:__aliases__, [], [:Blendend, :Path]}, :close!]}, meta, [path_var]}
+
+      other ->
+        other
+    end)
+  end
+
   @doc """
   Build a `Blendend.Path` with a concise DSL, hygienically.
 
@@ -316,7 +365,7 @@ defmodule Blendend.Draw do
           move_to 0, -10
           line_to 3, -3
           line_to 10, -3
-          close_path()
+          close()
         end
 
   The macro:
@@ -325,28 +374,32 @@ defmodule Blendend.Draw do
       against that path (no reliance on `var!/1`)
     * closes the path and returns it
   """
+  # Base path macros (declared before wrappers to avoid compile ordering issues)
+  # Base path macros (grouped by arity)
   defmacro path(do: body) do
-    path = Macro.unique_var(:path, __CALLER__)
+    path = Macro.unique_var(:path, __MODULE__)
     rewritten = rewrite_path_dsl(body, path)
+    path_impl(path, rewritten, true)
+  end
 
-    quote do
-      unquote(path) = Blendend.Path.new!()
-      _ = unquote(rewritten)
-      Blendend.Path.close!(unquote(path))
-      unquote(path)
-    end
+  defmacro path(opts, do: body) when is_list(opts) do
+    path = Macro.unique_var(:path, __MODULE__)
+    rewritten = rewrite_path_dsl(body, path)
+    close? = Keyword.get(opts, :close?, true)
+    path_impl(path, rewritten, close?)
   end
 
   defmacro path(var, do: body) when is_atom(var) do
     path = Macro.var(var, nil)
     rewritten = rewrite_path_dsl(body, path)
+    path_impl(path, rewritten, true)
+  end
 
-    quote do
-      unquote(path) = Blendend.Path.new!()
-      _ = unquote(rewritten)
-      Blendend.Path.close!(unquote(path))
-      unquote(path)
-    end
+  defmacro path(var, opts, do: body) when is_atom(var) and is_list(opts) do
+    path = Macro.var(var, nil)
+    rewritten = rewrite_path_dsl(body, path)
+    close? = Keyword.get(opts, :close?, true)
+    path_impl(path, rewritten, close?)
   end
 
   defmacro load_font(face, size) do
@@ -354,38 +407,6 @@ defmodule Blendend.Draw do
       face = Blendend.Text.Face.load!(face)
       Blendend.Text.Font.create!(face, size)
     end
-  end
-
-  # Internal: rewrite path DSL calls inside a path macro body.
-  defp rewrite_path_dsl(ast, path_var) do
-    Macro.prewalk(ast, fn
-      {:move_to, meta, [x, y]} ->
-        {:Blendend.Path, meta, :move_to!, [path_var, x, y]}
-
-      {:line_to, meta, [x, y]} ->
-        {:Blendend.Path, meta, :line_to!, [path_var, x, y]}
-
-      {:quad_to, meta, [x1, y1, x2, y2]} ->
-        {:Blendend.Path, meta, :quad_to!, [path_var, x1, y1, x2, y2]}
-
-      {:cubic_to, meta, [x1, y1, x2, y2, x3, y3]} ->
-        {:Blendend.Path, meta, :cubic_to!, [path_var, x1, y1, x2, y2, x3, y3]}
-
-      {:conic_to, meta, [x1, y1, x2, y2, w]} ->
-        {:Blendend.Path, meta, :conic_to!, [path_var, x1, y1, x2, y2, w]}
-
-      {:smooth_quad_to, meta, [x2, y2]} ->
-        {:Blendend.Path, meta, :smooth_quad_to!, [path_var, x2, y2]}
-
-      {:smooth_cubic_to, meta, [x2, y2, x3, y3]} ->
-        {:Blendend.Path, meta, :smooth_cubic_to!, [path_var, x2, y2, x3, y3]}
-
-      {:close_path, meta, []} ->
-        {:Blendend.Path, meta, :close!, [path_var]}
-
-      other ->
-        other
-    end)
   end
 
   defmacro text(font, x, y, string, opts \\ []) do
