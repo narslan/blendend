@@ -238,10 +238,10 @@ defmodule Blendend.Draw do
     end
   end
 
-  defmacro comp_op(op) do
+  defmacro set_comp_op(op) do
     quote bind_quoted: [op: op] do
       c = Blendend.Draw.get_canvas()
-      :ok = Blendend.Canvas.set_comp_op(c, op)
+      _ = Blendend.Canvas.set_comp_op!(c, op)
     end
   end
 
@@ -436,7 +436,9 @@ defmodule Blendend.Draw do
     rewritten = rewrite_grad_dsl(body, grad)
 
     quote do
-      unquote(grad) = Blendend.Style.Gradient.linear!(unquote(x0), unquote(y0), unquote(x1), unquote(y1))
+      unquote(grad) =
+        Blendend.Style.Gradient.linear!(unquote(x0), unquote(y0), unquote(x1), unquote(y1))
+
       _ = unquote(rewritten)
       unquote(grad)
     end
