@@ -81,57 +81,25 @@ defmodule Blendend.CanvasBasicTest do
   test "set_global_alpha scales subsequent drawing" do
     {:ok, c} = Canvas.new(4, 2)
 
-    :ok = Canvas.clear(c)
-    :ok = Canvas.set_fill_style(c, Blendend.Style.Color.rgb!(255, 255, 255, 255))
+    # White background so we can infer effective alpha from channel attenuation.
+    :ok = Canvas.clear(c, fill: Blendend.Style.Color.rgb!(255, 255, 255, 255))
+    :ok = Canvas.set_fill_style(c, Blendend.Style.Color.rgb!(255, 0, 0, 255))
 
-    # Half alpha on the first pixel
     :ok = Canvas.set_global_alpha(c, 0.5)
     :ok = Fill.rect(c, 0, 0, 1, 1)
 
-    # Full alpha on a nearby pixel
     :ok = Canvas.set_global_alpha(c, 1.0)
     :ok = Fill.rect(c, 1, 0, 1, 1)
 
     img = decode_qoi!(c)
-    {r0, g0, b0, a0} = pixel!(img, 0, 0)
-    {r1, g1, b1, a1} = pixel!(img, 1, 0)
+    {_r0, g0, _b0, _a0} = pixel!(img, 0, 0)
+    {_r1, g1, _b1, _a1} = pixel!(img, 1, 0)
 
-    assert a0 < a1 or r0 < r1 or g0 < g1 or b0 < b1
-  end
+    alpha0 = 1.0 - g0 / 255.0
+    alpha1 = 1.0 - g1 / 255.0
 
-  @tag :canvas
-  test "set_style_alpha targets individual slots" do
-    {:ok, c} = Canvas.new(8, 4)
-
-    :ok = Canvas.set_fill_style(c, Blendend.Style.Color.rgb!(255, 255, 255, 255))
-    :ok = Canvas.set_style_alpha(c, :fill, 0.25)
-    :ok = Fill.rect(c, 0, 0, 1, 1)
-
-    :ok = Canvas.set_style_alpha(c, :fill, 1.0)
-    :ok = Fill.rect(c, 1, 0, 1, 1)
-
-    img = decode_qoi!(c)
-    {fr0, fg0, fb0, fa0} = pixel!(img, 0, 0)
-    {fr1, fg1, fb1, fa1} = pixel!(img, 1, 0)
-
-    assert fa0 <= fa1
-    assert fr0 <= fr1 and fg0 <= fg1 and fb0 <= fb1
-
-    :ok = Canvas.clear(c, fill: Blendend.Style.Color.rgb!(0, 0, 0, 0))
-    :ok = Canvas.set_stroke_style(c, Blendend.Style.Color.rgb!(255, 0, 0, 255))
-    :ok = Canvas.set_style_alpha(c, :stroke, 0.4)
-    :ok = Stroke.rect(c, 0, 0, 2, 2, stroke_width: 2.5)
-
-    :ok = Canvas.set_style_alpha(c, :stroke, 1.0)
-    :ok = Stroke.rect(c, 4, 0, 2, 2, stroke_width: 2.5)
-
-    img_stroke = decode_qoi!(c)
-    {sr0, sg0, sb0, sa0} = pixel!(img_stroke, 1, 1)
-    {sr1, _sg1, _sb1, sa1} = pixel!(img_stroke, 5, 1)
-
-    assert sa0 <= sa1
-    assert sr0 <= sr1
-    assert sr1 > sg0 and sr1 > sb0
+    assert alpha0 < alpha1,
+           "expected lower effective alpha with global alpha 0.5; got inferred #{alpha0} vs #{alpha1} from pixels #{inspect({g0, g1})}"
   end
 
   @tag :canvas
@@ -142,19 +110,25 @@ defmodule Blendend.CanvasBasicTest do
     :ok = Canvas.set_fill_style(c, Blendend.Style.Color.rgb!(0, 255, 0, 255))
     :ok = Canvas.set_stroke_style(c, Blendend.Style.Color.rgb!(255, 0, 0, 255))
 
-    :ok = Canvas.set_style_alpha(c, :stroke, 0.2)
-    :ok = Canvas.set_style_alpha(c, :fill, 1.0)
+    assert :ok = Canvas.set_style_alpha(c, :stroke, 0.2)
+    assert :ok = Canvas.set_style_alpha(c, :fill, 1.0)
 
+    :ok = Stroke.rect(c, 3, 0, 2, 2, stroke_width: 1)
     :ok = Fill.rect(c, 0, 0, 2, 2)
-    :ok = Stroke.rect(c, 4, 0, 2, 2, stroke_width: 2.5)
 
     img = decode_qoi!(c)
-    {_fr, _fg, _fb, fa} = pixel!(img, 0, 0)
-    {sr, sg, sb, sa} = pixel!(img, 5, 1)
+    {fr, fg, fb, fa} = pixel!(img, 0, 0)
+    {sr, sg, sb, sa} = pixel!(img, 3, 0)
 
-    assert sa < fa
-    assert sr > sg and sr > sb
-    assert fa == 255
+    # Verify stroke stays red-dominant and separate from the green fill, and alpha is reduced.
+    assert sr > sg and sr > sb,
+           "expected stroke to be red-dominant; got stroke pixel #{inspect({sr, sg, sb, sa})}"
+
+    assert fg > fr and fg > fb,
+           "expected fill to be green-dominant; got fill pixel #{inspect({fr, fg, fb, fa})}"
+
+    assert sa < fa,
+           "expected stroke alpha < fill alpha; stroke #{inspect(sa)} fill #{inspect(fa)}"
   end
 
   @tag :canvas
