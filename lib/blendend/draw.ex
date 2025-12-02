@@ -331,6 +331,10 @@ defmodule Blendend.Draw do
         {{:., meta, [{:__aliases__, [], [:Blendend, :Path]}, :conic_to!]}, meta,
          [path_var, x1, y1, x2, y2, w]}
 
+      {:arc_quadrant_to, meta, [x1, y1, x2, y2]} ->
+        {{:., meta, [{:__aliases__, [], [:Blendend, :Path]}, :arc_quadrant_to!]}, meta,
+         [path_var, x1, y1, x2, y2]}
+
       {:smooth_quad_to, meta, [x2, y2]} ->
         {{:., meta, [{:__aliases__, [], [:Blendend, :Path]}, :smooth_quad_to!]}, meta,
          [path_var, x2, y2]}
@@ -345,13 +349,101 @@ defmodule Blendend.Draw do
       {:close, meta, []} ->
         {{:., meta, [{:__aliases__, [], [:Blendend, :Path]}, :close!]}, meta, [path_var]}
 
+      {:add_circle, meta, [x, y, r]} ->
+        {{:., meta, [{:__aliases__, [], [:Blendend, :Path]}, :add_circle!]}, meta,
+         [path_var, x, y, r]}
+
+      {:add_circle, meta, [x, y, r, opts]} ->
+        {{:., meta, [{:__aliases__, [], [:Blendend, :Path]}, :add_circle!]}, meta,
+         [path_var, x, y, r, opts]}
+
+      {:add_box, meta, [x0, y0, x1, y1]} ->
+        {{:., meta, [{:__aliases__, [], [:Blendend, :Path]}, :add_box!]}, meta,
+         [path_var, x0, y0, x1, y1]}
+
+      {:add_box, meta, [x0, y0, x1, y1, opts]} ->
+        {{:., meta, [{:__aliases__, [], [:Blendend, :Path]}, :add_box!]}, meta,
+         [path_var, x0, y0, x1, y1, opts]}
+
+      {:add_rect, meta, [x, y, w, h]} ->
+        {{:., meta, [{:__aliases__, [], [:Blendend, :Path]}, :add_rect!]}, meta,
+         [path_var, x, y, w, h]}
+
+      {:add_rect, meta, [x, y, w, h, opts]} ->
+        {{:., meta, [{:__aliases__, [], [:Blendend, :Path]}, :add_rect!]}, meta,
+         [path_var, x, y, w, h, opts]}
+
+      {:add_ellipse, meta, [cx, cy, rx, ry]} ->
+        {{:., meta, [{:__aliases__, [], [:Blendend, :Path]}, :add_ellipse!]}, meta,
+         [path_var, cx, cy, rx, ry]}
+
+      {:add_ellipse, meta, [cx, cy, rx, ry, opts]} ->
+        {{:., meta, [{:__aliases__, [], [:Blendend, :Path]}, :add_ellipse!]}, meta,
+         [path_var, cx, cy, rx, ry, opts]}
+
+      {:add_round_rect, meta, [x, y, w, h, rx, ry]} ->
+        {{:., meta, [{:__aliases__, [], [:Blendend, :Path]}, :add_round_rect!]}, meta,
+         [path_var, x, y, w, h, rx, ry]}
+
+      {:add_round_rect, meta, [x, y, w, h, rx, ry, opts]} ->
+        {{:., meta, [{:__aliases__, [], [:Blendend, :Path]}, :add_round_rect!]}, meta,
+         [path_var, x, y, w, h, rx, ry, opts]}
+
+      {:add_arc, meta, [cx, cy, rx, ry, start, sweep]} ->
+        {{:., meta, [{:__aliases__, [], [:Blendend, :Path]}, :add_arc!]}, meta,
+         [path_var, cx, cy, rx, ry, start, sweep]}
+
+      {:add_arc, meta, [cx, cy, rx, ry, start, sweep, opts]} ->
+        {{:., meta, [{:__aliases__, [], [:Blendend, :Path]}, :add_arc!]}, meta,
+         [path_var, cx, cy, rx, ry, start, sweep, opts]}
+
+      {:add_chord, meta, [cx, cy, rx, ry, start, sweep]} ->
+        {{:., meta, [{:__aliases__, [], [:Blendend, :Path]}, :add_chord!]}, meta,
+         [path_var, cx, cy, rx, ry, start, sweep]}
+
+      {:add_chord, meta, [cx, cy, rx, ry, start, sweep, opts]} ->
+        {{:., meta, [{:__aliases__, [], [:Blendend, :Path]}, :add_chord!]}, meta,
+         [path_var, cx, cy, rx, ry, start, sweep, opts]}
+
+      {:add_line, meta, [x0, y0, x1, y1]} ->
+        {{:., meta, [{:__aliases__, [], [:Blendend, :Path]}, :add_line!]}, meta,
+         [path_var, x0, y0, x1, y1]}
+
+      {:add_line, meta, [x0, y0, x1, y1, opts]} ->
+        {{:., meta, [{:__aliases__, [], [:Blendend, :Path]}, :add_line!]}, meta,
+         [path_var, x0, y0, x1, y1, opts]}
+
+      {:add_triangle, meta, [x0, y0, x1, y1, x2, y2]} ->
+        {{:., meta, [{:__aliases__, [], [:Blendend, :Path]}, :add_triangle!]}, meta,
+         [path_var, x0, y0, x1, y1, x2, y2]}
+
+      {:add_triangle, meta, [x0, y0, x1, y1, x2, y2, opts]} ->
+        {{:., meta, [{:__aliases__, [], [:Blendend, :Path]}, :add_triangle!]}, meta,
+         [path_var, x0, y0, x1, y1, x2, y2, opts]}
+
+      {:add_polyline, meta, [points]} ->
+        {{:., meta, [{:__aliases__, [], [:Blendend, :Path]}, :add_polyline!]}, meta,
+         [path_var, points]}
+
+      {:add_polyline, meta, [points, opts]} ->
+        {{:., meta, [{:__aliases__, [], [:Blendend, :Path]}, :add_polyline!]}, meta,
+         [path_var, points, opts]}
+
+      {:add_polygon, meta, [points]} ->
+        {{:., meta, [{:__aliases__, [], [:Blendend, :Path]}, :add_polygon!]}, meta,
+         [path_var, points]}
+
+      {:add_polygon, meta, [points, opts]} ->
+        {{:., meta, [{:__aliases__, [], [:Blendend, :Path]}, :add_polygon!]}, meta,
+         [path_var, points, opts]}
+
       other ->
         other
     end)
   end
 
   @doc """
-  Build a `Blendend.Path` with a concise DSL, hygienically.
+  Build a `Blendend.Path` with a concise DSL.
 
       p =
         path do
@@ -360,22 +452,25 @@ defmodule Blendend.Draw do
           line_to 20, 10
         end
 
-      star =
-        path poly do
-          move_to 0, -10
-          line_to 3, -3
-          line_to 10, -3
-          close()
+      badge =
+        path badge do
+          add_round_rect(20, 20, 140, 80, 12, 12)
+          add_circle(60, 60, 18)
+          add_line(20, 20, 160, 100)
         end
 
-  The macro:
+  Forms:
+    * `path do ... end` – returns a new `Blendend.Path` with the given commands.
+    * `path name do ... end` – same, but also binds the path to `name` in the caller.
+    * `path opts do ... end` – anonymous form with options (e.g., `close?: false`).
+
+  What it does:
     * creates a fresh `Blendend.Path` (`Path.new!`)
-    * rewrites DSL calls (`move_to/2`, `line_to/2`, etc.) to `Blendend.Path.*!/…`
+    * rewrites DSL calls (`move_to/2`, `line_to/2`, `add_*`, etc.) to `Blendend.Path.*!/…`
       against that path (no reliance on `var!/1`)
-    * closes the path and returns it
+    * closes the path (unless `close?: false`) and returns it
   """
   # Base path macros (declared before wrappers to avoid compile ordering issues)
-  # Base path macros (grouped by arity)
   defmacro path(do: body) do
     path = Macro.unique_var(:path, __MODULE__)
     rewritten = rewrite_path_dsl(body, path)
@@ -389,7 +484,14 @@ defmodule Blendend.Draw do
     path_impl(path, rewritten, close?)
   end
 
-  defmacro path(var, do: body) when is_atom(var) do
+  defmacro path(var_ast, do: body) do
+    var =
+      case var_ast do
+        {name, _, _} when is_atom(name) -> name
+        name when is_atom(name) -> name
+        other -> raise ArgumentError, "path/2 expects a variable name, got: #{inspect(other)}"
+      end
+
     path = Macro.var(var, nil)
     rewritten = rewrite_path_dsl(body, path)
     path_impl(path, rewritten, true)
