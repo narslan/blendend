@@ -538,9 +538,7 @@ defmodule Blendend.Draw do
     rewritten = rewrite_grad_dsl(body, grad)
 
     quote do
-      unquote(grad) =
-        Blendend.Style.Gradient.linear!(unquote(x0), unquote(y0), unquote(x1), unquote(y1))
-
+      unquote(grad) = Blendend.Style.Gradient.linear!(unquote(x0), unquote(y0), unquote(x1), unquote(y1))
       _ = unquote(rewritten)
       unquote(grad)
     end
