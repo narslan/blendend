@@ -116,6 +116,295 @@ static bool parse_optional_matrix(ErlNifEnv* env, ERL_NIF_TERM term, const Matri
   return true;
 }
 
+static bool parse_size_t(ErlNifEnv* env, ERL_NIF_TERM term, size_t* out)
+{
+  unsigned long v;
+  if(enif_get_ulong(env, term, &v)) {
+    *out = static_cast<size_t>(v);
+    return true;
+  }
+
+  return false;
+}
+
+static bool parse_bl_range(ErlNifEnv* env, ERL_NIF_TERM term, BLRange* out)
+{
+  // Accept either {start, end} or a Range struct/map with :first and :last.
+  const ERL_NIF_TERM* tuple;
+  int arity;
+
+  if(enif_get_tuple(env, term, &arity, &tuple) && arity == 2) {
+    if(parse_size_t(env, tuple[0], &out->start) && parse_size_t(env, tuple[1], &out->end)) {
+      return out->start <= out->end;
+    }
+  }
+
+  if(enif_is_map(env, term)) {
+    ERL_NIF_TERM first_key = enif_make_atom(env, "first");
+    ERL_NIF_TERM last_key = enif_make_atom(env, "last");
+    ERL_NIF_TERM first_val, last_val;
+
+    if(enif_get_map_value(env, term, first_key, &first_val) &&
+       enif_get_map_value(env, term, last_key, &last_val) &&
+       parse_size_t(env, first_val, &out->start) && parse_size_t(env, last_val, &out->end)) {
+      return out->start <= out->end;
+    }
+  }
+
+  return false;
+}
+
+static BLStrokeOptions default_stroke_opts()
+{
+  BLStrokeOptions opts;
+  bl_stroke_options_init(&opts);
+  opts.width = 1.0;
+  opts.miter_limit = 4.0;
+  opts.start_cap = BL_STROKE_CAP_BUTT;
+  opts.end_cap = BL_STROKE_CAP_BUTT;
+  opts.join = BL_STROKE_JOIN_MITER_CLIP;
+  opts.transform_order = BL_STROKE_TRANSFORM_ORDER_AFTER;
+  opts.dash_offset = 0.0;
+  return opts;
+}
+
+static bool parse_cap(ErlNifEnv* env, ERL_NIF_TERM term, uint8_t* out)
+{
+  char cap[32];
+  if(!enif_get_atom(env, term, cap, sizeof(cap), ERL_NIF_UTF8))
+    return false;
+
+  if(!std::strcmp(cap, "butt"))
+    *out = BL_STROKE_CAP_BUTT;
+  else if(!std::strcmp(cap, "round"))
+    *out = BL_STROKE_CAP_ROUND;
+  else if(!std::strcmp(cap, "square"))
+    *out = BL_STROKE_CAP_SQUARE;
+  else if(!std::strcmp(cap, "round_rev"))
+    *out = BL_STROKE_CAP_ROUND_REV;
+  else if(!std::strcmp(cap, "triangle"))
+    *out = BL_STROKE_CAP_TRIANGLE;
+  else if(!std::strcmp(cap, "triangle_rev"))
+    *out = BL_STROKE_CAP_TRIANGLE_REV;
+  else
+    return false;
+
+  return true;
+}
+
+static bool parse_join(ErlNifEnv* env, ERL_NIF_TERM term, uint8_t* out)
+{
+  char join[32];
+  if(!enif_get_atom(env, term, join, sizeof(join), ERL_NIF_UTF8))
+    return false;
+
+  if(!std::strcmp(join, "miter_clip"))
+    *out = BL_STROKE_JOIN_MITER_CLIP;
+  else if(!std::strcmp(join, "miter_bevel"))
+    *out = BL_STROKE_JOIN_MITER_BEVEL;
+  else if(!std::strcmp(join, "miter_round"))
+    *out = BL_STROKE_JOIN_MITER_ROUND;
+  else if(!std::strcmp(join, "bevel"))
+    *out = BL_STROKE_JOIN_BEVEL;
+  else if(!std::strcmp(join, "round"))
+    *out = BL_STROKE_JOIN_ROUND;
+  else
+    return false;
+
+  return true;
+}
+
+static bool parse_transform_order(ErlNifEnv* env, ERL_NIF_TERM term, uint8_t* out)
+{
+  char atom[32];
+  if(!enif_get_atom(env, term, atom, sizeof(atom), ERL_NIF_UTF8))
+    return false;
+
+  if(!std::strcmp(atom, "after")) {
+    *out = BL_STROKE_TRANSFORM_ORDER_AFTER;
+    return true;
+  }
+  if(!std::strcmp(atom, "before")) {
+    *out = BL_STROKE_TRANSFORM_ORDER_BEFORE;
+    return true;
+  }
+
+  return false;
+}
+
+static bool parse_stroke_options(ErlNifEnv* env, ERL_NIF_TERM term, BLStrokeOptions* out)
+{
+  if(enif_is_atom(env, term)) {
+    char atom[8];
+    if(enif_get_atom(env, term, atom, sizeof(atom), ERL_NIF_UTF8) && std::strcmp(atom, "nil") == 0) {
+      *out = default_stroke_opts();
+      return true;
+    }
+  }
+
+  if(!enif_is_list(env, term))
+    return false;
+
+  BLStrokeOptions opts = default_stroke_opts();
+  bool ok = true;
+
+  ERL_NIF_TERM list = term, head, tail;
+  while(enif_get_list_cell(env, list, &head, &tail)) {
+    const ERL_NIF_TERM* tup;
+    int arity;
+    if(!enif_get_tuple(env, head, &arity, &tup) || arity != 2) {
+      ok = false;
+      list = tail;
+      continue;
+    }
+
+    char key[64];
+    if(!enif_get_atom(env, tup[0], key, sizeof(key), ERL_NIF_UTF8)) {
+      ok = false;
+      list = tail;
+      continue;
+    }
+
+    if(std::strcmp(key, "width") == 0) {
+      ok = enif_get_double(env, tup[1], &opts.width) && ok;
+    }
+    else if(std::strcmp(key, "miter_limit") == 0) {
+      ok = enif_get_double(env, tup[1], &opts.miter_limit) && ok;
+    }
+    else if(std::strcmp(key, "dash_offset") == 0) {
+      ok = enif_get_double(env, tup[1], &opts.dash_offset) && ok;
+    }
+    else if(std::strcmp(key, "start_cap") == 0) {
+      ok = parse_cap(env, tup[1], &opts.start_cap) && ok;
+    }
+    else if(std::strcmp(key, "end_cap") == 0) {
+      ok = parse_cap(env, tup[1], &opts.end_cap) && ok;
+    }
+    else if(std::strcmp(key, "join") == 0) {
+      ok = parse_join(env, tup[1], &opts.join) && ok;
+    }
+    else if(std::strcmp(key, "transform_order") == 0) {
+      ok = parse_transform_order(env, tup[1], &opts.transform_order) && ok;
+    }
+    else if(std::strcmp(key, "dash_array") == 0) {
+      if(!enif_is_list(env, tup[1])) {
+        ok = false;
+      }
+      else {
+        std::vector<double> dashes;
+        ERL_NIF_TERM dash_list = tup[1], dash_head, dash_tail;
+        while(enif_get_list_cell(env, dash_list, &dash_head, &dash_tail)) {
+          double val;
+          if(enif_get_double(env, dash_head, &val)) {
+            dashes.push_back(val);
+          }
+          else {
+            ok = false;
+          }
+          dash_list = dash_tail;
+        }
+        opts.dash_array.assign_data(dashes.data(), dashes.size());
+      }
+    }
+    else {
+      // Unknown key -> ignore to be lenient
+    }
+
+    list = tail;
+  }
+
+  if(ok)
+    *out = opts;
+  return ok;
+}
+
+static BLApproximationOptions default_approx_opts()
+{
+  return bl_default_approximation_options;
+}
+
+static bool parse_approximation_options(ErlNifEnv* env, ERL_NIF_TERM term, BLApproximationOptions* out)
+{
+  if(enif_is_atom(env, term)) {
+    char atom[8];
+    if(enif_get_atom(env, term, atom, sizeof(atom), ERL_NIF_UTF8) && std::strcmp(atom, "nil") == 0) {
+      *out = default_approx_opts();
+      return true;
+    }
+  }
+
+  if(!enif_is_list(env, term))
+    return false;
+
+  BLApproximationOptions opts = default_approx_opts();
+  bool ok = true;
+
+  ERL_NIF_TERM list = term, head, tail;
+  while(enif_get_list_cell(env, list, &head, &tail)) {
+    const ERL_NIF_TERM* tup;
+    int arity;
+    if(!enif_get_tuple(env, head, &arity, &tup) || arity != 2) {
+      ok = false;
+      list = tail;
+      continue;
+    }
+
+    char key[64];
+    if(!enif_get_atom(env, tup[0], key, sizeof(key), ERL_NIF_UTF8)) {
+      ok = false;
+      list = tail;
+      continue;
+    }
+
+    if(std::strcmp(key, "flatten_tolerance") == 0) {
+      ok = enif_get_double(env, tup[1], &opts.flatten_tolerance) && ok;
+    }
+    else if(std::strcmp(key, "simplify_tolerance") == 0) {
+      ok = enif_get_double(env, tup[1], &opts.simplify_tolerance) && ok;
+    }
+    else if(std::strcmp(key, "offset_parameter") == 0) {
+      ok = enif_get_double(env, tup[1], &opts.offset_parameter) && ok;
+    }
+    else if(std::strcmp(key, "flatten_mode") == 0) {
+      char atom[32];
+      if(enif_get_atom(env, tup[1], atom, sizeof(atom), ERL_NIF_UTF8)) {
+        if(!std::strcmp(atom, "default"))
+          opts.flatten_mode = BL_FLATTEN_MODE_DEFAULT;
+        else if(!std::strcmp(atom, "recursive"))
+          opts.flatten_mode = BL_FLATTEN_MODE_RECURSIVE;
+        else
+          ok = false;
+      }
+      else {
+        ok = false;
+      }
+    }
+    else if(std::strcmp(key, "offset_mode") == 0) {
+      char atom[32];
+      if(enif_get_atom(env, tup[1], atom, sizeof(atom), ERL_NIF_UTF8)) {
+        if(!std::strcmp(atom, "default"))
+          opts.offset_mode = BL_OFFSET_MODE_DEFAULT;
+        else if(!std::strcmp(atom, "iterative"))
+          opts.offset_mode = BL_OFFSET_MODE_ITERATIVE;
+        else
+          ok = false;
+      }
+      else {
+        ok = false;
+      }
+    }
+    else {
+      // Unknown key ignored
+    }
+
+    list = tail;
+  }
+
+  if(ok)
+    *out = opts;
+  return ok;
+}
+
 struct GeometryExtras {
   const Matrix2D* matrix;
   BLGeometryDirection dir;
@@ -1288,6 +1577,140 @@ ERL_NIF_TERM path_add_path_transform(ErlNifEnv* env, int argc, const ERL_NIF_TER
   BLResult r = dst->value.add_path(src->value, m->value);
   if(r != BL_SUCCESS)
     return make_result_error(env, "add_path_transform_failed");
+
+  return enif_make_atom(env, "ok");
+}
+
+// path_translate(path, dx, dy)
+// path_translate(path, {start, end} | %Range{}, dx, dy)
+ERL_NIF_TERM path_translate(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
+{
+  if(argc != 3 && argc != 4) {
+    return enif_make_badarg(env);
+  }
+
+  auto path = NifResource<Path>::get(env, argv[0]);
+  if(path == nullptr) {
+    return make_result_error(env, "invalid_path_translate_resource");
+  }
+
+  double dx, dy;
+  if(!enif_get_double(env, argv[argc - 2], &dx) || !enif_get_double(env, argv[argc - 1], &dy)) {
+    return make_result_error(env, "path_translate_invalid_args");
+  }
+
+  BLResult r;
+
+  if(argc == 3) {
+    r = path->value.translate(BLPoint(dx, dy));
+  }
+  else {
+    BLRange range;
+    if(!parse_bl_range(env, argv[1], &range)) {
+      return make_result_error(env, "path_translate_invalid_range");
+    }
+
+    r = path->value.translate(range, BLPoint(dx, dy));
+  }
+
+  if(r != BL_SUCCESS)
+    return make_result_error(env, "path_translate_failed");
+
+  return enif_make_atom(env, "ok");
+}
+
+// path_transform(path, matrix)
+// path_transform(path, {start, end} | %Range{}, matrix)
+ERL_NIF_TERM path_transform(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
+{
+  if(argc != 2 && argc != 3) {
+    return enif_make_badarg(env);
+  }
+
+  auto path = NifResource<Path>::get(env, argv[0]);
+  if(path == nullptr) {
+    return make_result_error(env, "invalid_path_transform_resource");
+  }
+
+  const Matrix2D* matrix = nullptr;
+  if(argc == 2) {
+    matrix = NifResource<Matrix2D>::get(env, argv[1]);
+  }
+  else {
+    matrix = NifResource<Matrix2D>::get(env, argv[2]);
+  }
+
+  if(matrix == nullptr) {
+    return make_result_error(env, "path_transform_invalid_matrix");
+  }
+
+  BLResult r;
+
+  if(argc == 2) {
+    r = path->value.transform(matrix->value);
+  }
+  else {
+    BLRange range;
+    if(!parse_bl_range(env, argv[1], &range)) {
+      return make_result_error(env, "path_transform_invalid_range");
+    }
+
+    r = path->value.transform(range, matrix->value);
+  }
+
+  if(r != BL_SUCCESS)
+    return make_result_error(env, "path_transform_failed");
+
+  return enif_make_atom(env, "ok");
+}
+
+// path_add_stroked_path(dst, src, stroke_opts, approx_opts)
+// path_add_stroked_path(dst, src, range, stroke_opts, approx_opts)
+ERL_NIF_TERM path_add_stroked_path(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
+{
+  if(argc < 3 || argc > 5)
+    return enif_make_badarg(env);
+
+  bool has_range = argc == 5;
+  int opts_idx = has_range ? 3 : 2;
+
+  auto dst = NifResource<Path>::get(env, argv[0]);
+  auto src = NifResource<Path>::get(env, argv[1]);
+  if(dst == nullptr || src == nullptr) {
+    return make_result_error(env, "invalid_add_stroked_path_resources");
+  }
+
+  BLStrokeOptions stroke_opts = default_stroke_opts();
+  BLApproximationOptions approx_opts = default_approx_opts();
+
+  if(argc >= 3) {
+    if(!parse_stroke_options(env, argv[opts_idx], &stroke_opts)) {
+      return make_result_error(env, "add_stroked_path_invalid_stroke_opts");
+    }
+  }
+
+  if(argc == opts_idx + 2) {
+    if(!parse_approximation_options(env, argv[opts_idx + 1], &approx_opts)) {
+      return make_result_error(env, "add_stroked_path_invalid_approx_opts");
+    }
+  }
+
+  BLResult r;
+
+  if(has_range) {
+    BLRange range;
+    if(!parse_bl_range(env, argv[2], &range)) {
+      return make_result_error(env, "add_stroked_path_invalid_range");
+    }
+
+    r = dst->value.add_stroked_path(src->value, range, stroke_opts, approx_opts);
+  }
+  else {
+    r = dst->value.add_stroked_path(src->value, stroke_opts, approx_opts);
+  }
+
+  if(r != BL_SUCCESS)
+    return make_result_error(env, "add_stroked_path_failed");
 
   return enif_make_atom(env, "ok");
 }

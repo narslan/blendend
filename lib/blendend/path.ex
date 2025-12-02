@@ -16,6 +16,9 @@ defmodule Blendend.Path do
       `vertex_at/2`, and `set_vertex_at/5`
     * derive straight segments or samples with `segments/1` and `sample/3`
     * compose shapes with `add_path/2` and `add_path/3`
+    * shift or warp them in-place via `translate/3`, `translate/4`,
+      `transform/2`, or `transform/3`
+    * derive stroke outlines as geometry with `add_stroked_path/3`
     * render it with `Blendend.Canvas.Fill.path/3` or
       `Blendend.Canvas.Stroke.path/3`
     * apply blur/shadow effect on it via `Blendend.Effects.blur_path/4`
@@ -506,6 +509,175 @@ defmodule Blendend.Path do
     case add_path(dst, src, mtx) do
       :ok -> dst
       {:error, reason} -> raise Error.new(:path_add_path_transform, reason)
+    end
+  end
+
+  @doc """
+  Runs Blend2D's stroker on `src` and appends the resulting outline
+  geometry to `dst`.
+
+  This does **not** draw anything; it converts a stroke into fillable
+  path geometry. Useful for hit-testing, boolean ops, or filling later.
+
+  `stroke_opts` (keyword list) mirrors `BLStrokeOptions`:
+
+    * `:width` – stroke width (float, default `1.0`)
+    * `:miter_limit` – miter limit (default `4.0`)
+    * `:start_cap` / `:end_cap` – `:butt | :round | :square | :round_rev | :triangle | :triangle_rev`
+    * `:join` – `:miter_clip | :miter_bevel | :miter_round | :bevel | :round`
+    * `:transform_order` – `:after | :before` (default `:after`)
+    * `:dash_offset` – dash phase (float)
+    * `:dash_array` – list of dash lengths `[on, off, ...]`
+
+  `approx_opts` (keyword list) maps to `BLApproximationOptions`:
+
+    * `:flatten_tolerance`, `:simplify_tolerance`, `:offset_parameter`
+    * `:flatten_mode` – `:default | :recursive`
+    * `:offset_mode` – `:default | :iterative`
+
+  On success, returns `:ok`. On failure, returns `{:error, reason}`.
+  """
+  @spec add_stroked_path(t(), t(), keyword(), keyword()) :: :ok | {:error, term()}
+  def add_stroked_path(dst, src, stroke_opts \\ [], approx_opts \\ []) do
+    Native.path_add_stroked_path(dst, src, stroke_opts, approx_opts)
+  end
+
+  @doc """
+  Same as `add_stroked_path/4`, but limits stroking to a vertex `range`
+  (tuple `{start, stop}` or `Range`, stop exclusive).
+  """
+  @spec add_stroked_path(
+          t(),
+          t(),
+          Range.t() | {non_neg_integer(), non_neg_integer()},
+          keyword(),
+          keyword()
+        ) :: :ok | {:error, term()}
+  def add_stroked_path(dst, src, range, stroke_opts, approx_opts) do
+    Native.path_add_stroked_path(dst, src, range, stroke_opts, approx_opts)
+  end
+
+  @doc """
+  Bang variant of `add_stroked_path/4`.
+  """
+  @spec add_stroked_path!(t(), t(), keyword(), keyword()) :: t()
+  def add_stroked_path!(dst, src, stroke_opts \\ [], approx_opts \\ []) do
+    case add_stroked_path(dst, src, stroke_opts, approx_opts) do
+      :ok -> dst
+      {:error, reason} -> raise Error.new(:path_add_stroked_path, reason)
+    end
+  end
+
+  @doc """
+  Bang variant of `add_stroked_path/5`.
+  """
+  @spec add_stroked_path!(
+          t(),
+          t(),
+          Range.t() | {non_neg_integer(), non_neg_integer()},
+          keyword(),
+          keyword()
+        ) :: t()
+  def add_stroked_path!(dst, src, range, stroke_opts, approx_opts) do
+    case add_stroked_path(dst, src, range, stroke_opts, approx_opts) do
+      :ok -> dst
+      {:error, reason} -> raise Error.new(:path_add_stroked_path, reason)
+    end
+  end
+
+  @doc """
+  Translates all vertices in the path by `(dx, dy)` in-place.
+
+  On success, returns `:ok`.
+
+  On failure, returns `{:error, reason}`.
+  """
+  @spec translate(t(), number(), number()) :: :ok | {:error, term()}
+  def translate(path, dx, dy), do: Native.path_translate(path, dx * 1.0, dy * 1.0)
+
+  @doc """
+  Translates only the vertices within `range` by `(dx, dy)`.
+
+  `range` can be either a two-tuple `{start, stop}` (zero-based, stop is
+  exclusive) or an Elixir `Range` struct.
+
+  On success, returns `:ok`.
+
+  On failure, returns `{:error, reason}`.
+  """
+  @spec translate(t(), Range.t() | {non_neg_integer(), non_neg_integer()}, number(), number()) ::
+          :ok | {:error, term()}
+  def translate(path, range, dx, dy),
+    do: Native.path_translate(path, range, dx * 1.0, dy * 1.0)
+
+  @doc """
+  Same as `translate/3`, but returns the path for piping.
+
+  On success, returns `path`.
+
+  On failure, raises `Blendend.Error`.
+  """
+  @spec translate!(t(), number(), number()) :: t()
+  def translate!(path, dx, dy) do
+    case translate(path, dx, dy) do
+      :ok -> path
+      {:error, reason} -> raise Error.new(:path_translate, reason)
+    end
+  end
+
+  @doc """
+  Same as `translate/4`, but returns the path for piping.
+
+  On success, returns `path`.
+
+  On failure, raises `Blendend.Error`.
+  """
+  @spec translate!(t(), Range.t() | {non_neg_integer(), non_neg_integer()}, number(), number()) ::
+          t()
+  def translate!(path, range, dx, dy) do
+    case translate(path, range, dx, dy) do
+      :ok -> path
+      {:error, reason} -> raise Error.new(:path_translate, reason)
+    end
+  end
+
+  @doc """
+  Applies an affine transform `matrix` to all vertices in the path.
+
+  Mutates the path in-place. Wraps `BLPath::transform(matrix)`.
+  """
+  @spec transform(t(), Matrix2D.t()) :: :ok | {:error, term()}
+  def transform(path, matrix), do: Native.path_transform(path, matrix)
+
+  @doc """
+  Applies an affine transform `matrix` only to the vertices within `range`.
+
+  `range` accepts a two-tuple `{start, stop}` (zero-based, stop exclusive)
+  or an Elixir `Range`.
+  """
+  @spec transform(t(), Range.t() | {non_neg_integer(), non_neg_integer()}, Matrix2D.t()) ::
+          :ok | {:error, term()}
+  def transform(path, range, matrix), do: Native.path_transform(path, range, matrix)
+
+  @doc """
+  Same as `transform/2`, but returns the path for piping.
+  """
+  @spec transform!(t(), Matrix2D.t()) :: t()
+  def transform!(path, matrix) do
+    case transform(path, matrix) do
+      :ok -> path
+      {:error, reason} -> raise Error.new(:path_transform, reason)
+    end
+  end
+
+  @doc """
+  Same as `transform/3`, but returns the path for piping.
+  """
+  @spec transform!(t(), Range.t() | {non_neg_integer(), non_neg_integer()}, Matrix2D.t()) :: t()
+  def transform!(path, range, matrix) do
+    case transform(path, range, matrix) do
+      :ok -> path
+      {:error, reason} -> raise Error.new(:path_transform, reason)
     end
   end
 

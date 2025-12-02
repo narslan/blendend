@@ -1,0 +1,81 @@
+# Blendend Intro
+
+```elixir
+Mix.install([
+  {:blendend, path: "."},
+  {:kino, "~> 0.18.0"}
+])
+
+```
+
+## Basic shapes
+
+Fill and stroke a few shapes. We render the PNG as a Kino image.
+
+```elixir
+use Blendend.Draw
+
+{:ok, b64} =
+  draw 300, 220 do
+    clear(fill: rgb(245, 245, 245))
+
+    rect 30, 30, 100, 80, fill: rgb(40, 140, 200)
+    circle 200, 70, 50, stroke: rgb(200, 80, 60), stroke_width: 6
+
+    path tri do
+      move_to 180, 160
+      line_to 260, 180
+      line_to 220, 120
+      end
+
+    fill_path tri, fill: rgb(120, 200, 120)
+    stroke_path tri, stroke: rgb(0, 0, 0), stroke_width: 3
+  end
+
+bin = Base.decode64!(b64)
+Kino.Image.new(bin, "image/png")
+```
+
+## Glyph outline
+
+Outline a glyph and sample its segments.
+
+```elixir
+alias Blendend.Text.{Face, Font, GlyphBuffer, GlyphRun}
+alias Blendend.Path, as: BPath
+{:ok, b64} =
+  draw 400, 200 do
+    font_path = Path.expand("priv/fonts/Alegreya-Regular.otf", Application.app_dir(:blendend))
+    face = Face.load!(font_path)
+    font = Font.create!(face, 80.0)
+
+    gb =
+      GlyphBuffer.new!()
+      |> GlyphBuffer.set_utf8_text!("Blendend")
+      |> Font.shape!(font)
+
+    run = GlyphRun.new!(gb)
+m = Blendend.Matrix2D.identity!()
+    path =
+      BPath.new!()
+      |> Font.get_glyph_run_outlines!(font, run,m)
+      |> BPath.translate!(30, 130)
+
+    fill_path path, fill: rgb(240, 240, 240)
+
+    path
+    |> BPath.flatten!(0.8)
+    |> BPath.segments()
+    |> BPath.sample(8.0)
+    |> Enum.each(fn {{x, y}, {tx, ty}} ->
+      nx = ty
+      ny = -tx
+      hx = x + nx * 10
+      hy = y + ny * 10
+      line x, y, hx, hy, stroke: rgb(0, 120, 200), stroke_width: 2.0
+    end)
+  end
+
+bin = Base.decode64!(b64)
+Kino.Image.new(bin,  "image/png")
+```

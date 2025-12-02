@@ -1,0 +1,54 @@
+# Stroking to geometry
+
+```elixir
+Mix.install([
+  {:blendend, path: "."},
+  {:kino, "~> 0.18.0"}
+])
+```
+
+This example turns a stroke into path geometry using
+`Blendend.Path.add_stroked_path/5`, then fills that outline.
+
+```elixir
+use Blendend.Draw
+alias Blendend.Path
+
+{:ok, b64} =
+  draw 440, 300 do
+    clear(fill: rgb(248, 248, 248))
+
+    # Source path: a rounded rectangle.
+    src =
+      Path.new!()
+      |> Path.add_round_rect!(110, 90, 220, 120, 30, 30)
+
+    # Fill the original shape lightly so we can see the difference.
+    fill_path src, fill: rgb(220, 236, 250)
+
+    # Convert stroke -> outline geometry, limited to the full vertex range.
+    range = {0, Path.vertex_count(src)}
+
+    stroke_opts = [
+      width: 24.0,
+      join: :round,
+      start_cap: :round,
+      end_cap: :round,
+      dash_array: [18.0, 12.0]
+    ]
+
+    approx_opts = [
+      flatten_tolerance: 0.25
+    ]
+
+    stroked =
+      Path.new!()
+      |> Path.add_stroked_path!(src, range, stroke_opts, approx_opts)
+      |> Path.translate!(2, 2) # small drop-shadow offset
+
+    fill_path stroked, fill: rgb(30, 120, 210)
+  end
+
+bin = Base.decode64!(b64)
+Kino.Image.new(bin, "image/png")
+```

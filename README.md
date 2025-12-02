@@ -4,6 +4,8 @@
   <img src="docs/images/piriform.png" alt="Blendend logo" width="320">
 </p>
 
+[![Run in Livebook](https://livebook.dev/badge/v1.svg)](https://livebook.dev/run?url=https://raw.githubusercontent.com/narslan/blendend/main/notebooks/blendend_intro.livemd)
+
 This project provides Elixir bindings to [Blend2D](https://github.com/blend2d/blend2d) .
 - `blendend` is currently in experimental stage. But most of the functionalities have been already implemented. 
 

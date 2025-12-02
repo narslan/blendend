@@ -152,6 +152,9 @@ MAKE_TERM(path_add_polyline)
 MAKE_TERM(path_add_polygon)
 MAKE_TERM(path_add_path)
 MAKE_TERM(path_add_path_transform)
+MAKE_TERM(path_add_stroked_path)
+MAKE_TERM(path_translate)
+MAKE_TERM(path_transform)
 MAKE_TERM(path_close)
 MAKE_TERM(path_hit_test)
 MAKE_TERM(path_clear)
@@ -317,6 +320,13 @@ MAKE_DRAW_GLYPH(stroke_glyph_run)
   X(path_add_polygon, 4, 0) \
   X(path_add_path, 2, 0) \
   X(path_add_path_transform, 3, 0) \
+  X(path_add_stroked_path, 3, 0) \
+  X(path_add_stroked_path, 4, 0) \
+  X(path_add_stroked_path, 5, 0) \
+  X(path_translate, 3, 0) \
+  X(path_translate, 4, 0) \
+  X(path_transform, 2, 0) \
+  X(path_transform, 3, 0) \
   X(path_vertex_at, 2, 0) \
   X(path_shrink, 1, 0) \
   X(path_debug_dump, 1, 0) \
