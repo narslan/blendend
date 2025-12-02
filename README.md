@@ -81,18 +81,18 @@ There is a separate web playground for live editing and rendering, and for brows
   </tr>
   <tr>
     <td width="50%">
-      <strong>Function plot</strong><br>
-      <img src="docs/images/sine_wave.png" alt="Sine and cosine waves on axes" title="Function plot rendered with Blendend.Draw" />
-    </td>
+      <strong> Burn gradients </strong><br>
+      <img src="docs/images/p5_burn_grid.png" alt="Grid of gradients with burn blend" title="p5.js burn grid port rendered with blendend" />
+    </td>  
     <td width="50%">
-      <strong>iEx Shell (path flattening)</strong><br>
+      <strong></strong><br>
       <img src="docs/images/iex.png" alt=" iex with noisy outlines" title="Path flattening on the letters of iEx" />
     </td>
   </tr>
   <tr>
-    <td width="50%">
-      <strong> Burn gradients</strong><br>
-      <img src="docs/images/p5_burn_grid.png" alt="Grid of gradients with burn blend" title="p5.js burn grid port rendered with blendend" />
+      <td width="50%">
+      <strong>Easy to plot</strong><br>
+      <img src="docs/images/sine_wave.png" alt="Sine and cosine waves on axes" title="Function plot rendered with Blendend.Draw" />
     </td>
     <td width="50%">
     </td>
