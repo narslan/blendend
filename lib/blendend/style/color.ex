@@ -6,6 +6,7 @@ defmodule Blendend.Style.Color do
   provides convenience constructors in RGB, HSL, and HSV.
   """
 
+  @typedoc "Opaque color resource (RGBA). Create via rgb!/4, hsl/4, hsv/4."
   @opaque t :: reference()
   alias Blendend.{Native, Error}
 
@@ -107,6 +108,9 @@ defmodule Blendend.Style.Color do
     {f.(5), f.(3), f.(1)}
   end
 
+  @doc """
+  Creates a random `t:t/0`.
+  """
   @spec random() :: Color.t()
   def random() do
     rgb!(

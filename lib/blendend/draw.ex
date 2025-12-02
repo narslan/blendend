@@ -39,6 +39,16 @@ defmodule Blendend.Draw do
 
   The current canvas is stored in the process dictionary.
   Nested `draw/2` in the same process will overwrite the previous state.
+
+  ## Shape API
+
+  Shape helpers (`rect/4`, `circle/3`, `polygon/2`, etc.) default to filling.
+  Use `fill: color/gradient/pattern` to set the fill. 
+  To stroke instead, pass
+  `mode: :stroke` or supply stroke-specific options (`:stroke` with a
+  color/gradient/pattern, plus `:stroke_width`, `:stroke_cap`, etc.).
+
+
   """
   @canvas_key :blendend_current_canvas
 
@@ -51,8 +61,13 @@ defmodule Blendend.Draw do
   # ------------------------------------------------------------------
   # process-local state
   # ------------------------------------------------------------------
-  def put_canvas(c), do: Process.put(@canvas_key, c)
+  defp put_canvas(c), do: Process.put(@canvas_key, c)
 
+  @doc """
+  Returns the current process-local canvas.
+
+  Raises if no canvas is active (use `draw/3` to establish one).
+  """
   def get_canvas() do
     Process.get(@canvas_key) ||
       raise "No active canvas. Use draw/3 first."
@@ -61,10 +76,10 @@ defmodule Blendend.Draw do
   # ------------------------------------------------------------------
   # helpers: floatification
   # ------------------------------------------------------------------
-  # numeric helpers
-  def to_f(v) when is_integer(v), do: v * 1.0
-  def to_f(v) when is_float(v), do: v
-  def to_f(v), do: v
+
+  defp to_f(v) when is_integer(v), do: v * 1.0
+  defp to_f(v) when is_float(v), do: v
+  defp to_f(v), do: v
 
   defp to_f_points(points) do
     Enum.map(points, fn {x, y} -> {to_f(x), to_f(y)} end)
@@ -83,78 +98,60 @@ defmodule Blendend.Draw do
   end
 
   # fill vs stroke for shapes that support both
+  @doc false
   def classify_mode(opts) do
     mode = Keyword.get(opts, :mode)
-    style = Keyword.get(opts, :style)
-    opts = Keyword.drop(opts, [:mode, :style])
+    opts = Keyword.drop(opts, [:mode])
+
+    stroke_keys = [:stroke, :stroke_color, :stroke_gradient, :stroke_pattern]
 
     case mode do
       :stroke ->
-        stroke_opts =
-          opts
-          |> Keyword.delete(:fill)
-          |> Keyword.delete(:stroke_color)
-          |> Keyword.update(:stroke, style, fn
-            nil -> style
-            v -> v || style
-          end)
-
-        {:stroke, stroke_opts}
+        {:stroke, Keyword.drop(opts, [:color, :gradient, :pattern])}
 
       :fill ->
-        fill_opts =
-          opts
-          |> Keyword.delete(:stroke)
-          |> Keyword.delete(:stroke_color)
-          |> Keyword.update(:fill, style, fn
-            nil -> style
-            v -> v || style
-          end)
-
-        {:fill, fill_opts}
+        {:fill, Keyword.drop(opts, stroke_keys)}
 
       _ ->
-        stroke_val = Keyword.get(opts, :stroke_color) || Keyword.get(opts, :stroke)
+        has_stroke? = Enum.any?(stroke_keys, &Keyword.has_key?(opts, &1))
 
-        if stroke_val do
-          base_opts =
-            opts
-            |> Keyword.delete(:stroke_color)
-            |> Keyword.delete(:stroke)
-
-          {:stroke, Keyword.put(base_opts, :stroke, stroke_val)}
+        if has_stroke? do
+          {:stroke, Keyword.drop(opts, [:color, :gradient, :pattern])}
         else
-          fill_opts =
-            opts
-            |> Keyword.delete(:stroke_color)
-            |> Keyword.delete(:stroke)
-
-          fill_opts =
-            if style do
-              Keyword.put(fill_opts, :fill, style)
-            else
-              fill_opts
-            end
-
-          {:fill, fill_opts}
+          {:fill, Keyword.drop(opts, stroke_keys)}
         end
     end
   end
 
+  @doc """
+  Creates an RGB color (0–255 channels, optional alpha).
+
+  Convenience for `Blendend.Style.Color.rgb!/4`.
+  """
   defmacro rgb(r, g, b, a \\ 255) do
     quote bind_quoted: [r: r, g: g, b: b, a: a] do
       Blendend.Style.Color.rgb!(r, g, b, a)
     end
   end
 
+  @doc """
+  Generates a random RGB color (opaque).
+
+  Convenience for `Blendend.Style.Color.random/0`.
+  """
   defmacro rgb(:random) do
     quote do
       Blendend.Style.Color.random()
     end
   end
 
-  # HSV helpers: tuple or positional forms.
-  defmacro hsv(h, s \\ nil, v \\ nil, a \\ 255) do
+  @doc """
+  Creates a color from HSV components plus alpha (0–255).
+
+  `h` in degrees (0–360), `s` and `v` as 0.0–1.0 floats, `a` as 0–255.
+  Convenience for `Blendend.Style.Color.from_hsv/4`.
+  """
+  defmacro hsv(h, s, v, a \\ 255) do
     quote bind_quoted: [h: h, s: s, v: v, a: a] do
       Blendend.Style.Color.from_hsv(h, s, v, a)
     end
@@ -223,6 +220,7 @@ defmodule Blendend.Draw do
     end
   end
 
+  @doc false
   def __drawsave__(w, h, file, fun) do
     {:ok, c} = Blendend.Canvas.new(w, h)
     put_canvas(c)
@@ -231,6 +229,11 @@ defmodule Blendend.Draw do
     Blendend.Canvas.save(c, file)
   end
 
+  @doc """
+  Clears the current canvas with the given options.
+
+  Wraps `Blendend.Canvas.clear/2`; common options include `fill: color/gradient/pattern`.
+  """
   defmacro clear(opts) do
     quote bind_quoted: [opts: opts] do
       c = Blendend.Draw.get_canvas()
@@ -238,6 +241,11 @@ defmodule Blendend.Draw do
     end
   end
 
+  @doc """
+  Sets the compositing operator (e.g., `:src_over`, `:multiply`) on the current canvas.
+
+  Wraps `Blendend.Canvas.set_comp_op!/2`.
+  """
   defmacro set_comp_op(op) do
     quote bind_quoted: [op: op] do
       c = Blendend.Draw.get_canvas()
@@ -245,6 +253,11 @@ defmodule Blendend.Draw do
     end
   end
 
+  @doc """
+  Sets the global alpha multiplier for all subsequent drawing on the current canvas.
+
+  Wraps `Blendend.Canvas.set_global_alpha/2` (alpha typically 0.0–1.0).
+  """
   defmacro set_global_alpha(alpha) do
     quote bind_quoted: [alpha: alpha] do
       c = Blendend.Draw.get_canvas()
@@ -252,6 +265,11 @@ defmodule Blendend.Draw do
     end
   end
 
+  @doc """
+  Sets the alpha multiplier for a specific style slot (`:fill` or `:stroke`) on the current canvas.
+
+  Wraps `Blendend.Canvas.set_style_alpha/3` (alpha typically 0.0–1.0).
+  """
   defmacro set_style_alpha(slot, alpha) do
     quote bind_quoted: [slot: slot, alpha: alpha] do
       c = Blendend.Draw.get_canvas()
@@ -259,6 +277,11 @@ defmodule Blendend.Draw do
     end
   end
 
+  @doc """
+  Disables either the `:fill` or `:stroke` style slot on the current canvas.
+
+  Wraps `Blendend.Canvas.disable_style/2`.
+  """
   defmacro disable_style(slot) do
     quote bind_quoted: [slot: slot] do
       c = Blendend.Draw.get_canvas()
@@ -266,6 +289,11 @@ defmodule Blendend.Draw do
     end
   end
 
+  @doc """
+  Sets the fill rule for the current canvas (`:non_zero` or `:even_odd`).
+
+  Wraps `Blendend.Canvas.set_fill_rule/2`.
+  """
   defmacro fill_rule(rule) do
     quote bind_quoted: [rule: rule] do
       c = Blendend.Draw.get_canvas()
@@ -273,6 +301,11 @@ defmodule Blendend.Draw do
     end
   end
 
+  @doc """
+  Sets the fill style (color/gradient/pattern) on the current canvas.
+
+  Wraps `Blendend.Canvas.set_fill_style/2`.
+  """
   defmacro set_fill_style(style) do
     quote bind_quoted: [style: style] do
       c = Blendend.Draw.get_canvas()
@@ -280,6 +313,11 @@ defmodule Blendend.Draw do
     end
   end
 
+  @doc """
+  Sets the stroke style (color/gradient/pattern) on the current canvas.
+
+  Wraps `Blendend.Canvas.set_stroke_style/2`.
+  """
   defmacro set_stroke_style(style) do
     quote bind_quoted: [style: style] do
       c = Blendend.Draw.get_canvas()
@@ -287,6 +325,11 @@ defmodule Blendend.Draw do
     end
   end
 
+  @doc """
+  Sets the stroke width on the current canvas.
+
+  Wraps `Blendend.Canvas.set_stroke_width/2`.
+  """
   defmacro set_stroke_width(width) do
     quote bind_quoted: [width: width] do
       c = Blendend.Draw.get_canvas()
@@ -294,6 +337,11 @@ defmodule Blendend.Draw do
     end
   end
 
+  @doc """
+  Sets the stroke join (`:miter`, `:round`, `:bevel`) on the current canvas.
+
+  Wraps `Blendend.Canvas.set_stroke_join/2`.
+  """
   defmacro set_stroke_join(join) do
     quote bind_quoted: [join: join] do
       c = Blendend.Draw.get_canvas()
@@ -301,7 +349,7 @@ defmodule Blendend.Draw do
     end
   end
 
-  # Internal helpers for the path DSL (defined before macros for availability during expansion)
+  # Internal helpers for the path macro.
   defp path_impl(path_var, rewritten_body, close?) do
     quote do
       unquote(path_var) = Blendend.Path.new!()
@@ -525,7 +573,7 @@ defmodule Blendend.Draw do
   end
 
   @doc """
-  Build a linear gradient with a small DSL.
+  Build a linear gradient.
 
       grad =
         linear_gradient 0, 0, 0, 200 do
@@ -547,7 +595,7 @@ defmodule Blendend.Draw do
   end
 
   @doc """
-  Build a radial gradient with a DSL.
+  Build a radial gradient.
 
       radial_gradient cx0, cy0, r0, cx1, cy1, r1 do
         add_stop 0.0, rgb(255, 255, 0)
@@ -575,7 +623,7 @@ defmodule Blendend.Draw do
   end
 
   @doc """
-  Build a conic gradient with a DSL.
+  Build a conic gradient.
 
       conic_gradient cx, cy, angle do
         add_stop 0.0, rgb(255, 0, 0)
@@ -593,6 +641,11 @@ defmodule Blendend.Draw do
     end
   end
 
+  @doc """
+  Loads a font face from the given path and creates a font at the specified size.
+
+  Convenience for `Blendend.Text.Face.load!/1` followed by `Blendend.Text.Font.create!/2`.
+  """
   defmacro load_font(face, size) do
     quote bind_quoted: [face: face, size: size] do
       face = Blendend.Text.Face.load!(face)
@@ -636,7 +689,7 @@ defmodule Blendend.Draw do
 
   # generic shape handler
   # PATH =====================================================================
-
+  @doc false
   def __shape__(:fill_path, p, opts) do
     c = get_canvas()
 
@@ -644,6 +697,7 @@ defmodule Blendend.Draw do
     :ok
   end
 
+  @doc false
   def __shape__(:stroke_path, p, opts) do
     c = get_canvas()
 
@@ -652,7 +706,7 @@ defmodule Blendend.Draw do
   end
 
   # BOX ======================================================================
-
+  @doc false
   def __shape__(:box, [x0, y0, x1, y1], opts) do
     c = get_canvas()
 
@@ -668,7 +722,7 @@ defmodule Blendend.Draw do
   end
 
   # RECT =====================================================================
-
+  @doc false
   def __shape__(:rect, [x, y, w, h], opts) do
     c = get_canvas()
 
@@ -684,7 +738,7 @@ defmodule Blendend.Draw do
   end
 
   # CIRCLE ===================================================================
-
+  @doc false
   def __shape__(:circle, [cx, cy, r], opts) do
     c = get_canvas()
 
@@ -700,7 +754,7 @@ defmodule Blendend.Draw do
   end
 
   # ELLIPSE ==================================================================
-
+  @doc false
   def __shape__(:ellipse, [cx, cy, rx, ry], opts) do
     c = get_canvas()
 
@@ -716,7 +770,7 @@ defmodule Blendend.Draw do
   end
 
   # ROUND RECT ===============================================================
-
+  @doc false
   def __shape__(:round_rect, [x, y, w, h, rx, ry], opts) do
     c = get_canvas()
 
@@ -732,7 +786,7 @@ defmodule Blendend.Draw do
   end
 
   # CHORD ====================================================================
-
+  @doc false
   def __shape__(:chord, [cx, cy, rx, ry, start_angle, sweep_angle], opts) do
     c = get_canvas()
 
@@ -748,7 +802,7 @@ defmodule Blendend.Draw do
   end
 
   # PIE ======================================================================
-
+  @doc false
   def __shape__(:pie, [cx, cy, rx, ry, start_angle, sweep_angle], opts) do
     c = get_canvas()
 
@@ -764,7 +818,7 @@ defmodule Blendend.Draw do
   end
 
   # TRIANGLE =================================================================
-
+  @doc false
   def __shape__(:triangle, [x0, y0, x1, y1, x2, y2], opts) do
     c = get_canvas()
 
@@ -780,7 +834,7 @@ defmodule Blendend.Draw do
   end
 
   # POLYGON / POLYLINE =======================================================
-
+  @doc false
   def __shape__(:polygon, [points], opts) do
     c = get_canvas()
     points = to_f_points(points)
@@ -796,7 +850,7 @@ defmodule Blendend.Draw do
     :ok
   end
 
-  # polyline is stroke-only (no fill variant)
+  @doc false
   def __shape__(:polyline, [points], opts) do
     c = get_canvas()
     points = to_f_points(points)
@@ -805,7 +859,7 @@ defmodule Blendend.Draw do
   end
 
   # BOX ARRAY ================================================================
-
+  @doc false
   def __shape__(:box_array, [boxes], opts) do
     c = get_canvas()
     boxes = to_f_boxes(boxes)
@@ -822,7 +876,7 @@ defmodule Blendend.Draw do
   end
 
   # RECT ARRAY ===============================================================
-
+  @doc false
   def __shape__(:rect_array, [rects], opts) do
     c = get_canvas()
     rects = to_f_rects(rects)
@@ -840,7 +894,7 @@ defmodule Blendend.Draw do
 
   # LINE =====================================================================
 
-  # line is stroke-only
+  @doc false
   def __shape__(:line, [x0, y0, x1, y1], opts) do
     c = get_canvas()
 
@@ -849,8 +903,7 @@ defmodule Blendend.Draw do
   end
 
   # ARC ======================================================================
-
-  # arc is stroke-only
+  @doc false
   def __shape__(:arc, [cx, cy, rx, ry, start_angle, sweep_angle], opts) do
     c = get_canvas()
 
@@ -858,27 +911,45 @@ defmodule Blendend.Draw do
     :ok
   end
 
-  # path fill / stroke
+  @doc """
+  Fills a path on the current canvas.
+
+  Style options mirror `Blendend.Canvas.Fill.path/3` (`:fill` with color/gradient/pattern, plus `:alpha`, `:comp_op`, etc.).
+  """
   defmacro fill_path(path, opts \\ []) do
     quote bind_quoted: [path: path, opts: opts] do
       Blendend.Draw.__shape__(:fill_path, path, opts)
     end
   end
 
+  @doc """
+  Strokes a path on the current canvas.
+
+  Style options mirror `Blendend.Canvas.Stroke.path/3` (`:stroke` with color/gradient/pattern, plus `:stroke_width`, caps/joins, `:comp_op`, etc.).
+  """
   defmacro stroke_path(path, opts \\ []) do
     quote bind_quoted: [path: path, opts: opts] do
       Blendend.Draw.__shape__(:stroke_path, path, opts)
     end
   end
 
-  # box (uses fill_box / stroke_box)
+  @doc """
+  Draws a box given corners `{x0, y0}` and `{x1, y1}` (fill or stroke).
+
+  Style options match the shape API (`:fill`/`:stroke` with color/gradient/pattern, `:stroke_width`, `:comp_op`, etc.).
+  """
+
   defmacro box(x0, y0, x1, y1, opts \\ []) do
     quote bind_quoted: [x0: x0, y0: y0, x1: x1, y1: y1, opts: opts] do
       Blendend.Draw.__shape__(:box, [x0, y0, x1, y1], opts)
     end
   end
 
-  # rect (fill_rect / stroke_rect)
+  @doc """
+  Draws a rectangle at `{x, y}` with width `w` and height `h` (fill or stroke).
+
+  Style options match the shape API.
+  """
   defmacro rect(x, y, w, h, opts \\ []) do
     quote bind_quoted: [x: x, y: y, w: w, h: h, opts: opts] do
       Blendend.Draw.__shape__(:rect, [x, y, w, h], opts)
@@ -898,28 +969,44 @@ defmodule Blendend.Draw do
     end
   end
 
-  # circle (fill_circle / stroke_circle)
+  @doc """
+  Draws a circle centered at `{cx, cy}` with radius `r` (fill or stroke).
+
+  Style options match the shape API.
+  """
   defmacro circle(cx, cy, r, opts \\ []) do
     quote bind_quoted: [cx: cx, cy: cy, r: r, opts: opts] do
       Blendend.Draw.__shape__(:circle, [cx, cy, r], opts)
     end
   end
 
-  # ellipse (fill_ellipse / stroke_ellipse)
+  @doc """
+  Draws an ellipse centered at `{cx, cy}` with radii `(rx, ry)` (fill or stroke).
+
+  Style options match the shape API.
+  """
   defmacro ellipse(cx, cy, rx, ry, opts \\ []) do
     quote bind_quoted: [cx: cx, cy: cy, rx: rx, ry: ry, opts: opts] do
       Blendend.Draw.__shape__(:ellipse, [cx, cy, rx, ry], opts)
     end
   end
 
-  # round rect (fill_round_rect / stroke_round_rect)
+  @doc """
+  Draws a rounded rectangle `(x, y, w, h)` with corner radii `(rx, ry)` (fill or stroke).
+
+  Style options match the shape API.
+  """
   defmacro round_rect(x, y, w, h, rx, ry, opts \\ []) do
     quote bind_quoted: [x: x, y: y, w: w, h: h, rx: rx, ry: ry, opts: opts] do
       Blendend.Draw.__shape__(:round_rect, [x, y, w, h, rx, ry], opts)
     end
   end
 
-  # chord (fill_chord / stroke_chord)
+  @doc """
+  Draws a chord (closed arc) with center `(cx, cy)`, radii `(rx, ry)`, start angle, and sweep (radians).
+
+  Style options match the shape API.
+  """
   defmacro chord(cx, cy, rx, ry, start_angle, sweep_angle, opts \\ []) do
     quote bind_quoted: [
             cx: cx,
@@ -938,7 +1025,11 @@ defmodule Blendend.Draw do
     end
   end
 
-  # pie (fill_pie / stroke_pie)
+  @doc """
+  Draws a pie slice with center `(cx, cy)`, radii `(rx, ry)`, start angle, and sweep (radians).
+
+  Style options match the shape API.
+  """
   defmacro pie(cx, cy, rx, ry, start_angle, sweep_angle, opts \\ []) do
     quote bind_quoted: [
             cx: cx,
@@ -957,8 +1048,13 @@ defmodule Blendend.Draw do
     end
   end
 
-  # triangle (fill_triangle / stroke_triangle)
-  # equilateral triangle by center + side length (pointing up)
+  @doc """
+  Draws a triangle, equilateral when given a center point and side length.
+
+  `triangle(cx, cy, side)` – builds an equilateral triangle centered at `{cx, cy}`,
+      pointing up, with edge length `side`.  
+  Same style `opts` as `Blendend.Canvas.Fill.path/3` or `Blendend.Canvas.Stroke.path/3`.
+  """
   defmacro triangle(cx, cy, side, opts \\ []) do
     quote bind_quoted: [cx: cx, cy: cy, side: side, opts: opts] do
       h = side * :math.sqrt(3) / 2.0
@@ -975,48 +1071,78 @@ defmodule Blendend.Draw do
     end
   end
 
+  @doc """
+  `triangle(x0, y0, x1, y1, x2, y2)` – triangle from explicit vertices.
+  Same style `opts` as `Blendend.Canvas.Fill.path/3` or `Blendend.Canvas.Stroke.path/3`.
+  """
   defmacro triangle(x0, y0, x1, y1, x2, y2, opts \\ []) do
     quote bind_quoted: [x0: x0, y0: y0, x1: x1, y1: y1, x2: x2, y2: y2, opts: opts] do
       Blendend.Draw.__shape__(:triangle, [x0, y0, x1, y1, x2, y2], opts)
     end
   end
 
-  # polygon (fill_polygon / stroke_polygon)
+  @doc """
+  Draws a polygon (fill or stroke) from a list of `{x, y}` points.
+
+  Style options match `Blendend.Canvas.Fill.path/3` and `Blendend.Canvas.Stroke.path/3`
+  (e.g. `fill: color/gradient/pattern`, `stroke: color/gradient/pattern`, `:stroke_width`, `:comp_op`).
+  """
   defmacro polygon(points, opts \\ []) do
     quote bind_quoted: [points: points, opts: opts] do
       Blendend.Draw.__shape__(:polygon, [points], opts)
     end
   end
 
-  # polyline (stroke_polyline only)
+  @doc """
+  Draws a stroked polyline from a list of `{x, y}` points.
+
+  Style options match `Blendend.Canvas.Stroke.path/3` (`:stroke`, `:stroke_width`, `:stroke_cap`, etc.).
+  """
   defmacro polyline(points, opts \\ []) do
     quote bind_quoted: [points: points, opts: opts] do
       Blendend.Draw.__shape__(:polyline, [points], opts)
     end
   end
 
-  # box_array (fill_box_array / stroke_box_array)
+  @doc """
+  Draws multiple boxes from a list of `{x0, y0, x1, y1}` tuples (fill or stroke).
+
+  Style options match `Blendend.Canvas.Fill.path/3` and `Blendend.Canvas.Stroke.path/3`.
+  """
   defmacro box_array(boxes, opts \\ []) do
     quote bind_quoted: [boxes: boxes, opts: opts] do
       Blendend.Draw.__shape__(:box_array, [boxes], opts)
     end
   end
 
-  # rect_array (fill_rect_array / stroke_rect_array)
+  @doc """
+  Draws multiple rects from a list of `{x, y, w, h}` tuples (fill or stroke).
+
+  Style options match `Blendend.Canvas.Fill.path/3` and `Blendend.Canvas.Stroke.path/3`.
+  """
   defmacro rect_array(rects, opts \\ []) do
     quote bind_quoted: [rects: rects, opts: opts] do
       Blendend.Draw.__shape__(:rect_array, [rects], opts)
     end
   end
 
-  # line (stroke_line only)
+  @doc """
+  Draws a stroked line segment from `{x0, y0}` to `{x1, y1}`.
+
+  Style options match `Blendend.Canvas.Stroke.path/3` (`:stroke`, `:stroke_width`, `:stroke_cap`, etc.).
+  """
   defmacro line(x0, y0, x1, y1, opts \\ []) do
     quote bind_quoted: [x0: x0, y0: y0, x1: x1, y1: y1, opts: opts] do
       Blendend.Draw.__shape__(:line, [x0, y0, x1, y1], opts)
     end
   end
 
-  # arc (stroke_arc only)
+  @doc """
+  Draws a stroked elliptical arc defined by center `(cx, cy)`, radii `(rx, ry)`,
+  start angle, and sweep angle (radians).
+
+  Style options match `Blendend.Canvas.Stroke.path/3`.
+  """
   defmacro arc(cx, cy, rx, ry, start_angle, sweep_angle, opts \\ []) do
     quote bind_quoted: [
             cx: cx,
@@ -1035,7 +1161,9 @@ defmodule Blendend.Draw do
     end
   end
 
-  # translate (canvas only)
+  @doc """
+  Translates the current canvas transform by `{tx, ty}` (pixels).
+  """
   defmacro translate(tx, ty) do
     quote bind_quoted: [tx: tx, ty: ty] do
       c = get_canvas()
@@ -1043,6 +1171,9 @@ defmodule Blendend.Draw do
     end
   end
 
+  @doc """
+  Translates temporarily the current canvas transform by `{tx, ty}` (pixels) for the duration of the block.
+  """
   defmacro translate(tx, ty, do: body) do
     quote do
       c = Blendend.Draw.get_canvas()
@@ -1059,13 +1190,19 @@ defmodule Blendend.Draw do
     end
   end
 
-  # scale (canvas only)
+  @doc """
+  Scales the current canvas uniformly by `s` (both axes).
+  """
   defmacro scale(sx, sy) do
     quote bind_quoted: [sx: sx, sy: sy] do
       c = get_canvas()
       Blendend.Canvas.scale(c, sx, sy)
     end
   end
+
+  @doc """
+  Scales temporarily the current canvas transform by `{sx, sy}` for the duration of the block.
+  """
 
   defmacro scale(sx, sy, do: body) do
     quote do
@@ -1083,7 +1220,9 @@ defmodule Blendend.Draw do
     end
   end
 
-  # skew (canvas only)
+  @doc """
+  Skews the current canvas transform by `{sx, sy}` (radians) relative to the x/y axes.
+  """
   defmacro skew(kx, ky) do
     quote bind_quoted: [kx: kx, ky: ky] do
       c = get_canvas()
@@ -1091,6 +1230,9 @@ defmodule Blendend.Draw do
     end
   end
 
+  @doc """
+  Skews temporarily the current canvas by `s` on both axes (radians) for the duration of the block.
+  """
   defmacro skew(kx, ky, do: body) do
     quote do
       c = Blendend.Draw.get_canvas()
@@ -1107,7 +1249,9 @@ defmodule Blendend.Draw do
     end
   end
 
-  # rotate (canvas only)
+  @doc """
+  Rotates the current canvas transform by `angle` (radians) around the origin.
+  """
   defmacro rotate(angle) do
     quote bind_quoted: [angle: angle] do
       c = get_canvas()
@@ -1115,6 +1259,9 @@ defmodule Blendend.Draw do
     end
   end
 
+  @doc """
+  Rotates temporarily the current canvas `angle` (radians)  around `{cx, cy}` while evaluating `do` block.
+  """
   defmacro rotate(angle, do: body) do
     quote do
       c = Blendend.Draw.get_canvas()
@@ -1133,7 +1280,7 @@ defmodule Blendend.Draw do
 
   @doc """
   Temporarily applies a transform to the current canvas while evaluating `do` block.
-
+  That means any transform applied inside is rolled back when the block exits.
   This macro mirrors the typical *save / apply / restore* pattern:
 
     * saves the current context state (`Canvas.save_state/1`),
@@ -1192,7 +1339,10 @@ defmodule Blendend.Draw do
   # Effects
   # ------------------------------------------------------------------
 
-  @doc "Blur a path and composite it onto the current canvas."
+  @doc """
+  Blur a path and composite it onto the current canvas.
+  Wraps `Blendend.Effects.blur_path/4`; accepts blur options (e.g. `:radius`, `:spread`) and style overrides.
+  """
   def blur_path(path, sigma, opts \\ []) do
     canvas = get_canvas()
     Blendend.Effects.blur_path!(canvas, path, sigma, opts)

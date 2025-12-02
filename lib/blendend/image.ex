@@ -10,6 +10,7 @@ defmodule Blendend.Image do
     * draw an image onto a canvas via `Blendend.Canvas.blit_image/4` (or `/6`)
   """
 
+  @typedoc "Opaque image resource (pixel buffer). Load via from_file!/1 or from_data/1."
   @opaque t :: reference()
 
   alias Blendend.Native

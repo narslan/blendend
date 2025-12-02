@@ -15,6 +15,7 @@ defmodule Blendend.Matrix2D do
   * `tx, ty`             – translation
   """
 
+  @typedoc "Opaque affine transform matrix (BLMatrix2D)."
   @opaque t :: reference()
 
   alias Blendend.Native

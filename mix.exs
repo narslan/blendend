@@ -23,6 +23,7 @@ defmodule Blendend.MixProject do
 
   defp deps do
     [
+      {:ex_doc, "~> 0.34", only: :dev, runtime: false, warn_if_outdated: true},
       {:elixir_make, "~> 0.9.0"}
     ]
   end

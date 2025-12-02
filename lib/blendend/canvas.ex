@@ -3,7 +3,9 @@ defmodule Blendend.Canvas do
   Drawing surface of `blend2d`.
 
   A `Blendend.Canvas` represents a 2D drawing surface backed by a `blend2d`
-  `BLImage` and `BLContext`. Most functions here delegate to `Blendend.Native`
+  `BLImage` and `BLContext`. Most functions here delegate to the internal NIF
+  module (not part of the public API) while accepting plain Elixir numbers and
+  option lists.
   while accepting plain Elixir numbers and option lists.
 
   All transformation functions in this module mutate the canvas' internal

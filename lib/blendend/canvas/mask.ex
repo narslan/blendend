@@ -3,20 +3,23 @@ defmodule Blendend.Canvas.Mask do
   Experimental masking helpers for `Blendend.Canvas`.
 
   ## Examples
-      
-    alias Blendend.{Canvas, Canvas.Mask, Style.Color, Image}
-    mask = Image.from_file!("priv/images/tortoise_mask.png") # with real alpha
-    {mw, mh} = Image.size!(mask)
-    canvas =
-      Canvas.new!(mw, mh)
-      |> Canvas.clear!()
-      
-      :ok =
-        Mask.fill(canvas, mask, 0, 0,
-          color: Color.rgb!(255, 200, 255),
-          alpha: 1.0)
-      :ok = Canvas.save!(canvas, "priv/images/masked_canvas.png")
+  ```    
+  alias Blendend.{Canvas, Canvas.Mask, Style.Color, Image}
+  mask = Image.from_file_a8!("priv/images/splash.png", :red)
+  {mw, mh} = Image.size!(mask)
 
+  canvas =
+  Canvas.new!(mw, mh)
+  |> Canvas.clear!()
+
+  :ok =
+  Mask.fill(canvas, mask, 0, 0,
+    color: Color.rgb!(255, 200, 255),
+    alpha: 1.0
+  )
+
+  :ok = Canvas.save!(canvas, "priv/images/masked_canvas.png")
+  ```
   To blur a mask (e.g. soft shadows), use `blur_fill/6` and set `sigma` in pixels.
   A `sigma` of 3.0 produces a visible blur radius around ~9 px.
   """

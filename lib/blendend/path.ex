@@ -19,8 +19,21 @@ defmodule Blendend.Path do
     * render it with `Blendend.Canvas.Fill.path/3` or
       `Blendend.Canvas.Stroke.path/3`
     * apply blur/shadow effect on it via `Blendend.Effects.blur_path/4`
+
+  You can also build paths with the DSL in `Blendend.Draw`:
+
+      use Blendend.Draw
+
+      path badge do
+        add_round_rect(20, 20, 140, 80, 12, 12)
+        add_circle(60, 60, 18)
+        add_line(20, 20, 160, 100)
+      end
+
+      stroke_path badge
   """
 
+  @typedoc "Opaque path resource (sequence of lines/curves). Build via DSL or Path.*! helpers."
   @opaque t :: reference()
   @type point :: {float(), float()}
   @type segment :: {point(), point()}
@@ -501,7 +514,7 @@ defmodule Blendend.Path do
 
   Optional `opts`:
 
-    * `:matrix`    – `Blendend.Matrix2D.t()` transform to apply
+    * `:matrix`    – `t:Blendend.Matrix2D.t/0` transform to apply
     * `:direction` – `:cw | :ccw | :none` (default: `:cw`)
 
   On success, returns `:ok`.
@@ -564,7 +577,7 @@ defmodule Blendend.Path do
 
   Optional `opts`:
 
-    * `:matrix`    – `Blendend.Matrix2D.t()` transform to apply
+    * `:matrix`    – `t:Blendend.Matrix2D.t/0` transform to apply
     * `:direction` – `:cw | :ccw | :none` (default: `:cw`)
 
   On success, returns `:ok`.

@@ -7,7 +7,7 @@ defmodule Blendend do
 
   ### Canvas
 
-  The main drawing surface in `blendend` is a **canvas** (`Blendend.Canvas.t/0`).
+  The main drawing surface in `blendend` is a **canvas** (`Blendend.Canvas` resource).
 
   A canvas owns:
 

@@ -11,7 +11,7 @@ defmodule Blendend.Style.Gradient do
     1. Create a gradient with one of:
 
         * `linear/4`  – linear gradient between two points
-        * `radial/5`  – radial gradient with center, radius and focal point
+        * `radial/6`  – radial gradient with center, radius and focal point
         * `conic/3`   – conic (angular) gradient around a center
 
     2. Add color stops using `add_stop/3` (or `add_stop!/3`).
@@ -30,7 +30,8 @@ defmodule Blendend.Style.Gradient do
 
   Gradients created here are typically passed as the `:gradient` or
   `:stroke_gradient` option to drawing functions such as
-  `Blendend.Canvas.Fill.rect/5`.
+  `Blendend.Canvas.Fill.rect/6`
+  `Blendend.Canvas.Stroke.circle/5`.
   """
 
   alias Blendend.Native
@@ -93,7 +94,6 @@ defmodule Blendend.Style.Gradient do
     * `cx0`, `cy0`, `r0` – inner circle center and radius
     * `cx1`, `cy1`, `r1` – outer circle center and radius
 
-  https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/createRadialGradient
   On success, returns `{:ok, gradient}`.
 
   On failure, returns `{:error, reason}`.
@@ -165,7 +165,7 @@ defmodule Blendend.Style.Gradient do
 
   On failure, returns `{:error, reason}`.
   """
-  @spec add_stop(t(), number(), term()) :: :ok | {:error, term()}
+  @spec add_stop(t(), float(), term()) :: :ok | {:error, term()}
   def add_stop(grad, offset, color),
     do: Native.gradient_add_stop(grad, offset * 1.0, color)
 
@@ -176,7 +176,7 @@ defmodule Blendend.Style.Gradient do
 
   On failure, raises `Blendend.Error`.
   """
-  @spec add_stop!(t(), number(), term()) :: t()
+  @spec add_stop!(t(), float(), term()) :: t()
   def add_stop!(grad, offset, color) do
     case add_stop(grad, offset, color) do
       :ok -> grad
@@ -286,8 +286,8 @@ defmodule Blendend.Style.Gradient do
     end
   end
 
-  @spec with_stops(t(), [{number(), Color.t()}]) :: t()
-  def with_stops(gradient, stops) do
+  @spec with_stops(t(), [{float(), Color.t()}]) :: t()
+  defp with_stops(gradient, stops) do
     Enum.reduce(stops, gradient, fn {t, color}, grad ->
       add_stop!(grad, t, color)
     end)
@@ -307,7 +307,7 @@ defmodule Blendend.Style.Gradient do
   """
   @spec linear_from_stops(
           {number(), number(), number(), number()},
-          [{number(), Blended.Style.Color.t()}],
+          [{float(), Blended.Style.Color.t()}],
           keyword()
         ) :: t()
   def linear_from_stops({x0, y0, x1, y1}, stops, opts \\ []) do
@@ -322,7 +322,8 @@ defmodule Blendend.Style.Gradient do
   @doc """
   Creates a radial gradient and adds `stops`.
 
-  * `{cx, cy, r, fx, fy}` – center, radius, focal point
+  * `cx0`, `cy0`, `r0` – inner circle center and radius
+  * `cx1`, `cy1`, `r1` – outer circle center and radius
   * `stops` – list of `{offset, color}`
 
   Options:
@@ -330,8 +331,8 @@ defmodule Blendend.Style.Gradient do
     * `:extend` – extend mode (`:pad | :repeat | :reflect`), defaults to `:pad`.
   """
   @spec radial_from_stops(
-          {number(), number(), number(), number(), number()},
-          [{number(), Blended.Style.Color.t()}],
+          {number(), number(), number(), number(), number(), number()},
+          [{float(), Blended.Style.Color.t()}],
           keyword()
         ) :: t()
   def radial_from_stops({cx0, cy0, r0, cx1, cy1, r1}, stops, opts \\ []) do
@@ -352,7 +353,7 @@ defmodule Blendend.Style.Gradient do
   """
   @spec conic_from_stops(
           {number(), number(), number()},
-          [{number(), Blended.Style.Color.t()}],
+          [{float(), Blended.Style.Color.t()}],
           keyword()
         ) :: t()
   def conic_from_stops({cx, cy, angle}, stops, opts \\ []) do
