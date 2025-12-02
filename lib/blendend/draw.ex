@@ -538,7 +538,9 @@ defmodule Blendend.Draw do
     rewritten = rewrite_grad_dsl(body, grad)
 
     quote do
-      unquote(grad) = Blendend.Style.Gradient.linear!(unquote(x0), unquote(y0), unquote(x1), unquote(y1))
+      unquote(grad) =
+        Blendend.Style.Gradient.linear!(unquote(x0), unquote(y0), unquote(x1), unquote(y1))
+
       _ = unquote(rewritten)
       unquote(grad)
     end
@@ -589,13 +591,6 @@ defmodule Blendend.Draw do
       _ = unquote(rewritten)
       unquote(grad)
     end
-  end
-
-  defmacro path(var, opts, do: body) when is_atom(var) and is_list(opts) do
-    path = Macro.var(var, nil)
-    rewritten = rewrite_path_dsl(body, path)
-    close? = Keyword.get(opts, :close?, true)
-    path_impl(path, rewritten, close?)
   end
 
   defmacro load_font(face, size) do

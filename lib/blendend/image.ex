@@ -2,11 +2,12 @@ defmodule Blendend.Image do
   @moduledoc """
   Image loading functions for Blendend.
 
-  This module deals with **image resources** that can be
-  used as sources for patterns or other operations that need pixel data.
+  This module deals with **image resources** that can be used anywhere pixel data
+  is needed: as sources for patterns, or passed directly to canvas blit calls.
 
-  The returned value is typically passed to `Blendend.Style.pattern/1`
-  to create a tiling or transformed fill style.
+  Typical uses:
+    * create a tiling or transformed fill via `Blendend.Style.pattern/1`
+    * draw an image onto a canvas via `Blendend.Canvas.blit_image/4` (or `/6`)
   """
 
   @opaque t :: reference()
