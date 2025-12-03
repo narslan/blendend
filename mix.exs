@@ -13,8 +13,7 @@ defmodule Blendend.MixProject do
         main: "readme",
         extras: [
           "README.md",
-          "notebooks/blendend_intro.livemd",
-          "notebooks/stroked_path.livemd"
+          "notebooks/blendend_intro.livemd"
         ]
       ]
     ]
