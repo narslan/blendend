@@ -78,6 +78,8 @@ defmodule Blendend.Native do
   def gradient_set_transform(_grad, _matrix), do: :erlang.nif_error(:nif_not_loaded)
   def gradient_reset_transform(_grad), do: :erlang.nif_error(:nif_not_loaded)
 
+  def color_components(_color), do: :erlang.nif_error(:nif_not_loaded)
+
   def pattern_create(_img), do: :erlang.nif_error(:nif_not_loaded)
   def pattern_set_extend(_pattern, _extend_mode), do: :erlang.nif_error(:nif_not_loaded)
   def pattern_set_transform(_pattern, _matrix), do: :erlang.nif_error(:nif_not_loaded)

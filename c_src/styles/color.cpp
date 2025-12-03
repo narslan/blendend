@@ -30,3 +30,25 @@ ERL_NIF_TERM color(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
 
   return make_result_ok(env, NifResource<Color>::make(env, color));
 }
+
+ERL_NIF_TERM color_components(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
+{
+  if(argc != 1) {
+    return enif_make_badarg(env);
+  }
+
+  auto color = NifResource<Color>::get(env, argv[0]);
+  if(color == nullptr) {
+    return make_result_error(env, "invalid_color_resource");
+  }
+
+  BLRgba32 c = color->value;
+  ERL_NIF_TERM tuple =
+      enif_make_tuple4(env,
+                       enif_make_int(env, c.r()),
+                       enif_make_int(env, c.g()),
+                       enif_make_int(env, c.b()),
+                       enif_make_int(env, c.a()));
+
+  return make_result_ok(env, tuple);
+}

@@ -109,6 +109,8 @@ MAKE_TERM(image_blur)
 
 // Styles
 MAKE_TERM(color)
+MAKE_TERM(color_components)
+MAKE_TERM(color_components)
 MAKE_TERM(gradient_linear)
 MAKE_TERM(gradient_radial)
 MAKE_TERM(gradient_conic)
@@ -282,6 +284,7 @@ MAKE_DRAW_GLYPH(stroke_glyph_run)
   X(image_blur, 2, ERL_NIF_DIRTY_JOB_CPU_BOUND) \
   /* Styles */ \
   X(color, 4, 0) \
+  X(color_components, 1, 0) \
   X(gradient_linear, 4, 0) \
   X(gradient_radial, 6, 0) \
   X(gradient_conic, 3, 0) \

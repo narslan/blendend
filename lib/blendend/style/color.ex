@@ -3,7 +3,8 @@ defmodule Blendend.Style.Color do
   Color helpers for the `blendend` drawing API.
 
   This module works with **color resources** representing RGBA colors and
-  provides convenience constructors in RGB, HSL, and HSV.
+  provides convenience constructors in RGB, HSL, and HSV. You can also
+  read back the RGBA components.
   """
 
   @typedoc "Opaque color resource (RGBA). Create via rgb!/4, hsl/4, hsv/4."
@@ -118,6 +119,27 @@ defmodule Blendend.Style.Color do
       Enum.random(0..255),
       Enum.random(0..255)
     )
+  end
+
+  @doc """
+  Returns the RGBA components of a color as integers `0..255`.
+
+  On success, returns `{:ok, {r, g, b, a}}`.
+
+  On failure, returns `{:error, reason}`.
+  """
+  @spec components(t()) :: {:ok, {0..255, 0..255, 0..255, 0..255}} | {:error, term()}
+  def components(color), do: Native.color_components(color)
+
+  @doc """
+  Same as `components/1`, but raises on failure.
+  """
+  @spec components!(t()) :: {0..255, 0..255, 0..255, 0..255}
+  def components!(color) do
+    case components(color) do
+      {:ok, tuple} -> tuple
+      {:error, reason} -> raise Error.new(:color_components, reason)
+    end
   end
 
   @doc """
