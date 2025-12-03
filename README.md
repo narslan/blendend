@@ -4,16 +4,22 @@
   <img src="docs/images/piriform.png" alt="Blendend logo" width="320">
 </p>
 
-[![Run in Livebook](https://livebook.dev/badge/v1.svg)](https://livebook.dev/run?url=https://raw.githubusercontent.com/narslan/blendend/main/notebooks/blendend_intro.livemd)
 
-This project provides Elixir bindings to [Blend2D](https://github.com/blend2d/blend2d) .
-- `blendend` is currently in experimental stage. But most of the functionalities have been already implemented. 
+`blendend` brings [Blend2D](https://github.com/blend2d/blend2d)'s fast, high-quality 2D vector renderer to Elixir. 
+It gives crisp antialiased shapes, gradients, text, and blending via an Elixir API, that speaks Blend2D directly (via NIF).
+Use it to script drawings, build charts, make new friends.
 
-- Blend2D's rendering engine from plain Elixir.
 - Composable drawing pipeline: `Canvas`, `Path`, `Matrix2D`, `Text`, `Style` modules.
 - A DSL (`Blendend.Draw`) for concise scripts. 
 - Support for PNG/QOI export. 
+ 
+3. Features
 
+- Canvas API (fill/stroke shapes, paths, transforms, compositing).
+- Text shaping (font loading, glyph outlines).
+- Gradients/patterns, blur effects, masks.
+- Path DSL/macros for ergonomic drawing.
+- Examples and playground scripts (mention priv/examples).
 
 ## Requirements
 
@@ -63,7 +69,6 @@ end
 
 For a richer starting point, clone the [blendend_playground](https://github.com/narslan/blendend_playground) repo and run it to browse and tweak the bundled examples in the browser.
 
-[Run in Livebook](https://livebook.dev/run?url=https://raw.githubusercontent.com/narslan/blendend/refs/heads/livebook-integration/notebooks/blendend_intro.livemd)
 
 ## Playground
 
