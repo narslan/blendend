@@ -350,11 +350,10 @@ defmodule Blendend.Draw do
   end
 
   # Internal helpers for the path macro.
-  defp path_impl(path_var, rewritten_body, close?) do
+  defp path_impl(path_var, rewritten_body) do
     quote do
       unquote(path_var) = Blendend.Path.new!()
       _ = unquote(rewritten_body)
-      if unquote(close?), do: Blendend.Path.close!(unquote(path_var))
       unquote(path_var)
     end
   end
@@ -510,26 +509,17 @@ defmodule Blendend.Draw do
   Forms:
     * `path do ... end` – returns a new `Blendend.Path` with the given commands.
     * `path name do ... end` – same, but also binds the path to `name` in the caller.
-    * `path opts do ... end` – anonymous form with options (e.g., `close?: false`).
 
   What it does:
     * creates a fresh `Blendend.Path` (`Path.new!`)
     * rewrites DSL calls (`move_to/2`, `line_to/2`, `add_*`, etc.) to `Blendend.Path.*!/…`
       against that path (no reliance on `var!/1`)
-    * closes the path (unless `close?: false`) and returns it
   """
   # Base path macros (declared before wrappers to avoid compile ordering issues)
   defmacro path(do: body) do
     path = Macro.unique_var(:path, __MODULE__)
     rewritten = rewrite_path_dsl(body, path)
-    path_impl(path, rewritten, true)
-  end
-
-  defmacro path(opts, do: body) when is_list(opts) do
-    path = Macro.unique_var(:path, __MODULE__)
-    rewritten = rewrite_path_dsl(body, path)
-    close? = Keyword.get(opts, :close?, true)
-    path_impl(path, rewritten, close?)
+    path_impl(path, rewritten)
   end
 
   defmacro path(var_ast, do: body) do
@@ -542,7 +532,91 @@ defmodule Blendend.Draw do
 
     path = Macro.var(var, nil)
     rewritten = rewrite_path_dsl(body, path)
-    path_impl(path, rewritten, true)
+    path_impl(path, rewritten)
+  end
+
+  defmacro path do
+    quote do
+      Blendend.Path.new!()
+    end
+  end
+
+  @doc """
+  Build a `Blendend.Matrix2D` with a tiny DSL.
+
+      m =
+        matrix do
+          translate 40, 90
+          rotate :math.pi() / 3
+          skew 0.1, 0.0
+          scale 1.2, 0.8
+        end
+
+  Forms:
+    * `matrix()` – returns identity
+    * `matrix do ... end` – identity then applies DSL ops in order
+  """
+  defmacro matrix(do: body) do
+    mat = Macro.unique_var(:matrix, __MODULE__)
+    rewritten = rewrite_matrix_dsl(body, mat)
+    quote do
+      unquote(mat) = Blendend.Matrix2D.identity!()
+      _ = unquote(rewritten)
+      unquote(mat)
+    end
+  end
+
+  defmacro matrix do
+    quote do
+      Blendend.Matrix2D.identity!()
+    end
+  end
+
+  defp rewrite_matrix_dsl(ast, mtx_var) do
+    Macro.prewalk(ast, fn
+      {:translate, meta, [x, y]} ->
+        {:=, meta,
+         [
+           mtx_var,
+           {{:., meta, [{:__aliases__, [], [:Blendend, :Matrix2D]}, :translate!]}, meta,
+            [mtx_var, x, y]}
+         ]}
+
+      {:post_translate, meta, [x, y]} ->
+        {:=, meta,
+         [
+           mtx_var,
+           {{:., meta, [{:__aliases__, [], [:Blendend, :Matrix2D]}, :post_translate!]}, meta,
+            [mtx_var, x, y]}
+         ]}
+
+      {:rotate, meta, [angle]} ->
+        {:=, meta,
+         [
+           mtx_var,
+           {{:., meta, [{:__aliases__, [], [:Blendend, :Matrix2D]}, :rotate!]}, meta,
+            [mtx_var, angle]}
+         ]}
+
+      {:skew, meta, [kx, ky]} ->
+        {:=, meta,
+         [
+           mtx_var,
+           {{:., meta, [{:__aliases__, [], [:Blendend, :Matrix2D]}, :skew!]}, meta,
+            [mtx_var, kx, ky]}
+         ]}
+
+      {:scale, meta, [sx, sy]} ->
+        {:=, meta,
+         [
+           mtx_var,
+           {{:., meta, [{:__aliases__, [], [:Blendend, :Matrix2D]}, :scale!]}, meta,
+            [mtx_var, sx, sy]}
+         ]}
+
+      other ->
+        other
+    end)
   end
 
   # ------------------------------------------------------------------

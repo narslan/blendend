@@ -1,81 +1,154 @@
 # Blendend Intro
 
 ```elixir
-Mix.install([
-  {:blendend, path: "."},
-  {:kino, "~> 0.18.0"}
-])
+Mix.install(
+  [
+    {:blendend, path: Path.expand("..", __DIR__)},
+    {:kino, "~> 0.18.0"}
+  ],
+  consolidate_protocols: false,
+  force: true
+)
 
 ```
 
-## Basic shapes
-
-Fill and stroke a few shapes. We render the PNG as a Kino image.
+## Load drawing macros
 
 ```elixir
 use Blendend.Draw
-
-{:ok, b64} =
-  draw 300, 220 do
-    clear(fill: rgb(245, 245, 245))
-
-    rect 30, 30, 100, 80, fill: rgb(40, 140, 200)
-    circle 200, 70, 50, stroke: rgb(200, 80, 60), stroke_width: 6
-
-    path tri do
-      move_to 180, 160
-      line_to 260, 180
-      line_to 220, 120
-      end
-
-    fill_path tri, fill: rgb(120, 200, 120)
-    stroke_path tri, stroke: rgb(0, 0, 0), stroke_width: 3
-  end
-
-bin = Base.decode64!(b64)
-Kino.Image.new(bin, "image/png")
 ```
 
-## Glyph outline
+A lightweight tour of Blendend in Livebook. Each section introduces one concept.
 
-Outline a glyph and sample its segments.
+> **Note:** Run from the project checkout so `Mix.install/1` can load the local `blendend` dependency.
+
+## Canvas + Clear
+
+Create a canvas, clear it with a color, and show the image as PNG.
 
 ```elixir
-alias Blendend.Text.{Face, Font, GlyphBuffer, GlyphRun}
-alias Blendend.Path, as: BPath
 {:ok, b64} =
-  draw 400, 200 do
-    font_path = Path.expand("priv/fonts/Alegreya-Regular.otf", Application.app_dir(:blendend))
-    face = Face.load!(font_path)
-    font = Font.create!(face, 80.0)
-
-    gb =
-      GlyphBuffer.new!()
-      |> GlyphBuffer.set_utf8_text!("Blendend")
-      |> Font.shape!(font)
-
-    run = GlyphRun.new!(gb)
-m = Blendend.Matrix2D.identity!()
-    path =
-      BPath.new!()
-      |> Font.get_glyph_run_outlines!(font, run,m)
-      |> BPath.translate!(30, 130)
-
-    fill_path path, fill: rgb(240, 240, 240)
-
-    path
-    |> BPath.flatten!(0.8)
-    |> BPath.segments()
-    |> BPath.sample(8.0)
-    |> Enum.each(fn {{x, y}, {tx, ty}} ->
-      nx = ty
-      ny = -tx
-      hx = x + nx * 10
-      hy = y + ny * 10
-      line x, y, hx, hy, stroke: rgb(0, 120, 200), stroke_width: 2.0
-    end)
+  draw 240, 120 do
+    clear(fill: rgb(235, 240, 245))
   end
 
-bin = Base.decode64!(b64)
-Kino.Image.new(bin,  "image/png")
+Kino.Image.new(Base.decode64!(b64), "image/png")
+```
+
+## Fill vs Stroke
+
+Draw simple shapes with fill and stroke options.
+
+```elixir
+{:ok, b64} =
+  draw 320, 200 do
+    clear(fill: rgb(245, 245, 245))
+
+    rect 30, 30, 120, 80, fill: rgb(40, 140, 200)
+    circle 220, 70, 50, stroke: rgb(200, 80, 60), stroke_width: 6
+  end
+
+Kino.Image.new(Base.decode64!(b64), "image/png")
+```
+
+## Paths with a Small DSL
+
+Use the `path` macro to build and reuse shapes with `move_to/2`, `line_to/2`, and `close/0`.
+
+```elixir
+star =
+  path do
+    move_to 100, 20
+    line_to 120, 80
+    line_to 60, 45
+    line_to 140, 45
+    line_to 80, 80
+    close()
+  end
+
+{:ok, b64} =
+  draw 200, 120 do
+    clear(fill: rgb(250, 250, 250))
+    fill_path star, fill: rgb(255, 215, 0)
+    stroke_path star, stroke: rgb(30, 30, 30), stroke_width: 2
+  end
+
+Kino.Image.new(Base.decode64!(b64), "image/png")
+```
+
+## Gradients
+
+Build a gradient once, then use it as a fill.
+
+```elixir
+grad =
+  linear_gradient 0, 0, 0, 200 do
+    add_stop 0.0, rgb(40, 120, 240)
+    add_stop 1.0, rgb(200, 240, 255)
+  end
+
+{:ok, b64} =
+  draw 260, 180 do
+    clear(fill: rgb(240, 240, 240))
+    rect 20, 20, 220, 140, fill: grad
+  end
+
+Kino.Image.new(Base.decode64!(b64), "image/png")
+```
+
+## Reusing a Path with Transforms
+
+Cache a path and place copies with a transform matrix.
+
+```elixir
+
+  path leaf do
+    move_to 0, 0
+    quad_to 20, -10, 40, 0
+    quad_to 20, 10, 0, 0
+    close()
+  end
+
+{:ok, b64} =
+  draw 240, 180 do
+    clear(fill: rgb(250, 250, 250))
+
+    for i <- 0..4 do
+      m = matrix()
+        matrix from: m do
+          translate(40 + i * 35, 90.0)
+          rotate(i * 0.35)
+        end
+
+      dst = path()
+
+      Blendend.Path.add_path!(dst, leaf, m)
+      fill_path dst, fill: rgb(60 + i * 30, 160, 100 + i * 20)
+    end
+  end
+
+Kino.Image.new(Base.decode64!(b64), "image/png")
+```
+
+## Blur / Shadow a Path
+
+We can blur a path and drop a soft shadow.
+
+```elixir
+tri =
+  path do
+    move_to 50, 30
+    line_to 150, 30
+    line_to 100, 120
+    close()
+  end
+
+{:ok, b64} =
+  draw 220, 160 do
+    clear(fill: rgb(250, 250, 250))
+    shadow_path(tri, 6, 6, 8, fill: rgb(0, 0, 0, 60))
+    fill_path(tri, fill: rgb(80, 140, 220))
+  end
+
+Kino.Image.new(Base.decode64!(b64), "image/png")
 ```

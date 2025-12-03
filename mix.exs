@@ -8,7 +8,15 @@ defmodule Blendend.MixProject do
       elixir: "~> 1.19",
       elixirc_paths: elixirc_paths(Mix.env()),
       compilers: [:elixir_make] ++ Mix.compilers(),
-      deps: deps()
+      deps: deps(),
+      docs: [
+        main: "readme",
+        extras: [
+          "README.md",
+          "notebooks/blendend_intro.livemd",
+          "notebooks/stroked_path.livemd"
+        ]
+      ]
     ]
   end
 
