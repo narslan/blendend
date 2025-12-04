@@ -718,12 +718,14 @@ defmodule Blendend.Draw do
   @doc """
   Loads a font face from the given path and creates a font at the specified size.
 
-  Convenience for `Blendend.Text.Face.load!/1` followed by `Blendend.Text.Font.create!/2`.
+  Returns `{:ok, font}` or `{:error, reason}` without raising.
   """
-  defmacro load_font(face, size) do
-    quote bind_quoted: [face: face, size: size] do
-      face = Blendend.Text.Face.load!(face)
-      Blendend.Text.Font.create!(face, size)
+  defmacro load_font(path, size) do
+    quote bind_quoted: [path: path, size: size] do
+      with {:ok, face} <- Blendend.Text.Face.load(path),
+           {:ok, font} <- Blendend.Text.Font.create(face, size) do
+        {:ok, font}
+      end
     end
   end
 

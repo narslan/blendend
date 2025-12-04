@@ -7,10 +7,51 @@
 
 `blendend` brings [Blend2D](https://github.com/blend2d/blend2d)'s fast, high-quality 2D vector renderer to Elixir. 
 It gives crisp antialiased shapes, gradients, text, and blending via an Elixir API, that speaks Blend2D directly (via NIF).
-Use it to script drawings, build charts, make new friends.
+It is still experimental.
+## Goals
+- Declarative. Knowledge of colors, gradients, shapes, shadows
+and transformations guide you.
 
-- Composable drawing pipeline: `Canvas`, `Path`, `Matrix2D`, `Text`, `Style` modules.
-- A DSL (`Blendend.Draw`) for concise scripts. 
+#### colors
+```elixir
+hsv(0, 1.0, 1.0) #gives you red
+hsv(0, 1.0, 1.0, 255) #gives no color back.
+hsv(60, 1.0, 1.0, 255) #gives yellow.
+hsv(60, 1.0, 1.0, 100) #shades yellow.
+rgb(255, 255, 0) #gives you red.
+```
+#### gradient
+```elixir
+grad = linear_gradient 0, y, 0, height do
+        add_stop(1.0, hsv(0, 0, 0, 255))
+        add_stop(0.0, hsv(0, 0, 0, 0))
+      end
+```
+Colors start to change gradually on canvas.
+
+### transformation
+```elixir
+# Calculate transformation
+m = matrix do
+        translate(x, y)
+        rotate(:math.pi() / 2)
+        scale(2,2) 
+      end
+
+# Construct a path 
+path p1 do
+  line_to 100.0, 100.0
+end
+# Construct another 
+p2 = path()
+
+# ... apply transformation.
+Blendend.Path.add_path!(p1, p2, m) 
+## shadows
+shadow_path(star, 10.0, 8.0, 15.0, fill: rgb(250, 0, 0, 150)) shadows the background or outline of a path.
+```
+#
+
 - Support for PNG/QOI export. 
  
 3. Features
