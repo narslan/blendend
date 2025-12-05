@@ -108,14 +108,8 @@ draw 200, 200, "priv/basic_line.png" do
 end
 ```
 
-For a richer starting point, clone the [blendend_playground](https://github.com/narslan/blendend_playground) repo and run it to browse and tweak the bundled examples in the browser.
-
-
 ## Playground
-
-There is a separate web playground for live editing and rendering, and for browsing the bundled examples:
-[blendend_playground](https://github.com/narslan/blendend_playground).
-
+For a richer starting point, clone the [blendend_playground](https://github.com/narslan/blendend_playground) repo and run it to browse and tweak the bundled examples in the browser.
 
 ## Gallery
 
