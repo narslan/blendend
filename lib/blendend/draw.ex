@@ -132,26 +132,11 @@ defmodule Blendend.Draw do
   Forms:
 
     * `rgb(r, g, b, a \\ 255)`
-    * `rgb({r, g, b})`
-    * `rgb({r, g, b, a})`
     * `rgb(:random)` for an opaque random color
   """
-  defmacro rgb(color) do
-    quote bind_quoted: [color: color] do
-      case color do
-        :random ->
-          Blendend.Style.Color.random()
-
-        {r, g, b} ->
-          Blendend.Style.Color.rgb!(r, g, b, 255)
-
-        {r, g, b, a} ->
-          Blendend.Style.Color.rgb!(r, g, b, a)
-
-        other ->
-          raise ArgumentError,
-                "rgb/1 expects {r, g, b}, {r, g, b, a}, or :random, got: #{inspect(other)}"
-      end
+  defmacro rgb(:random) do
+    quote do
+      Blendend.Style.Color.random()
     end
   end
 
@@ -170,25 +155,7 @@ defmodule Blendend.Draw do
   Forms:
 
     * `hsv(h, s, v, a \\ 255)`
-    * `hsv({h, s, v})`
-    * `hsv({h, s, v, a})`
   """
-  defmacro hsv(color) do
-    quote bind_quoted: [color: color] do
-      case color do
-        {h, s, v} ->
-          Blendend.Style.Color.from_hsv(h, s, v, 255)
-
-        {h, s, v, a} ->
-          Blendend.Style.Color.from_hsv(h, s, v, a)
-
-        other ->
-          raise ArgumentError,
-                "hsv/1 expects {h, s, v} or {h, s, v, a}, got: #{inspect(other)}"
-      end
-    end
-  end
-
   defmacro hsv(h, s, v, a \\ 255) do
     quote bind_quoted: [h: h, s: s, v: v, a: a] do
       Blendend.Style.Color.from_hsv(h, s, v, a)
