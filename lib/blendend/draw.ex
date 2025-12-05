@@ -127,21 +127,28 @@ defmodule Blendend.Draw do
   Creates an RGB color (0–255 channels, optional alpha).
 
   Convenience for `Blendend.Style.Color.rgb!/4`.
-  """
-  defmacro rgb(r, g, b, a \\ 255) do
-    quote bind_quoted: [r: r, g: g, b: b, a: a] do
-      Blendend.Style.Color.rgb!(r, g, b, a)
-    end
-  end
 
-  @doc """
-  Generates a random RGB color (opaque).
+  Forms:
 
-  Convenience for `Blendend.Style.Color.random/0`.
+    * `rgb(r, g, b, a \\ 255)`
+    * `rgb({r, g, b})`
+    * `rgb(:random)` for an opaque random color
   """
   defmacro rgb(:random) do
     quote do
       Blendend.Style.Color.random()
+    end
+  end
+
+  defmacro rgb({r, g, b}) do
+    quote bind_quoted: [r: r, g: g, b: b] do
+      Blendend.Style.Color.rgb!(r, g, b, 255)
+    end
+  end
+
+  defmacro rgb(r, g, b, a \\ 255) do
+    quote bind_quoted: [r: r, g: g, b: b, a: a] do
+      Blendend.Style.Color.rgb!(r, g, b, a)
     end
   end
 
@@ -150,7 +157,15 @@ defmodule Blendend.Draw do
 
   `h` in degrees (0–360), `s` and `v` as 0.0–1.0 floats, `a` as 0–255.
   Convenience for `Blendend.Style.Color.from_hsv/4`.
+
+  Accepts either `hsv(h, s, v, a \\ 255)` or `hsv({h, s, v})`.
   """
+  defmacro hsv({h, s, v}) do
+    quote bind_quoted: [h: h, s: s, v: v] do
+      Blendend.Style.Color.from_hsv(h, s, v, 255)
+    end
+  end
+
   defmacro hsv(h, s, v, a \\ 255) do
     quote bind_quoted: [h: h, s: s, v: v, a: a] do
       Blendend.Style.Color.from_hsv(h, s, v, a)
