@@ -7,7 +7,7 @@ defmodule Blendend.Draw do
 
       use Blendend.Draw
 
-      draw 400, 300 do
+      draw 400, 300, "priv/rect.png" do
         rect 40.0, 40.0, 320.0, 220.0, fill: rgb(255, 255, 255)
       end
 
@@ -18,8 +18,9 @@ defmodule Blendend.Draw do
     * creates a new `Blendend.Canvas` of the given size
     * stores it as the *current* canvas in the calling process,
     * executes a block, where helpers like `rect/...`, `circle/...`, `text...`
-    * finally encodes the image via `Blendend.Canvas.to_png_base64/1`.
-
+    * finally encodes the image via:
+       `Blendend.Canvas.to_png_base64/1`. (`draw/2`)
+       `Blendend.Canvas.save/1`. (`draw/3`)
   The return value is whatever `Blendend.Canvas.to_png_base64/1` returns
   (usually `{:ok, base64}`), which makes it easy to give to a web UI:
 
@@ -31,7 +32,7 @@ defmodule Blendend.Draw do
       "data:image/png;base64," <> b64
       # usable as <img src="data:image/png;base64,\#{b64}">
 
-  This makes the `Blendend.Draw` especially convenient for LiveView / WebSocket /
+  This makes the `Blendend.Draw` especially convenient for
   HTTP-streaming setups where we regenerate PNGs on demand.
 
 
@@ -572,6 +573,9 @@ defmodule Blendend.Draw do
     path_impl(path, rewritten)
   end
 
+  @doc """
+  Creates a fresh `t:Blendend.Path.t/0`.
+  """
   defmacro path do
     quote do
       Blendend.Path.new!()
@@ -596,6 +600,7 @@ defmodule Blendend.Draw do
   defmacro matrix(do: body) do
     mat = Macro.unique_var(:matrix, __MODULE__)
     rewritten = rewrite_matrix_dsl(body, mat)
+
     quote do
       unquote(mat) = Blendend.Matrix2D.identity!()
       _ = unquote(rewritten)
@@ -603,6 +608,9 @@ defmodule Blendend.Draw do
     end
   end
 
+  @doc """
+  Returns the identity matrix.
+  """
   defmacro matrix do
     quote do
       Blendend.Matrix2D.identity!()
@@ -1164,7 +1172,7 @@ defmodule Blendend.Draw do
   Draws a triangle, equilateral when given a center point and side length.
 
   `triangle(cx, cy, side)` – builds an equilateral triangle centered at `{cx, cy}`,
-      pointing up, with edge length `side`.  
+  pointing up, with edge length `side`.  
   Same style `opts` as `Blendend.Canvas.Fill.path/3` or `Blendend.Canvas.Stroke.path/3`.
   """
   defmacro triangle(cx, cy, side, opts \\ []) do
@@ -1431,7 +1439,7 @@ defmodule Blendend.Draw do
   Temporarily clip drawing to the rectangle `{x, y, w, h}` while executing the block.
 
   This wraps `Canvas.save_state/1`, `Canvas.Clip.to_rect/5`, then restores state
-  after the block (even if it raises), mirroring `with_transform/2`.
+  after the block (even if it raises).
   """
   defmacro with_clip(x, y, w, h, do: body) do
     quote bind_quoted: [x: x, y: y, w: w, h: h, body: body] do

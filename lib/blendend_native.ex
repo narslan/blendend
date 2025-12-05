@@ -155,10 +155,13 @@ defmodule Blendend.Native do
   def path_add_path(_dst, _src), do: :erlang.nif_error(:nif_not_loaded)
   def path_add_path_transform(_dst, _src, _mtx), do: :erlang.nif_error(:nif_not_loaded)
   def path_add_stroked_path(_dst, _src, _stroke_opts), do: :erlang.nif_error(:nif_not_loaded)
+
   def path_add_stroked_path(_dst, _src, _stroke_opts, _approx_opts),
     do: :erlang.nif_error(:nif_not_loaded)
+
   def path_add_stroked_path(_dst, _src, _range, _stroke_opts, _approx_opts),
     do: :erlang.nif_error(:nif_not_loaded)
+
   def path_translate(_p, _dx, _dy), do: :erlang.nif_error(:nif_not_loaded)
   def path_translate(_p, _range, _dx, _dy), do: :erlang.nif_error(:nif_not_loaded)
   def path_transform(_p, _mtx), do: :erlang.nif_error(:nif_not_loaded)

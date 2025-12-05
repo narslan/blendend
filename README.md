@@ -45,9 +45,9 @@ end
 # Construct another 
 p2 = path()
 
-# ... apply transformation.
+# apply transformation.
 Blendend.Path.add_path!(p1, p2, m) 
-## shadows
+# decorate with shadow
 shadow_path(star, 10.0, 8.0, 15.0, fill: rgb(250, 0, 0, 150)) shadows the background or outline of a path.
 ```
 #

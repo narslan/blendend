@@ -6,7 +6,7 @@ defmodule Blendend.Image do
   is needed: as sources for patterns, or passed directly to canvas blit calls.
 
   Typical uses:
-    * create a tiling or transformed fill via `Blendend.Style.pattern/1`
+    * create a tiling or transformed fill via `Blendend.Style.Pattern.create/1`
     * draw an image onto a canvas via `Blendend.Canvas.blit_image/4` (or `/6`)
   """
 
