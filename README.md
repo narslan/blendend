@@ -7,7 +7,7 @@
 
 `blendend` brings [Blend2D](https://github.com/blend2d/blend2d)'s fast, high-quality 2D vector renderer to Elixir. 
 It gives crisp antialiased shapes, gradients, text, and blending via an Elixir API, that speaks Blend2D directly (via NIF).
-It is still experimental.
+The project is experimental and still evolving.
 ## Goals
 - Declarative. Knowledge of colors, gradients, shapes, shadows
 and transformations guide you.
@@ -15,7 +15,7 @@ and transformations guide you.
 #### colors
 ```elixir
 hsv(0, 1.0, 1.0) #gives you red
-hsv(0, 1.0, 1.0, 255) #gives no color back.
+hsv(0, 1.0, 1.0, 0) #gives no color back.
 hsv(60, 1.0, 1.0, 255) #gives yellow.
 hsv(60, 1.0, 1.0, 100) #shades yellow.
 rgb(255, 255, 0) #gives you red.
