@@ -20,21 +20,42 @@ ERL_NIF_TERM face_load(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
 
   auto res = NifResource<FontFace>::alloc();
 
-  // 1) Create BLFontData from in-memory bytes
-  BLFontData fontData;
-  BLResult r = fontData.create_from_data(
-      bin.data,
-      bin.size,
-      nullptr, // destroyFunc (nullptr = Blend2D copies/owns internally in current API)
-      nullptr // userData
-  );
+  // Keep a private copy of the binary term to extend its lifetime without duplicating data.
+  res->bin_env = enif_alloc_env();
+  if(!res->bin_env) {
+    res->destroy();
+    return make_result_error(env, "font_data_alloc_env_failed");
+  }
+
+  res->bin_term = enif_make_copy(res->bin_env, argv[0]);
+
+  ErlNifBinary persisted_bin;
+  if(!enif_inspect_binary(res->bin_env, res->bin_term, &persisted_bin)) {
+    if(res->bin_env) {
+      enif_free_env(res->bin_env);
+      res->bin_env = nullptr;
+    }
+    res->destroy();
+    return make_result_error(env, "font_face_load_invalid_data");
+  }
+
+  // Create BLFontData pointing at the binary owned by bin_env (no copy).
+  BLResult r = res->data.create_from_data(
+      persisted_bin.data,
+      persisted_bin.size,
+      nullptr,
+      nullptr);
 
   if(r != BL_SUCCESS) {
+    if(res->bin_env) {
+      enif_free_env(res->bin_env);
+      res->bin_env = nullptr;
+    }
     res->destroy();
     return make_result_error(env, "font_data_create_failed");
   }
 
-  r = res->value.create_from_data(fontData, /*faceIndex=*/0);
+  r = res->value.create_from_data(res->data, /*faceIndex=*/0);
   if(r != BL_SUCCESS) {
     res->destroy();
     return make_result_error(env, "font_face_load_failed");
@@ -117,6 +138,3 @@ ERL_NIF_TERM face_get_feature_tags(ErlNifEnv* env, int argc, const ERL_NIF_TERM 
 
   return make_result_ok(env, list);
 }
-
-
-

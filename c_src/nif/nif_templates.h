@@ -323,6 +323,9 @@ draw_text_or_glyph_template(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[],
   if(font == nullptr) {
     return make_result_error(env, "draw_text_or_glyph_invalid_font");
   }
+  if(!font->value.is_valid()) {
+    return make_result_error(env, "draw_text_or_glyph_invalid_font");
+  }
 
   // coords
   double x, y;

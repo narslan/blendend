@@ -38,6 +38,10 @@ ERL_NIF_TERM font_create(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
     return make_result_error(env, "font_create_failed");
   }
 
+   // Keep the face resource alive for the lifetime of this font.
+   res->owner = face;
+   enif_keep_resource(face);
+
   return make_result_ok(env, NifResource<Font>::make(env, res));
 }
 
