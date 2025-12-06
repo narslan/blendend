@@ -499,6 +499,29 @@ ERL_NIF_TERM canvas_rotate(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
   return enif_make_atom(env, "ok");
 }
 
+ERL_NIF_TERM canvas_rotate_at(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
+{
+  if(argc != 4)
+    return enif_make_badarg(env);
+
+  double angle, cx, cy;
+  auto canvas = NifResource<Canvas>::get(env, argv[0]);
+  if(canvas == nullptr) {
+    return make_result_error(env, "canvas_rotate_at_invalid_canvas");
+  }
+
+  if(!enif_get_double(env, argv[1], &angle) || !enif_get_double(env, argv[2], &cx) ||
+     !enif_get_double(env, argv[3], &cy)) {
+    return make_result_error(env, "canvas_rotate_at_invalid_args");
+  }
+
+  BLResult r = canvas->ctx.rotate(angle, cx, cy);
+  if(r != BL_SUCCESS)
+    return make_result_error(env, "canvas_rotate_at_failed");
+
+  return enif_make_atom(env, "ok");
+}
+
 ERL_NIF_TERM canvas_skew(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
 {
   if(argc != 3)
@@ -518,6 +541,51 @@ ERL_NIF_TERM canvas_skew(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
   BLResult r = canvas->ctx.skew(kx, ky);
   if(r != BL_SUCCESS)
     return make_result_error(env, "canvas_skew_failed");
+
+  return enif_make_atom(env, "ok");
+}
+
+ERL_NIF_TERM canvas_post_rotate(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
+{
+  if(argc != 2)
+    return enif_make_badarg(env);
+
+  double angle;
+  auto canvas = NifResource<Canvas>::get(env, argv[0]);
+  if(canvas == nullptr) {
+    return make_result_error(env, "canvas_post_rotate_invalid_canvas");
+  }
+
+  if(!enif_get_double(env, argv[1], &angle)) {
+    return make_result_error(env, "canvas_post_rotate_invalid_angle");
+  }
+
+  BLResult r = canvas->ctx.post_rotate(angle);
+  if(r != BL_SUCCESS)
+    return make_result_error(env, "canvas_post_rotate_failed");
+
+  return enif_make_atom(env, "ok");
+}
+
+ERL_NIF_TERM canvas_post_rotate_at(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
+{
+  if(argc != 4)
+    return enif_make_badarg(env);
+
+  double angle, cx, cy;
+  auto canvas = NifResource<Canvas>::get(env, argv[0]);
+  if(canvas == nullptr) {
+    return make_result_error(env, "canvas_post_rotate_at_invalid_canvas");
+  }
+
+  if(!enif_get_double(env, argv[1], &angle) || !enif_get_double(env, argv[2], &cx) ||
+     !enif_get_double(env, argv[3], &cy)) {
+    return make_result_error(env, "canvas_post_rotate_at_invalid_args");
+  }
+
+  BLResult r = canvas->ctx.post_rotate(angle, cx, cy);
+  if(r != BL_SUCCESS)
+    return make_result_error(env, "canvas_post_rotate_at_failed");
 
   return enif_make_atom(env, "ok");
 }

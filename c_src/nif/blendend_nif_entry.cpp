@@ -78,6 +78,9 @@ MAKE_TERM(canvas_translate)
 MAKE_TERM(canvas_post_translate)
 MAKE_TERM(canvas_scale)
 MAKE_TERM(canvas_rotate)
+MAKE_TERM(canvas_rotate_at)
+MAKE_TERM(canvas_post_rotate)
+MAKE_TERM(canvas_post_rotate_at)
 MAKE_TERM(canvas_skew)
 
 MAKE_TERM(canvas_apply_transform)
@@ -174,9 +177,19 @@ MAKE_TERM(matrix2d_to_list)
 MAKE_TERM(matrix2d_translate)
 MAKE_TERM(matrix2d_post_translate)
 MAKE_TERM(matrix2d_scale)
+MAKE_TERM(matrix2d_post_scale)
 MAKE_TERM(matrix2d_skew)
+MAKE_TERM(matrix2d_post_skew)
 MAKE_TERM(matrix2d_rotate)
+MAKE_TERM(matrix2d_rotate_at)
+MAKE_TERM(matrix2d_post_rotate)
 MAKE_TERM(matrix2d_compose)
+MAKE_TERM(matrix2d_transform)
+MAKE_TERM(matrix2d_post_transform)
+MAKE_TERM(matrix2d_invert)
+MAKE_TERM(matrix2d_map_point)
+MAKE_TERM(matrix2d_map_vector)
+MAKE_TERM(matrix2d_make_sin_cos)
 MAKE_TERM(canvas_set_stroke_join)
 // Fill Geometry
 MAKE_DRAW_NIF(canvas_fill_box, BLBox, fill_box)
@@ -252,6 +265,9 @@ MAKE_DRAW_GLYPH(stroke_glyph_run)
   X(canvas_post_translate, 3, 0) \
   X(canvas_scale, 3, 0) \
   X(canvas_rotate, 2, 0) \
+  X(canvas_rotate_at, 4, 0) \
+  X(canvas_post_rotate, 2, 0) \
+  X(canvas_post_rotate_at, 4, 0) \
   X(canvas_skew, 3, 0) \
   X(canvas_set_stroke_join, 2, 0) \
   X(canvas_clip_to_rect, 5, 0) \
@@ -348,8 +364,18 @@ MAKE_DRAW_GLYPH(stroke_glyph_run)
   X(matrix2d_post_translate, 3, 0) \
   X(matrix2d_skew, 3, 0) \
   X(matrix2d_scale, 3, 0) \
+  X(matrix2d_post_scale, 3, 0) \
+  X(matrix2d_post_skew, 3, 0) \
   X(matrix2d_rotate, 2, 0) \
+  X(matrix2d_rotate_at, 4, 0) \
+  X(matrix2d_post_rotate, 4, 0) \
   X(matrix2d_compose, 2, 0) \
+  X(matrix2d_transform, 2, 0) \
+  X(matrix2d_post_transform, 2, 0) \
+  X(matrix2d_invert, 1, 0) \
+  X(matrix2d_map_point, 3, 0) \
+  X(matrix2d_map_vector, 3, 0) \
+  X(matrix2d_make_sin_cos, 4, 0) \
   /* Canvas fill */ \
   X(canvas_fill_box, 5, 0) \
   X(canvas_fill_box, 6, 0) \

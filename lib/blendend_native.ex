@@ -34,6 +34,15 @@ defmodule Blendend.Native do
   def canvas_rotate(_c, _angle),
     do: :erlang.nif_error(:nif_not_loaded)
 
+  def canvas_rotate_at(_c, _angle, _cx, _cy),
+    do: :erlang.nif_error(:nif_not_loaded)
+
+  def canvas_post_rotate(_c, _angle),
+    do: :erlang.nif_error(:nif_not_loaded)
+
+  def canvas_post_rotate_at(_c, _angle, _cx, _cy),
+    do: :erlang.nif_error(:nif_not_loaded)
+
   def canvas_skew(_c, _kx, _ky),
     do: :erlang.nif_error(:nif_not_loaded)
 
@@ -185,8 +194,18 @@ defmodule Blendend.Native do
   def matrix2d_post_translate(_matrix, _x0, _y0), do: :erlang.nif_error(:nif_not_loaded)
   def matrix2d_skew(_matrix, _kx, _ky), do: :erlang.nif_error(:nif_not_loaded)
   def matrix2d_scale(_matrix, _sx, _sy), do: :erlang.nif_error(:nif_not_loaded)
+  def matrix2d_post_scale(_matrix, _sx, _sy), do: :erlang.nif_error(:nif_not_loaded)
+  def matrix2d_post_skew(_matrix, _kx, _ky), do: :erlang.nif_error(:nif_not_loaded)
   def matrix2d_rotate(_matrix, _angle), do: :erlang.nif_error(:nif_not_loaded)
+  def matrix2d_rotate_at(_matrix, _angle, _cx, _cy), do: :erlang.nif_error(:nif_not_loaded)
+  def matrix2d_post_rotate(_matrix, _angle, _cx, _cy), do: :erlang.nif_error(:nif_not_loaded)
   def matrix2d_compose(_matrix1, _matrix2), do: :erlang.nif_error(:nif_not_loaded)
+  def matrix2d_transform(_matrix1, _matrix2), do: :erlang.nif_error(:nif_not_loaded)
+  def matrix2d_post_transform(_matrix1, _matrix2), do: :erlang.nif_error(:nif_not_loaded)
+  def matrix2d_invert(_matrix), do: :erlang.nif_error(:nif_not_loaded)
+  def matrix2d_map_point(_matrix, _x, _y), do: :erlang.nif_error(:nif_not_loaded)
+  def matrix2d_map_vector(_matrix, _x, _y), do: :erlang.nif_error(:nif_not_loaded)
+  def matrix2d_make_sin_cos(_sin, _cos, _tx, _ty), do: :erlang.nif_error(:nif_not_loaded)
   # ------------------------
   # Fill shapes 
   # ------------------------

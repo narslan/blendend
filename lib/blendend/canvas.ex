@@ -420,7 +420,7 @@ defmodule Blendend.Canvas do
 
   @doc """
   Translates the canvas' user transform by `(tx, ty)` in user coordinates.
-
+  M = T(x, y) · M (apply translation in user space before the current transform).
   This mutates the canvas in-place.
 
   ## Examples
@@ -451,7 +451,7 @@ defmodule Blendend.Canvas do
   @doc """
   Applies a translation after the current transform (post-translate).
 
-  Equivalent to `translate/3` for Blend2D contexts; provided for API symmetry.
+  M = M · T(x, y) (apply translation in the already-transformed/user space).
   """
   @spec post_translate(t(), number(), number()) :: :ok | {:error, term()}
   def post_translate(canvas, tx, ty),
@@ -509,6 +509,29 @@ defmodule Blendend.Canvas do
     do: Native.canvas_rotate(canvas, angle_radians * 1.0)
 
   @doc """
+  Rotates the canvas' user transform by `angle` radians around the point `{cx, cy}`.
+
+  Mutates the canvas in-place.
+  """
+  @spec rotate_at(t(), number(), number(), number()) :: :ok | {:error, term()}
+  def rotate_at(canvas, angle_radians, cx, cy),
+    do: Native.canvas_rotate_at(canvas, angle_radians * 1.0, cx * 1.0, cy * 1.0)
+
+  @doc """
+  Post-multiplies the canvas transform by a rotation of `angle` radians.
+  """
+  @spec post_rotate(t(), number()) :: :ok | {:error, term()}
+  def post_rotate(canvas, angle_radians),
+    do: Native.canvas_post_rotate(canvas, angle_radians * 1.0)
+
+  @doc """
+  Post-multiplies the canvas transform by a rotation of `angle` radians around `{cx, cy}`.
+  """
+  @spec post_rotate_at(t(), number(), number(), number()) :: :ok | {:error, term()}
+  def post_rotate_at(canvas, angle_radians, cx, cy),
+    do: Native.canvas_post_rotate_at(canvas, angle_radians * 1.0, cx * 1.0, cy * 1.0)
+
+  @doc """
   Same as `rotate/2`, but returns the canvas.
 
   On success, returns `canvas`.
@@ -520,6 +543,39 @@ defmodule Blendend.Canvas do
     case rotate(canvas, angle) do
       :ok -> canvas
       {:error, reason} -> raise Error.new(:canvas_rotate, reason)
+    end
+  end
+
+  @doc """
+  Same as `rotate_at/4`, but returns the canvas or raises on error.
+  """
+  @spec rotate_at!(t(), number(), number(), number()) :: t()
+  def rotate_at!(canvas, angle, cx, cy) do
+    case rotate_at(canvas, angle, cx, cy) do
+      :ok -> canvas
+      {:error, reason} -> raise Error.new(:canvas_rotate_at, reason)
+    end
+  end
+
+  @doc """
+  Same as `post_rotate/2`, but returns the canvas or raises on error.
+  """
+  @spec post_rotate!(t(), number()) :: t()
+  def post_rotate!(canvas, angle) do
+    case post_rotate(canvas, angle) do
+      :ok -> canvas
+      {:error, reason} -> raise Error.new(:canvas_post_rotate, reason)
+    end
+  end
+
+  @doc """
+  Same as `post_rotate_at/4`, but returns the canvas or raises on error.
+  """
+  @spec post_rotate_at!(t(), number(), number(), number()) :: t()
+  def post_rotate_at!(canvas, angle, cx, cy) do
+    case post_rotate_at(canvas, angle, cx, cy) do
+      :ok -> canvas
+      {:error, reason} -> raise Error.new(:canvas_post_rotate_at, reason)
     end
   end
 

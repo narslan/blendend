@@ -610,6 +610,22 @@ defmodule Blendend.Draw do
             [mtx_var, angle]}
          ]}
 
+      {:rotate, meta, [angle, cx, cy]} ->
+        {:=, meta,
+         [
+           mtx_var,
+           {{:., meta, [{:__aliases__, [], [:Blendend, :Matrix2D]}, :rotate_at!]}, meta,
+            [mtx_var, angle, cx, cy]}
+         ]}
+
+      {:post_rotate, meta, [angle, cx, cy]} ->
+        {:=, meta,
+         [
+           mtx_var,
+           {{:., meta, [{:__aliases__, [], [:Blendend, :Matrix2D]}, :post_rotate!]}, meta,
+            [mtx_var, angle, cx, cy]}
+         ]}
+
       {:skew, meta, [kx, ky]} ->
         {:=, meta,
          [
@@ -618,11 +634,27 @@ defmodule Blendend.Draw do
             [mtx_var, kx, ky]}
          ]}
 
+      {:post_skew, meta, [kx, ky]} ->
+        {:=, meta,
+         [
+           mtx_var,
+           {{:., meta, [{:__aliases__, [], [:Blendend, :Matrix2D]}, :post_skew!]}, meta,
+            [mtx_var, kx, ky]}
+         ]}
+
       {:scale, meta, [sx, sy]} ->
         {:=, meta,
          [
            mtx_var,
            {{:., meta, [{:__aliases__, [], [:Blendend, :Matrix2D]}, :scale!]}, meta,
+            [mtx_var, sx, sy]}
+         ]}
+
+      {:post_scale, meta, [sx, sy]} ->
+        {:=, meta,
+         [
+           mtx_var,
+           {{:., meta, [{:__aliases__, [], [:Blendend, :Matrix2D]}, :post_scale!]}, meta,
             [mtx_var, sx, sy]}
          ]}
 
@@ -1278,6 +1310,25 @@ defmodule Blendend.Draw do
   end
 
   @doc """
+  Post-Translates temporarily the current canvas transform by `{tx, ty}` (pixels) for the duration of the block.
+  """
+  defmacro post_translate(tx, ty, do: body) do
+    quote do
+      c = Blendend.Draw.get_canvas()
+      :ok = Blendend.Canvas.save_state(c)
+      :ok = Blendend.Canvas.post_translate(c, unquote(tx), unquote(ty))
+
+      try do
+        unquote(body)
+      after
+        :ok = Blendend.Canvas.restore_state(c)
+      end
+
+      c
+    end
+  end
+
+  @doc """
   Scales the current canvas uniformly by `s` (both axes).
   """
   defmacro scale(sx, sy) do
@@ -1347,6 +1398,16 @@ defmodule Blendend.Draw do
   end
 
   @doc """
+  Rotates the current canvas transform by `angle` (radians) around `{cx, cy}`.
+  """
+  defmacro rotate(angle, cx, cy) do
+    quote bind_quoted: [angle: angle, cx: cx, cy: cy] do
+      c = get_canvas()
+      Blendend.Canvas.rotate_at(c, angle, cx, cy)
+    end
+  end
+
+  @doc """
   Rotates temporarily the current canvas `angle` (radians)  around `{cx, cy}` while evaluating `do` block.
   """
   defmacro rotate(angle, do: body) do
@@ -1354,6 +1415,63 @@ defmodule Blendend.Draw do
       c = Blendend.Draw.get_canvas()
       :ok = Blendend.Canvas.save_state(c)
       :ok = Blendend.Canvas.rotate(c, unquote(angle))
+
+      try do
+        unquote(body)
+      after
+        :ok = Blendend.Canvas.restore_state(c)
+      end
+
+      c
+    end
+  end
+
+  @doc """
+  Rotates temporarily the current canvas `angle` (radians) around `{cx, cy}` while evaluating `do` block.
+  """
+  defmacro rotate(angle, cx, cy, do: body) do
+    quote do
+      c = Blendend.Draw.get_canvas()
+      :ok = Blendend.Canvas.save_state(c)
+      :ok = Blendend.Canvas.rotate_at(c, unquote(angle), unquote(cx), unquote(cy))
+
+      try do
+        unquote(body)
+      after
+        :ok = Blendend.Canvas.restore_state(c)
+      end
+
+      c
+    end
+  end
+
+  @doc """
+  Post-Rotates temporarily the current canvas `angle` (radians)  around `{cx, cy}` while evaluating `do` block.
+  """
+  defmacro post_rotate(angle, do: body) do
+    quote do
+      c = Blendend.Draw.get_canvas()
+      :ok = Blendend.Canvas.save_state(c)
+      :ok = Blendend.Canvas.post_rotate(c, unquote(angle))
+
+      try do
+        unquote(body)
+      after
+        :ok = Blendend.Canvas.restore_state(c)
+      end
+
+      c
+    end
+  end
+
+  @doc """
+  Post-Rotates temporarily the current canvas `angle` (radians) around `{cx, cy}` while evaluating `do` block.
+  """
+  defmacro post_rotate(angle, cx, cy, do: body) do
+    quote do
+      c = Blendend.Draw.get_canvas()
+      :ok = Blendend.Canvas.save_state(c)
+      :ok = Blendend.Canvas.post_rotate_at(c, unquote(angle), unquote(cx), unquote(cy))
 
       try do
         unquote(body)

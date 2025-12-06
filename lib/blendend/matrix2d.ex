@@ -134,6 +134,40 @@ defmodule Blendend.Matrix2D do
   end
 
   @doc """
+  Pre-multiplies the matrix by `other` (`other * matrix`) and returns a new matrix.
+  """
+  @spec transform(t(), t()) :: {:ok, t()} | {:error, term()}
+  def transform(m, other), do: Native.matrix2d_transform(m, other)
+
+  @doc """
+  Same as `transform/2`, but returns the matrix directly.
+  """
+  @spec transform!(t(), t()) :: t()
+  def transform!(m, other) do
+    case transform(m, other) do
+      {:ok, m2} -> m2
+      {:error, reason} -> raise Error.new(:matrix2d_transform, reason)
+    end
+  end
+
+  @doc """
+  Post-multiplies the matrix by `other` (`matrix * other`) and returns a new matrix.
+  """
+  @spec post_transform(t(), t()) :: {:ok, t()} | {:error, term()}
+  def post_transform(m, other), do: Native.matrix2d_post_transform(m, other)
+
+  @doc """
+  Same as `post_transform/2`, but returns the matrix directly.
+  """
+  @spec post_transform!(t(), t()) :: t()
+  def post_transform!(m, other) do
+    case post_transform(m, other) do
+      {:ok, m2} -> m2
+      {:error, reason} -> raise Error.new(:matrix2d_post_transform, reason)
+    end
+  end
+
+  @doc """
   Translates the matrix by `{tx, ty}` and returns a new matrix.
 
   On success, returns `{:ok, matrix}`.
@@ -209,6 +243,23 @@ defmodule Blendend.Matrix2D do
   end
 
   @doc """
+  Post-multiplies the matrix by a scale and returns a new matrix.
+  """
+  @spec post_scale(t(), number(), number()) :: {:ok, t()} | {:error, term()}
+  def post_scale(m, sx, sy), do: Native.matrix2d_post_scale(m, sx * 1.0, sy * 1.0)
+
+  @doc """
+  Same as `post_scale/3`, but returns the scaled matrix directly.
+  """
+  @spec post_scale!(t(), number(), number()) :: t()
+  def post_scale!(m, sx, sy) do
+    case post_scale(m, sx, sy) do
+      {:ok, m2} -> m2
+      {:error, reason} -> raise Error.new(:matrix2d_post_scale, reason)
+    end
+  end
+
+  @doc """
   Rotates the matrix by `angle` radians around the origin, returning a new matrix.
 
   On success, returns `{:ok, matrix}`.
@@ -234,6 +285,42 @@ defmodule Blendend.Matrix2D do
   end
 
   @doc """
+  Rotates the matrix by `angle` radians about `{cx, cy}`, returning a new matrix.
+  """
+  @spec rotate_at(t(), number(), number(), number()) :: {:ok, t()} | {:error, term()}
+  def rotate_at(m, angle_rad, cx, cy),
+    do: Native.matrix2d_rotate_at(m, angle_rad * 1.0, cx * 1.0, cy * 1.0)
+
+  @doc """
+  Same as `rotate_at/4`, but returns the rotated matrix directly.
+  """
+  @spec rotate_at!(t(), number(), number(), number()) :: t()
+  def rotate_at!(m, angle_rad, cx, cy) do
+    case rotate_at(m, angle_rad, cx, cy) do
+      {:ok, m2} -> m2
+      {:error, reason} -> raise Error.new(:matrix2d_rotate_at, reason)
+    end
+  end
+
+  @doc """
+  Post-multiplies the matrix by a rotation about `{cx, cy}`.
+  """
+  @spec post_rotate(t(), number(), number(), number()) :: {:ok, t()} | {:error, term()}
+  def post_rotate(m, angle_rad, cx, cy),
+    do: Native.matrix2d_post_rotate(m, angle_rad * 1.0, cx * 1.0, cy * 1.0)
+
+  @doc """
+  Same as `post_rotate/4`, but returns the rotated matrix directly.
+  """
+  @spec post_rotate!(t(), number(), number(), number()) :: t()
+  def post_rotate!(m, angle_rad, cx, cy) do
+    case post_rotate(m, angle_rad, cx, cy) do
+      {:ok, m2} -> m2
+      {:error, reason} -> raise Error.new(:matrix2d_post_rotate, reason)
+    end
+  end
+
+  @doc """
   Post-translate the matrix by `(tx, ty)` (applied after existing transforms).
   """
   @spec post_translate(t(), number(), number()) :: {:ok, t()} | {:error, term()}
@@ -247,6 +334,92 @@ defmodule Blendend.Matrix2D do
     case post_translate(m, tx, ty) do
       {:ok, m2} -> m2
       {:error, reason} -> raise Error.new(:matrix2d_post_translate, reason)
+    end
+  end
+
+  @doc """
+  Inverts the matrix, returning a new matrix.
+  """
+  @spec invert(t()) :: {:ok, t()} | {:error, term()}
+  def invert(m), do: Native.matrix2d_invert(m)
+
+  @doc """
+  Same as `invert/1`, but returns the matrix directly.
+  """
+  @spec invert!(t()) :: t()
+  def invert!(m) do
+    case invert(m) do
+      {:ok, m2} -> m2
+      {:error, reason} -> raise Error.new(:matrix2d_invert, reason)
+    end
+  end
+
+  @doc """
+  Maps a point `{x, y}` through the matrix, returning `{ok, {x, y}}`.
+  """
+  @spec map_point(t(), number(), number()) :: {:ok, {number(), number()}} | {:error, term()}
+  def map_point(m, x, y), do: Native.matrix2d_map_point(m, x * 1.0, y * 1.0)
+
+  @doc """
+  Same as `map_point/3`, but returns the tuple directly.
+  """
+  @spec map_point!(t(), number(), number()) :: {number(), number()}
+  def map_point!(m, x, y) do
+    case map_point(m, x, y) do
+      {:ok, {nx, ny}} -> {nx, ny}
+      {:error, reason} -> raise Error.new(:matrix2d_map_point, reason)
+    end
+  end
+
+  @doc """
+  Maps a vector `{x, y}` through the matrix (ignores translation), returning `{ok, {x, y}}`.
+  """
+  @spec map_vector(t(), number(), number()) :: {:ok, {number(), number()}} | {:error, term()}
+  def map_vector(m, x, y), do: Native.matrix2d_map_vector(m, x * 1.0, y * 1.0)
+
+  @doc """
+  Same as `map_vector/3`, but returns the tuple directly.
+  """
+  @spec map_vector!(t(), number(), number()) :: {number(), number()}
+  def map_vector!(m, x, y) do
+    case map_vector(m, x, y) do
+      {:ok, {nx, ny}} -> {nx, ny}
+      {:error, reason} -> raise Error.new(:matrix2d_map_vector, reason)
+    end
+  end
+
+  @doc """
+  Constructs a matrix from precomputed `sin`/`cos` and optional translation `tx/ty`.
+  """
+  @spec make_sin_cos(number(), number(), number(), number()) :: {:ok, t()} | {:error, term()}
+  def make_sin_cos(sin, cos, tx \\ 0.0, ty \\ 0.0),
+    do: Native.matrix2d_make_sin_cos(sin * 1.0, cos * 1.0, tx * 1.0, ty * 1.0)
+
+  @doc """
+  Same as `make_sin_cos/4`, but returns the matrix directly.
+  """
+  @spec make_sin_cos!(number(), number(), number(), number()) :: t()
+  def make_sin_cos!(sin, cos, tx \\ 0.0, ty \\ 0.0) do
+    case make_sin_cos(sin, cos, tx, ty) do
+      {:ok, m} -> m
+      {:error, reason} -> raise Error.new(:matrix2d_make_sin_cos, reason)
+    end
+  end
+
+  @doc """
+  Post-multiplies the matrix by a skew (shear).
+  """
+  @spec post_skew(t(), number(), number()) :: {:ok, t()} | {:error, term()}
+  def post_skew(m, kx, ky), do: Native.matrix2d_post_skew(m, kx * 1.0, ky * 1.0)
+
+  @doc """
+  Same as `post_skew/3`, but returns the skewed matrix directly.
+  """
+  @spec post_skew!(t(), number(), number()) :: t()
+  def post_skew!(m, kx, ky) do
+    case post_skew(m, kx, ky) do
+      {:ok, m2} -> m2
+      {:error, reason} -> raise Error.new(:matrix2d_post_skew, reason)
     end
   end
 
