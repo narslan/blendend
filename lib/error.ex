@@ -11,7 +11,13 @@ defmodule Blendend.Error do
     %__MODULE__{
       context: context,
       reason: reason,
-      message: "blendend #{context} failed: #{inspect(reason)}"
+      message: format_message(context, reason)
     }
   end
+
+  defp format_message(context, {:enoent, path}),
+    do: "blendend #{context} failed: file not found: #{path}"
+
+  defp format_message(context, reason),
+    do: "blendend #{context} failed: #{inspect(reason)}"
 end

@@ -31,7 +31,7 @@ defmodule Blendend.Text.Face do
   """
   @spec load(String.t()) :: {:ok, t()} | {:error, term()}
   def load(path) when is_binary(path) do
-    with {:ok, bin} <- File.read(path),
+    with {:ok, bin} <- File.read(path) |> map_file_error(path),
          {:ok, img} <- Native.face_load(bin) do
       {:ok, img}
     end
@@ -51,6 +51,10 @@ defmodule Blendend.Text.Face do
       {:error, reason} -> raise Error.new(:face_load, reason)
     end
   end
+
+  defp map_file_error({:ok, bin}, _path), do: {:ok, bin}
+  defp map_file_error({:error, :enoent}, path), do: {:error, {:enoent, path}}
+  defp map_file_error({:error, reason}, _path), do: {:error, reason}
 
   @doc """
   Returns design-space metrics for the face.
