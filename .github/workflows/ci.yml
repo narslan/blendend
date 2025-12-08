@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    env:
+      LD_LIBRARY_PATH: /usr/local/lib:/opt/homebrew/lib
+      DYLD_LIBRARY_PATH: /usr/local/lib:/opt/homebrew/lib
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Elixir/OTP
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: "1.19"
+          otp-version: "27"
+
+      - name: Cache mix
+        uses: actions/cache@v4
+        with:
+          path: |
+            deps
+            _build
+          key: ${{ runner.os }}-mix-${{ hashFiles('mix.lock') }}
+
+      - name: Install Blend2D
+        run: |
+          set -euo pipefail
+          if [[ "$RUNNER_OS" == "Linux" ]]; then
+            sudo apt-get update
+            sudo apt-get install -y build-essential cmake git zlib1g-dev
+            git clone --depth=1 https://github.com/blend2d/blend2d
+            cd blend2d
+            git clone --depth=1 https://github.com/asmjit/asmjit 3rdparty/asmjit
+            mkdir build && cd build
+            cmake .. -DCMAKE_BUILD_TYPE=Release
+            cmake --build . --parallel
+            sudo cmake --install .
+            sudo ldconfig
+          else
+            if ! brew list blend2d >/dev/null 2>&1; then
+              brew update
+              if ! brew install blend2d; then
+                brew install cmake git
+                git clone --depth=1 https://github.com/blend2d/blend2d
+                cd blend2d
+                git clone --depth=1 https://github.com/asmjit/asmjit 3rdparty/asmjit
+                mkdir build && cd build
+                cmake .. -DCMAKE_BUILD_TYPE=Release
+                cmake --build . --parallel
+                sudo cmake --install .
+              fi
+            fi
+          fi
+
+      - name: Install deps
+        run: mix deps.get
+
+      - name: Format check
+        run: mix format --check-formatted
+
+      - name: Compile
+        run: mix compile
+
+      - name: Test
+        run: mix test
