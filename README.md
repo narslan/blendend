@@ -1,13 +1,12 @@
 # blendend
 
-<p align="center">
-  <img src="docs/images/logo.png" alt="blendend logo" width="320">
-</p>
-
-
-`blendend` brings [Blend2D](https://github.com/blend2d/blend2d)'s fast, high-quality 2D vector renderer to Elixir. 
+`blendend` brings [Blend2D](https://github.com/blend2d/blend2d)'s fast, high-quality 2D vector renderer to Elixir.
 It gives crisp antialiased shapes, gradients, text, and blending via an Elixir API, that speaks `blend2D` directly (via NIF).
 The project is still evolving.
+
+<p align="center">
+  <img src="docs/images/logo.png" alt="blendend logo" width="200">
+</p>
  
 ## Features
 
