@@ -209,7 +209,6 @@ parse_style(ErlNifEnv* env, const ERL_NIF_TERM argv[], int argc, int opts_index,
           mode = BL_STROKE_CAP_TRIANGLE;
         else if(!strcmp(cap, "triangle_rev"))
           mode = BL_STROKE_CAP_TRIANGLE_REV;
-        // unknown cap name → keep default (BUTT)
         out->stroke_opts.start_cap = mode;
         out->stroke_opts.end_cap = mode;
         out->has_stroke_opts = true;

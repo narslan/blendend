@@ -51,13 +51,13 @@ defmodule Blendend.Canvas.Stroke do
 
     * `:stroke_line_join` – join style between segments:
 
-        * `:miter_clip`
+        * `:miter_clip` (default)
         * `:miter_bevel`
         * `:miter_round`
         * `:bevel`
         * `:round`
     * `:stroke_miter_limit` – miter limit as float (only for `:miter` joins)
-    * `:comp_op` – compositing operator atom. See `Blendend.Canvas.Fill.path/3`
+    * `:comp_op` – compositing operator atom. See `Blendend.Canvas.Fill.path/3` for viable options.
     * `:stroke_alpha` - extra opacity multiplier (values are `0.0..1.0`)
   If you omit brush options, default values are set.
 

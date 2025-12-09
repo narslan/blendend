@@ -1,7 +1,7 @@
 # blendend
 
 `blendend` brings [Blend2D](https://github.com/blend2d/blend2d)'s fast, high-quality 2D vector renderer to Elixir.
-It gives crisp antialiased shapes, gradients, text, and blending via an Elixir API, that speaks `blend2D` directly (via NIF).
+It gives you crisp antialiased shapes, gradients, text, and blending through an Elixir API that calls Blend2D directly via NIFs.
 The project is still evolving.
 
 <p align="center">
@@ -10,18 +10,19 @@ The project is still evolving.
  
 ## Features
 
-- Canvas API (fill/stroke shapes, paths, transforms, compositing).
-- Text shaping (font loading, glyph outlines).
-- Gradients/patterns, blur effects, masks.
-- Path DSL/macros for ergonomic drawing.
-- Examples and playground scripts.
+- Canvas API: fill/stroke shapes, work with paths, transforms, and compositing.
+- Text handling and layout: load fonts, measure text, and draw crisp glyphs.
+- Gradients, patterns, blur effects, and masks.
+- Expressive drawing DSL and macros for comfortable sketching.
+- Headless rendering for charts/reports (matplotlib AGG–style) and generative art (p5.js–style).
+- Built for speed via Blend2D.
 
 ## Requirements
 
-- The latest Blend2D built and installed on your system
-- A C++ toolchain (a C++ compiler + cmake)
+- The latest Blend2D built and installed on your system.
+- A C++ toolchain (a C++ compiler + cmake).
 
-Quick build of Blend2D:
+Quick build of Blend2D (tested only on Linux):
 ```sh
 git clone https://github.com/blend2d/blend2d
 cd blend2d
@@ -31,6 +32,7 @@ cmake ..
 make -j$(nproc)
 sudo make install
 ```
+
 
 ## Install in your project
 
@@ -63,38 +65,41 @@ end
 ```
 
 ## Roadmap
+
+Most of Blend2D's functionality is exposed. Remaining work:
 - Multi-threaded drawing pipelines are not supported yet; rendering runs single-threaded for now.
 - Gradient transformations and extend modes are planned so gradients can be positioned and repeated more flexibly.
- 
+- More documentation and examples (the [blendend_playground](https://github.com/narslan/blendend_playground) covers many cases).
+
 ## Playground
 For a richer starting point, clone the [blendend_playground](https://github.com/narslan/blendend_playground) repo and run it to browse and tweak the bundled examples in the browser.
 
-## Goals
-- Declarative. Knowledge of colors, gradients, shapes, shadows
-and transformations guide you.
+## Overview
 
-- Each shape can carry its own style, and avoiding global setters prevents accidental style leaks when a set call is missed.
+In `blendend` you describe colors, gradients, shapes, shadows, and transforms directly; the DSL aims to stay declarative and keep style local to each shape.
 
-#### colors
+#### Colors
 ```elixir
-hsv(0, 1.0, 1.0) #gives you red
-hsv(0, 1.0, 1.0, 0) #gives no color back.
-hsv(60, 1.0, 1.0, 255) #gives yellow.
-hsv(60, 1.0, 1.0, 100) #shades yellow.
-rgb(255, 255, 0) #gives yellow.
+hsv(0, 1.0, 1.0)        # gives red
+hsv(0, 1.0, 1.0, 0)     # fully transparent
+hsv(60, 1.0, 1.0, 255)  # yellow
+hsv(60, 1.0, 1.0, 100)  # shaded yellow
+rgb(255, 255, 0)        # yellow
 ```
-#### gradient
+#### Gradient
 ```elixir
-grad2 = linear_gradient 0, 0, 0, 200 do
-        add_stop(0.0, rgb(255, 0, 0))
-        add_stop(0.5, rgb(0, 255, 0))
-        add_stop(1.0, rgb(0, 0, 255))
-      end
+grad2 =
+  linear_gradient 0, 0, 0, 200 do
+    add_stop(0.0, rgb(255, 0, 0))
+    add_stop(0.5, rgb(0, 255, 0))
+    add_stop(1.0, rgb(0, 0, 255))
+  end
+
 box(0, 0, 100, 200, fill: grad2)
 ```
 Colors change gradually in a box.
 
-### transformation
+### Transformation
 ```elixir
 # Calculate transformation
 m =
@@ -104,17 +109,18 @@ m =
     scale(2, 2)
   end
 
-# Construct a path 
+# Construct a path
 path p1 do
   line_to 100.0, 100.0
 end
-# Construct another 
+# Construct another
 p2 = path()
 
-# apply transformation.
-p1 = Blendend.Path.add_path!(p1, p2, m) # It returns p1 
-# decorate with shadow
-shadow_path(p1, 10.0, 8.0, 15.0, fill: rgb(250, 0, 0, 150)) shadows the background or outline of a path.
+# Apply transformation.
+p1 = Blendend.Path.add_path!(p1, p2, m) # It returns p1
+
+# Decorate with shadow.
+shadow_path(p1, 10.0, 8.0, 15.0, fill: rgb(250, 0, 0, 150))
 ```
 
 
@@ -134,12 +140,12 @@ shadow_path(p1, 10.0, 8.0, 15.0, fill: rgb(250, 0, 0, 150)) shadows the backgrou
   </tr>
   <tr>
     <td width="50%">
-      <strong> Color blending  </strong><br>
+      <strong>Color blending</strong><br>
       <img src="docs/images/burn_grid.png" alt="Grid of gradients with burn blend" title="p5.js burn grid port rendered with blendend" />
     </td>  
     <td width="50%">
-      <strong>Path flatten</strong><br>
-      <img src="docs/images/iex.png" alt=" iex with noisy outlines" title="Path flattening on the letters of iEx" />
+      <strong>Path flattening</strong><br>
+      <img src="docs/images/iex.png" alt="iex with noisy outlines" title="Path flattening on the letters of iEx" />
     </td>
   </tr>
   <tr>
@@ -157,4 +163,4 @@ shadow_path(p1, 10.0, 8.0, 15.0, fill: rgb(250, 0, 0, 150)) shadows the backgrou
 - This project is released under the MIT License (see `LICENSE`).
 - `blend2d` is licensed under the zlib license.
 - `priv/fonts/Alegreya-Regular.otf` is distributed under the SIL Open Font License.
-- The burn grid demo and flower waves (which are available in `blendend_playground`) is adapted from takawo's original p5.js sketch (https://openprocessing.org/user/6533) and shared under the Creative Commons BY-NC-SA 3.0 license (https://creativecommons.org/licenses/by-nc-sa/3.0/).
+- The burn grid demo and flower waves (which are available in `blendend_playground`) are adapted from takawo's original p5.js sketch (https://openprocessing.org/user/6533) and shared under the Creative Commons BY-NC-SA 3.0 license (https://creativecommons.org/licenses/by-nc-sa/3.0/).
