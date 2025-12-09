@@ -27,20 +27,48 @@ defmodule Blendend.Canvas.Fill do
   `path` must be a `Blendend.Path.t()`.
 
   ## Style options
+  We normally provide exactly one brush with `:fill`
+  and optionally decorate it with `:alpha` and/or `:comp_op`. If no brush is
+  provided 
 
   The `opts` keyword list controls the fill style. The style layer currently
-  understands:
+  understands:  
 
     * `:fill`:     
         – solid brush, created with `Blendend.Style.Color.*`
         – gradient brush, created with `Blendend.Style.Gradient.*`
         – image pattern, created with `Blendend.Style.Pattern.create/1`
-    * `:alpha`    – extra opacity multiplier (float, typically `0.0..1.0`)
-    * `:comp_op`  – compositing operator atom (e.g. `:src_over`, `:multiply`, etc.)
-
-  We normally provide exactly one brush with `:fill`
-  and optionally decorate it with `:alpha` and/or `:comp_op`. If no brush is
-  provided, the context’s current fill style is used.
+    * `:alpha`    – extra opacity multiplier (values are `0.0..1.0`)
+    * `:comp_op`  – compositing operator atom 
+         * `:src_over` (default)
+         * `:src_copy`
+         * `:src_in`
+         * `:src_out`
+         * `:dst_over`
+         * `:dst_copy`
+         * `:dst_in`
+         * `:dst_out`
+         * `:dst_atop`
+         * `:difference`
+         * `:multiply`
+         * `:screen`
+         * `:overlay`
+         * `:xor`
+         * `:clear`
+         * `:plus`
+         * `:minus`
+         * `:modulate`
+         * `:darken`
+         * `:lighten`
+         * `:color_dodge`
+         * `:color_burn`
+         * `:linear_burn`
+         * `:pin_light`
+         * `:hard_light`
+         * `:soft_light`
+         * `:exclusion` 
+    Those terms and the mathematics behind them are clearly explained on this page: 
+    [Advanced compositing features](https://www.w3.org/TR/compositing-1/#advancedcompositing)
 
   ## Examples
 

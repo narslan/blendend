@@ -138,7 +138,7 @@ defmodule Blendend.Path do
   def line_to(path, x, y), do: Native.path_line_to(path, x * 1.0, y * 1.0)
 
   @doc """
-  Same as `line_to/3`, but returns the path for piping.
+  Same as `line_to/3`, but returns the path .
 
   On success, returns the same `path`.
 
@@ -168,7 +168,7 @@ defmodule Blendend.Path do
     do: Native.path_quad_to(path, x1 * 1.0, y1 * 1.0, x2 * 1.0, y2 * 1.0)
 
   @doc """
-  Same as `quad_to/5`, but returns the path for piping.
+  Same as `quad_to/5`, but returns the path .
 
   On success, returns `path`.
 
@@ -204,7 +204,7 @@ defmodule Blendend.Path do
     do: Native.path_conic_to(path, x1 * 1.0, y1 * 1.0, x2 * 1.0, y2 * 1.0, w * 1.0)
 
   @doc """
-  Same as `conic_to/6`, but returns the path for piping.
+  Same as `conic_to/6`, but returns the path .
 
   On success, returns `path`.
 
@@ -232,7 +232,7 @@ defmodule Blendend.Path do
     do: Native.path_cubic_to(path, x1 * 1.0, y1 * 1.0, x2 * 1.0, y2 * 1.0, x3 * 1.0, y3 * 1.0)
 
   @doc """
-  Same as `cubic_to/7`, but returns the path for piping.
+  Same as `cubic_to/7`, but returns the path .
 
   On success, returns `path`.
 
@@ -267,7 +267,7 @@ defmodule Blendend.Path do
     do: Native.path_smooth_quad_to(path, x2 * 1.0, y2 * 1.0)
 
   @doc """
-  Same as `smooth_quad_to/3`, but returns the path for piping.
+  Same as `smooth_quad_to/3`, but returns the path .
 
   On success, returns `path`.
 
@@ -304,7 +304,7 @@ defmodule Blendend.Path do
     do: Native.path_smooth_cubic_to(path, x2 * 1.0, y2 * 1.0, x3 * 1.0, y3 * 1.0)
 
   @doc """
-  Same as `smooth_cubic_to/5`, but returns the path for piping.
+  Same as `smooth_cubic_to/5`, but returns the path .
 
   On success, returns `path`.
 
@@ -358,7 +358,7 @@ defmodule Blendend.Path do
       )
 
   @doc """
-  Same as `arc_to/8`, but returns the path for piping.
+  Same as `arc_to/8`, but returns the path .
 
   On success, returns `path`.
 
@@ -422,7 +422,7 @@ defmodule Blendend.Path do
       )
 
   @doc """
-  Same as `elliptic_arc_to/8`, but returns the path for piping.
+  Same as `elliptic_arc_to/8`, but returns the path .
 
   On success, returns `path`.
 
@@ -460,7 +460,7 @@ defmodule Blendend.Path do
     do: Native.path_arc_quadrant_to(path, x1 * 1.0, y1 * 1.0, x2 * 1.0, y2 * 1.0)
 
   @doc """
-  Same as `arc_quadrant_to/5`, but returns the path for piping.
+  Same as `arc_quadrant_to/5`, but returns the path .
 
   On success, returns `path`.
 
@@ -488,7 +488,7 @@ defmodule Blendend.Path do
   def add_path(dst, src), do: Native.path_add_path(dst, src)
 
   @doc """
-  Same as `add_path/2`, but returns `dst` for piping.
+  Same as `add_path/2`, but returns `dst` .
 
   On success, returns `dst`.
 
@@ -516,7 +516,7 @@ defmodule Blendend.Path do
     do: Native.path_add_path_transform(dst, src, mtx)
 
   @doc """
-  Same as `add_path/3`, but returns `dst` for piping.
+  Same as `add_path/3`, but returns `dst` .
 
   On success, returns `dst`.
 
@@ -629,7 +629,7 @@ defmodule Blendend.Path do
     do: Native.path_translate(path, range, dx * 1.0, dy * 1.0)
 
   @doc """
-  Same as `translate/3`, but returns the path for piping.
+  Same as `translate/3`, but returns the path .
 
   On success, returns `path`.
 
@@ -644,7 +644,7 @@ defmodule Blendend.Path do
   end
 
   @doc """
-  Same as `translate/4`, but returns the path for piping.
+  Same as `translate/4`, but returns the path .
 
   On success, returns `path`.
 
@@ -678,7 +678,7 @@ defmodule Blendend.Path do
   def transform(path, range, matrix), do: Native.path_transform(path, range, matrix)
 
   @doc """
-  Same as `transform/2`, but returns the path for piping.
+  Same as `transform/2`, but returns the path .
   """
   @spec transform!(t(), Matrix2D.t()) :: t()
   def transform!(path, matrix) do
@@ -689,7 +689,7 @@ defmodule Blendend.Path do
   end
 
   @doc """
-  Same as `transform/3`, but returns the path for piping.
+  Same as `transform/3`, but returns the path .
   """
   @spec transform!(t(), Range.t() | {non_neg_integer(), non_neg_integer()}, Matrix2D.t()) :: t()
   def transform!(path, range, matrix) do
@@ -718,7 +718,7 @@ defmodule Blendend.Path do
   end
 
   @doc """
-  Same as `add_box/6`, but returns the path for piping.
+  Same as `add_box/6`, but returns the path .
 
   On success, returns `path`.
 
@@ -748,7 +748,7 @@ defmodule Blendend.Path do
   end
 
   @doc """
-  Same as `add_rect/6`, but returns the path for piping.
+  Same as `add_rect/6`, but returns the path .
 
   On success, returns `path`.
 
@@ -781,7 +781,7 @@ defmodule Blendend.Path do
   end
 
   @doc """
-  Same as `add_circle/5`, but returns the path for piping.
+  Same as `add_circle/5`, but returns the path .
 
   On success, returns `path`.
 
@@ -808,7 +808,7 @@ defmodule Blendend.Path do
   end
 
   @doc """
-  Same as `add_ellipse/6`, but returns the path for piping.
+  Same as `add_ellipse/6`, but returns the path .
   """
   @spec add_ellipse!(t(), number(), number(), number(), number(), keyword()) :: t()
   def add_ellipse!(path, cx, cy, rx, ry, opts \\ []) do
@@ -842,7 +842,7 @@ defmodule Blendend.Path do
   end
 
   @doc """
-  Same as `add_round_rect/8`, but returns the path for piping.
+  Same as `add_round_rect/8`, but returns the path .
   """
   @spec add_round_rect!(
           t(),
@@ -885,7 +885,7 @@ defmodule Blendend.Path do
   end
 
   @doc """
-  Same as `add_arc/8`, but returns the path for piping.
+  Same as `add_arc/8`, but returns the path .
   """
   @spec add_arc!(
           t(),
@@ -928,7 +928,7 @@ defmodule Blendend.Path do
   end
 
   @doc """
-  Same as `add_chord/8`, but returns the path for piping.
+  Same as `add_chord/8`, but returns the path .
   """
   @spec add_chord!(
           t(),
@@ -959,7 +959,7 @@ defmodule Blendend.Path do
   end
 
   @doc """
-  Same as `add_line/6`, but returns the path for piping.
+  Same as `add_line/6`, but returns the path .
   """
   @spec add_line!(t(), number(), number(), number(), number(), keyword()) :: t()
   def add_line!(path, x0, y0, x1, y1, opts \\ []) do
@@ -1001,7 +1001,7 @@ defmodule Blendend.Path do
   end
 
   @doc """
-  Same as `add_triangle/8`, but returns the path for piping.
+  Same as `add_triangle/8`, but returns the path .
   """
   @spec add_triangle!(
           t(),
@@ -1033,7 +1033,7 @@ defmodule Blendend.Path do
   end
 
   @doc """
-  Same as `add_polyline/3`, but returns the path for piping.
+  Same as `add_polyline/3`, but returns the path .
   """
   @spec add_polyline!(t(), [point()], keyword()) :: t()
   def add_polyline!(path, points, opts \\ []) do
@@ -1056,7 +1056,7 @@ defmodule Blendend.Path do
   end
 
   @doc """
-  Same as `add_polygon/3`, but returns the path for piping.
+  Same as `add_polygon/3`, but returns the path .
   """
   @spec add_polygon!(t(), [point()], keyword()) :: t()
   def add_polygon!(path, points, opts \\ []) do
@@ -1100,7 +1100,7 @@ defmodule Blendend.Path do
   def close(path), do: Native.path_close(path)
 
   @doc """
-  Same as `close/1`, but returns the path for piping.
+  Same as `close/1`, but returns the path .
 
   On success, returns `path`.
 
@@ -1187,7 +1187,7 @@ defmodule Blendend.Path do
     do: Native.path_set_vertex_at(path, idx, cmd, x, y)
 
   @doc """
-  Same as `set_vertex_at/5`, but returns the path for piping.
+  Same as `set_vertex_at/5`, but returns the path .
 
   On success, returns `path`.
 
@@ -1212,7 +1212,7 @@ defmodule Blendend.Path do
   def clear(path), do: Native.path_clear(path)
 
   @doc """
-  Same as `clear/1`, but returns the path for piping.
+  Same as `clear/1`, but returns the path .
 
   On success, returns `path`.
 

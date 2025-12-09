@@ -97,11 +97,12 @@ Colors change gradually in a box.
 ### transformation
 ```elixir
 # Calculate transformation
-m = matrix do
-        translate(x, y)
-        rotate(:math.pi() / 2)
-        scale(2,2) 
-      end
+m =
+  matrix do
+    translate(x, y)
+    rotate(:math.pi() / 2)
+    scale(2, 2)
+  end
 
 # Construct a path 
 path p1 do
@@ -111,9 +112,9 @@ end
 p2 = path()
 
 # apply transformation.
-Blendend.Path.add_path!(p1, p2, m) 
+p1 = Blendend.Path.add_path!(p1, p2, m) # It returns p1 
 # decorate with shadow
-shadow_path(star, 10.0, 8.0, 15.0, fill: rgb(250, 0, 0, 150)) shadows the background or outline of a path.
+shadow_path(p1, 10.0, 8.0, 15.0, fill: rgb(250, 0, 0, 150)) shadows the background or outline of a path.
 ```
 
 

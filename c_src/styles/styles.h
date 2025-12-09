@@ -222,7 +222,9 @@ parse_style(ErlNifEnv* env, const ERL_NIF_TERM argv[], int argc, int opts_index,
       char join[32];
       if(enif_get_atom(env, tup[1], join, sizeof(join), ERL_NIF_UTF8)) {
         uint8_t mode = BL_STROKE_JOIN_MITER_CLIP;
-        if(!strcmp(join, "round"))
+        if(!strcmp(join, "miter_clip"))
+          mode = BL_STROKE_JOIN_MITER_CLIP;
+        else if(!strcmp(join, "round"))
           mode = BL_STROKE_JOIN_ROUND;
         else if(!strcmp(join, "bevel"))
           mode = BL_STROKE_JOIN_BEVEL;
