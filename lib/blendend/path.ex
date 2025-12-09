@@ -1412,31 +1412,31 @@ defmodule Blendend.Path do
     include_ends? = Keyword.get(opts, :include_ends?, true)
 
     segments
-    |> Enum.flat_map(fn {{x0, y0}, {x1, y1}} ->
-      dx = x1 - x0
-      dy = y1 - y0
-      len = :math.sqrt(dx * dx + dy * dy)
+    |> Enum.flat_map(&sample_segment(&1, spacing, include_ends?))
+  end
 
-      cond do
-        len == 0.0 ->
-          []
+  defp sample_segment({{x0, y0}, {x1, y1}}, spacing, include_ends?) do
+    dx = x1 - x0
+    dy = y1 - y0
+    len = :math.sqrt(dx * dx + dy * dy)
 
-        true ->
-          steps = max(floor(len / spacing), 1)
-          start_i = if include_ends?, do: 0, else: 1
-          end_i = if include_ends?, do: steps, else: steps - 1
-          nx = -dy / len
-          ny = dx / len
-          step = if start_i <= end_i, do: 1, else: -1
-          range = Range.new(start_i, end_i, step)
+    if len == 0.0 do
+      []
+    else
+      steps = max(floor(len / spacing), 1)
+      start_i = if include_ends?, do: 0, else: 1
+      end_i = if include_ends?, do: steps, else: steps - 1
+      nx = -dy / len
+      ny = dx / len
+      step = if start_i <= end_i, do: 1, else: -1
+      range = Range.new(start_i, end_i, step)
 
-          for i <- range,
-              i >= 0 and i <= steps,
-              t = min(1.0, i / steps) do
-            {{x0 + dx * t, y0 + dy * t}, {nx, ny}}
-          end
+      for i <- range,
+          i >= 0 and i <= steps,
+          t = min(1.0, i / steps) do
+        {{x0 + dx * t, y0 + dy * t}, {nx, ny}}
       end
-    end)
+    end
   end
 
   @doc """

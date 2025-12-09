@@ -67,9 +67,8 @@ defmodule Blendend.Canvas do
   """
   @spec save(t(), String.t()) :: :ok | {:error, term()}
   def save(canvas, path) do
-    with {:ok, bin} <- to_png(canvas),
-         :ok <- File.write(path, bin) do
-      :ok
+    with {:ok, bin} <- to_png(canvas) do
+      File.write(path, bin)
     end
   end
 
@@ -110,9 +109,8 @@ defmodule Blendend.Canvas do
   """
   @spec save_qoi(t(), String.t()) :: :ok | {:error, term()}
   def save_qoi(canvas, path) do
-    with {:ok, bin} <- to_qoi(canvas),
-         :ok <- File.write(path, bin) do
-      :ok
+    with {:ok, bin} <- to_qoi(canvas) do
+      File.write(path, bin)
     end
   end
 

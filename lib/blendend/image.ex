@@ -28,9 +28,8 @@ defmodule Blendend.Image do
   """
   @spec from_file(String.t()) :: {:ok, t()} | {:error, term()}
   def from_file(path) when is_binary(path) do
-    with {:ok, bin} <- File.read(path),
-         {:ok, img} <- from_data(bin) do
-      {:ok, img}
+    with {:ok, bin} <- File.read(path) do
+      from_data(bin)
     end
   end
 
@@ -132,9 +131,8 @@ defmodule Blendend.Image do
   """
   @spec from_file_a8(String.t(), atom()) :: {:ok, t()} | {:error, term()}
   def from_file_a8(path, channel \\ :red) when is_binary(path) do
-    with {:ok, bin} <- File.read(path),
-         {:ok, img} <- from_data_a8(bin, channel) do
-      {:ok, img}
+    with {:ok, bin} <- File.read(path) do
+      from_data_a8(bin, channel)
     end
   end
 

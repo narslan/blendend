@@ -140,18 +140,22 @@ defmodule Blendend.Native do
   def path_add_ellipse(_p, _cx, _cy, _rx, _ry, _matrix, _dir),
     do: :erlang.nif_error(:nif_not_loaded)
 
+  # credo:disable-for-next-line Credo.Check.Refactor.FunctionArity
   def path_add_round_rect(_p, _x, _y, _w, _h, _rx, _ry, _matrix, _dir),
     do: :erlang.nif_error(:nif_not_loaded)
 
+  # credo:disable-for-next-line Credo.Check.Refactor.FunctionArity
   def path_add_arc(_p, _cx, _cy, _rx, _ry, _start, _sweep, _matrix, _dir),
     do: :erlang.nif_error(:nif_not_loaded)
 
+  # credo:disable-for-next-line Credo.Check.Refactor.FunctionArity
   def path_add_chord(_p, _cx, _cy, _rx, _ry, _start, _sweep, _matrix, _dir),
     do: :erlang.nif_error(:nif_not_loaded)
 
   def path_add_line(_p, _x0, _y0, _x1, _y1, _matrix, _dir),
     do: :erlang.nif_error(:nif_not_loaded)
 
+  # credo:disable-for-next-line Credo.Check.Refactor.FunctionArity
   def path_add_triangle(_p, _x0, _y0, _x1, _y1, _x2, _y2, _matrix, _dir),
     do: :erlang.nif_error(:nif_not_loaded)
 

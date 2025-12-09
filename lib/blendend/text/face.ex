@@ -31,9 +31,8 @@ defmodule Blendend.Text.Face do
   """
   @spec load(String.t()) :: {:ok, t()} | {:error, term()}
   def load(path) when is_binary(path) do
-    with {:ok, bin} <- File.read(path) |> map_file_error(path),
-         {:ok, img} <- Native.face_load(bin) do
-      {:ok, img}
+    with {:ok, bin} <- File.read(path) |> map_file_error(path) do
+      Native.face_load(bin)
     end
   end
 
