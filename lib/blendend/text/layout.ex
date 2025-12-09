@@ -46,7 +46,19 @@ defmodule Blendend.Text.Layout do
   @doc """
   Returns a reasonable line height for `font`.
 
-  Uses ascent + descent + line_gap from `Font.metrics!/1`.
+  Uses ascent + descent + line_gap from `Font.metrics!/1`. Handy when you need
+  baseline-to-baseline spacing for manual layout (stacking multiple text lines,
+  positioning labels in a UI, or estimating vertical space) without pulling the
+  full metrics map.
+
+  ## Examples
+
+      alias Blendend.Text.{Face, Font, Layout}
+
+      face = Face.load!("priv/fonts/Alegreya-Regular.otf")
+      font = Font.create!(face, 12)
+      Layout.line_height(font)
+      16.332000255584717
   """
   @spec line_height(Font.t(), number()) :: float()
   def line_height(font, scale \\ 1.0) do
