@@ -6,6 +6,9 @@ defmodule Blendend.MixProject do
       app: :blendend,
       version: "0.1.0",
       elixir: "~> 1.19",
+      description: "Blend2D bindings for Elixir",
+      source_url: "https://github.com/narslan/blendend",
+      package: package(),
       elixirc_paths: elixirc_paths(Mix.env()),
       compilers: [:elixir_make] ++ Mix.compilers(),
       deps: deps(),
@@ -35,6 +38,14 @@ defmodule Blendend.MixProject do
       {:ex_doc, "~> 0.39.2", only: :dev, runtime: false, warn_if_outdated: true},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:elixir_make, "~> 0.9.0"}
+    ]
+  end
+
+  defp package do
+    [
+      files: ~w(lib c_src priv docs/images notebooks Makefile mix.exs README.md LICENSE),
+      licenses: ["MIT"],
+      links: %{"GitHub" => "https://github.com/narslan/blendend"}
     ]
   end
 end

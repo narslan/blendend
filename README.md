@@ -39,7 +39,7 @@ sudo make install
 ```elixir
 def deps do
   [
-    {:blendend, github: "narslan/blendend"}
+    {:blendend, "~> 0.1.0"}
   ]
 end
 ```
