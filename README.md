@@ -81,10 +81,9 @@ In `blendend` you describe colors, gradients, shapes, shadows, and transforms di
 #### Colors
 ```elixir
 hsv(0, 1.0, 1.0)        # gives red
-hsv(0, 1.0, 1.0, 0)     # fully transparent
-hsv(60, 1.0, 1.0, 255)  # yellow
-hsv(60, 1.0, 1.0, 100)  # shaded yellow
+hsv(0, 1.0, 1.0, 0)     # alpha zero, fully transparent
 rgb(255, 255, 0)        # yellow
+rgb(255, 255, 0, 150)        # shaded yellow
 ```
 #### Gradient
 ```elixir
@@ -102,28 +101,26 @@ Colors change gradually in a box.
 ### Transformation
 ```elixir
 # Calculate transformation
-m =
+ m =
   matrix do
-    translate(x, y)
-    rotate(:math.pi() / 2)
-    scale(2, 2)
+    translate(100, 100)
+    rotate(:math.pi() / 4)
   end
 
 # Construct a path
 path p1 do
+  move_to 0.0, 0.0
   line_to 100.0, 100.0
 end
-# Construct another
-p2 = path()
-
-# Apply transformation.
-p1 = Blendend.Path.add_path!(p1, p2, m) # It returns p1
+  
+# Apply transformation. 
+with_transform m do
+  stroke_path p1, stroke: rgb(0, 0, 0), stroke_width: 5.0    
+end
 
 # Decorate with shadow.
 shadow_path(p1, 10.0, 8.0, 15.0, fill: rgb(250, 0, 0, 150))
 ```
-
-
 
 ## Gallery
 
