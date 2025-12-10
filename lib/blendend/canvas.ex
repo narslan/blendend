@@ -145,7 +145,7 @@ defmodule Blendend.Canvas do
   style (for example a solid background color):
 
       iex> c = Blendend.Canvas.new!(100, 100)
-      iex> :ok = Blendend.Canvas.clear(c, color: Blendend.Style.Color.rgb!(255, 255, 255))
+      iex> :ok = Blendend.Canvas.clear(c, fill: Blendend.Style.Color.rgb!(255, 255, 255))
 
   The exact shape of the options is the same as the shape–drawing functions in
   `Blendend.Canvas.Fill.path/3`.

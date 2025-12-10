@@ -695,6 +695,13 @@ defmodule Blendend.Draw do
     end
   end
 
+  @doc """
+  Draws UTF-8 text at the given position using a `Blendend.Text.Font`.
+
+  Supports both fill and stroke modes (auto-detected via options or `mode: :fill | :stroke`).
+  Common options: `fill: color/gradient/pattern`, `stroke: color/gradient/pattern`,
+  `stroke_width`, `stroke_cap`, `stroke_join`, `alpha` (in fill mode), `stroke_alpha`, etc.
+  """
   defmacro text(font, x, y, string, opts \\ []) do
     quote bind_quoted: [x: x, y: y, font: font, string: string, opts: opts] do
       c = Blendend.Draw.get_canvas()
