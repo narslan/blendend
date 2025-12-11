@@ -1,9 +1,9 @@
-#include "canvas.h"
 #include "../geometries/path.h"
-#include "../styles/styles.h"
 #include "../images/blur.h"
 #include "../nif/nif_resource.h"
 #include "../nif/nif_util.h"
+#include "../styles/styles.h"
+#include "canvas.h"
 
 #include <algorithm>
 #include <blend2d/blend2d.h>
@@ -12,107 +12,106 @@
 #include <vector>
 
 namespace {
-struct BlurOpts {
-  bool fill = true;
-  bool stroke = false;
-  double offset_x = 0.0;
-  double offset_y = 0.0;
-  bool valid = true;
-  bool mode_set = false;
-  double resolution = 1.0;
-};
+  struct BlurOpts {
+    bool fill = true;
+    bool stroke = false;
+    double offset_x = 0.0;
+    double offset_y = 0.0;
+    bool valid = true;
+    bool mode_set = false;
+    double resolution = 1.0;
+  };
 
-struct BlurImageScratch {
-  BLImage img;
-  int w = 0;
-  int h = 0;
-};
+  struct BlurImageScratch {
+    BLImage img;
+    int w = 0;
+    int h = 0;
+  };
 
-thread_local BlurImageScratch blur_image_scratch;
+  thread_local BlurImageScratch blur_image_scratch;
 
-bool parse_blur_opts(ErlNifEnv* env, const ERL_NIF_TERM argv[], int argc, int opts_index, BlurOpts& out)
-{
-  if(argc <= opts_index)
-    return true;
+  bool parse_blur_opts(
+      ErlNifEnv* env, const ERL_NIF_TERM argv[], int argc, int opts_index, BlurOpts& out) {
+    if(argc <= opts_index)
+      return true;
 
-  ERL_NIF_TERM list = argv[opts_index], head, tail;
-  if(!enif_is_list(env, list))
-    return true;
+    ERL_NIF_TERM list = argv[opts_index], head, tail;
+    if(!enif_is_list(env, list))
+      return true;
 
-  while(enif_get_list_cell(env, list, &head, &tail)) {
-    const ERL_NIF_TERM* tup;
-    int arity;
-    if(!enif_get_tuple(env, head, &arity, &tup) || arity != 2) {
-      list = tail;
-      continue;
-    }
+    while(enif_get_list_cell(env, list, &head, &tail)) {
+      const ERL_NIF_TERM* tup;
+      int arity;
+      if(!enif_get_tuple(env, head, &arity, &tup) || arity != 2) {
+        list = tail;
+        continue;
+      }
 
-    char key[64];
-    if(!enif_get_atom(env, tup[0], key, sizeof(key), ERL_NIF_UTF8)) {
-      list = tail;
-      continue;
-    }
+      char key[64];
+      if(!enif_get_atom(env, tup[0], key, sizeof(key), ERL_NIF_UTF8)) {
+        list = tail;
+        continue;
+      }
 
-    if(strcmp(key, "mode") == 0) {
-      char val[32];
-      if(enif_get_atom(env, tup[1], val, sizeof(val), ERL_NIF_UTF8)) {
-        if(strcmp(val, "fill") == 0) {
-          out.fill = true;
-          out.stroke = false;
-          out.mode_set = true;
-        }
-        else if(strcmp(val, "stroke") == 0) {
-          out.fill = false;
-          out.stroke = true;
-          out.mode_set = true;
-        }
-        else if(strcmp(val, "fill_and_stroke") == 0 || strcmp(val, "both") == 0) {
-          out.fill = true;
-          out.stroke = true;
-          out.mode_set = true;
+      if(strcmp(key, "mode") == 0) {
+        char val[32];
+        if(enif_get_atom(env, tup[1], val, sizeof(val), ERL_NIF_UTF8)) {
+          if(strcmp(val, "fill") == 0) {
+            out.fill = true;
+            out.stroke = false;
+            out.mode_set = true;
+          }
+          else if(strcmp(val, "stroke") == 0) {
+            out.fill = false;
+            out.stroke = true;
+            out.mode_set = true;
+          }
+          else if(strcmp(val, "fill_and_stroke") == 0 || strcmp(val, "both") == 0) {
+            out.fill = true;
+            out.stroke = true;
+            out.mode_set = true;
+          }
+          else {
+            out.valid = false;
+          }
         }
         else {
           out.valid = false;
         }
       }
-      else {
-        out.valid = false;
+      else if(strcmp(key, "offset") == 0) {
+        const ERL_NIF_TERM* arr;
+        int arr_arity;
+        double ox, oy;
+        if(enif_get_tuple(env, tup[1], &arr_arity, &arr) && arr_arity == 2 &&
+           enif_get_double(env, arr[0], &ox) && enif_get_double(env, arr[1], &oy)) {
+          out.offset_x = ox;
+          out.offset_y = oy;
+        }
+        else {
+          out.valid = false;
+        }
       }
-    }
-    else if(strcmp(key, "offset") == 0) {
-      const ERL_NIF_TERM* arr;
-      int arr_arity;
-      double ox, oy;
-      if(enif_get_tuple(env, tup[1], &arr_arity, &arr) && arr_arity == 2 && enif_get_double(env, arr[0], &ox) &&
-         enif_get_double(env, arr[1], &oy)) {
-        out.offset_x = ox;
-        out.offset_y = oy;
+      else if(strcmp(key, "resolution") == 0) {
+        double res = 1.0;
+        if(enif_get_double(env, tup[1], &res) && res > 0.0 && res <= 1.0) {
+          out.resolution = res;
+        }
+        else {
+          out.valid = false;
+        }
       }
-      else {
-        out.valid = false;
-      }
-    }
-    else if(strcmp(key, "resolution") == 0) {
-      double res = 1.0;
-      if(enif_get_double(env, tup[1], &res) && res > 0.0 && res <= 1.0) {
-        out.resolution = res;
-      }
-      else {
-        out.valid = false;
-      }
+
+      list = tail;
     }
 
-    list = tail;
+    return out.valid;
   }
-
-  return out.valid;
-}
 
 } // namespace
 
 // canvas_blur_path(canvas, path, sigma, opts \\ [])
-ERL_NIF_TERM canvas_blur_path(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
-{
+ERL_NIF_TERM canvas_blur_path(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
   if(argc < 3)
     return enif_make_badarg(env);
 
@@ -183,6 +182,7 @@ ERL_NIF_TERM canvas_blur_path(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[
     return make_result_error(env, "canvas_blur_path_bounds_failed");
   }
 
+  // Expand bounds to fit stroke thickness, blur radius (3*sigma), and user offsets.
   const double stroke_pad =
       (opts.stroke && style.has_stroke()) ? std::max(0.0, style.stroke_opts.width * 0.5) : 0.0;
   const double blur_pad = std::ceil(std::max(0.0, sigma * 3.0));
@@ -192,12 +192,14 @@ ERL_NIF_TERM canvas_blur_path(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[
   const double width_d = bbox.x1 - bbox.x0 + pad_x * 2.0;
   const double height_d = bbox.y1 - bbox.y0 + pad_y * 2.0;
 
+  // Optionally downscale for cheaper blur, then scale back on blit.
   const double scale = std::max(0.0, std::min(opts.resolution, 1.0));
   const int w = static_cast<int>(std::ceil(std::max(1.0, width_d * scale)));
   const int h = static_cast<int>(std::ceil(std::max(1.0, height_d * scale)));
 
   BlurImageScratch& scratch = blur_image_scratch;
   BLResult r = BL_SUCCESS;
+  // Reuse a thread-local scratch image sized for the current blur.
   if(scratch.w != w || scratch.h != h || scratch.w <= 0 || scratch.h <= 0) {
     scratch.img.reset();
     r = scratch.img.create(w, h, BL_FORMAT_PRGB32);
@@ -217,7 +219,9 @@ ERL_NIF_TERM canvas_blur_path(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[
 
   tmp_ctx.clear_all();
   tmp_ctx.save();
-  tmp_ctx.translate((pad_x - bbox.x0 + opts.offset_x) * scale, (pad_y - bbox.y0 + opts.offset_y) * scale);
+  // Center the path in the padded scratch image and apply optional offset/scale.
+  tmp_ctx.translate((pad_x - bbox.x0 + opts.offset_x) * scale,
+                    (pad_y - bbox.y0 + opts.offset_y) * scale);
   tmp_ctx.scale(scale);
   style.apply(&tmp_ctx);
 
@@ -229,6 +233,7 @@ ERL_NIF_TERM canvas_blur_path(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[
   tmp_ctx.restore();
   tmp_ctx.end();
 
+  // Blur the rasterized patch; sigma is scaled with the raster scale.
   const double sigma_scaled = sigma * scale;
   r = blur_image_inplace(scratch.img, sigma_scaled, w, h);
   if(r != BL_SUCCESS) {
@@ -239,6 +244,7 @@ ERL_NIF_TERM canvas_blur_path(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[
   const int dst_y = static_cast<int>(std::floor(bbox.y0 - pad_y));
 
   canvas->ctx.save();
+  // Preserve caller composition settings when drawing the blurred patch.
   if(style.has_comp_op)
     canvas->ctx.set_comp_op(style.comp_op);
   const int dst_w = static_cast<int>(std::ceil(std::max(1.0, width_d)));
