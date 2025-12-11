@@ -88,7 +88,7 @@ defmodule Blendend.Matrix2D do
 
   Examples: 
     
-      use Blended.Draw
+      use Blendend.Draw
       m = matrix do
        rotate :math.pi
       end
@@ -120,7 +120,17 @@ defmodule Blendend.Matrix2D do
   # ===========================================================================
 
   @doc """
-  Pre-multiplies the matrix by `other` (`other * matrix`) and returns a new matrix.
+  Returns `matrix * other`, i.e. the `other` transform is applied after `matrix`.
+
+  Examples:
+
+      iex> use Blendend.Draw
+      iex> translate = matrix(do: translate(10, 0))
+      iex> scale = matrix(do: scale(2, 1))
+      iex> {:ok, m} = Blendend.Matrix2D.transform(translate, scale)
+      iex> {:ok, list} = Blendend.Matrix2D.to_list(m)
+      iex> list
+      [2.0, 0.0, 0.0, 1.0, 10.0, 0.0]  # translate first, then scale (translation unchanged)
   """
   @spec transform(t(), t()) :: {:ok, t()} | {:error, term()}
   def transform(m, other), do: Native.matrix2d_transform(m, other)
@@ -137,7 +147,17 @@ defmodule Blendend.Matrix2D do
   end
 
   @doc """
-  Post-multiplies the matrix by `other` (`matrix * other`) and returns a new matrix.
+  Returns `other * matrix`, i.e. the `other` transform is applied before `matrix`.
+
+  Examples:
+
+      iex> use Blendend.Draw
+      iex> translate = matrix(do: translate(10, 0))
+      iex> scale = matrix(do: scale(2, 1))
+      iex> {:ok, m} = Blendend.Matrix2D.post_transform(translate, scale)
+      iex> {:ok, list} = Blendend.Matrix2D.to_list(m)
+      iex> list
+      [2.0, 0.0, 0.0, 1.0, 20.0, 0.0]  # scale first, then translate (x translation doubled)
   """
   @spec post_transform(t(), t()) :: {:ok, t()} | {:error, term()}
   def post_transform(m, other), do: Native.matrix2d_post_transform(m, other)
@@ -229,7 +249,7 @@ defmodule Blendend.Matrix2D do
   end
 
   @doc """
-  Post-multiplies the matrix by a scale and returns a new matrix.
+  Returns `scale * matrix`, applying the scale before the existing transform.
   """
   @spec post_scale(t(), number(), number()) :: {:ok, t()} | {:error, term()}
   def post_scale(m, sx, sy), do: Native.matrix2d_post_scale(m, sx * 1.0, sy * 1.0)
@@ -289,7 +309,7 @@ defmodule Blendend.Matrix2D do
   end
 
   @doc """
-  Post-multiplies the matrix by a rotation about `{cx, cy}`.
+  Returns `rotation * matrix`, applying the rotation about `{cx, cy}` before the existing transform.
   """
   @spec post_rotate(t(), number(), number(), number()) :: {:ok, t()} | {:error, term()}
   def post_rotate(m, angle_rad, cx, cy),
@@ -307,7 +327,7 @@ defmodule Blendend.Matrix2D do
   end
 
   @doc """
-  Post-translate the matrix by `(tx, ty)` (applied after existing transforms).
+  Returns `translation * matrix`, applying `(tx, ty)` before the existing transforms.
   """
   @spec post_translate(t(), number(), number()) :: {:ok, t()} | {:error, term()}
   def post_translate(m, tx, ty), do: Native.matrix2d_post_translate(m, tx * 1.0, ty * 1.0)
@@ -324,7 +344,31 @@ defmodule Blendend.Matrix2D do
   end
 
   @doc """
+  Returns `skew * matrix`, applying the shear before the existing transforms.
+  """
+  @spec post_skew(t(), number(), number()) :: {:ok, t()} | {:error, term()}
+  def post_skew(m, kx, ky), do: Native.matrix2d_post_skew(m, kx * 1.0, ky * 1.0)
+
+  @doc """
+  Same as `post_skew/3`, but returns the skewed matrix directly.
+  """
+  @spec post_skew!(t(), number(), number()) :: t()
+  def post_skew!(m, kx, ky) do
+    case post_skew(m, kx, ky) do
+      {:ok, m2} -> m2
+      {:error, reason} -> raise Error.new(:matrix2d_post_skew, reason)
+    end
+  end
+
+  @doc """
   Inverts the matrix, returning a new matrix.
+
+  Examples:
+
+      iex> use Blendend.Draw
+      iex> scale = matrix(do: scale(2, 1))
+      iex> Blendend.Matrix2D.invert!(scale) |> Blendend.Matrix2D.to_list!
+      [0.5, -0.0, -0.0, 1.0, -0.0, -0.0]
   """
   @spec invert(t()) :: {:ok, t()} | {:error, term()}
   def invert(m), do: Native.matrix2d_invert(m)
@@ -359,6 +403,17 @@ defmodule Blendend.Matrix2D do
 
   @doc """
   Maps a vector `{x, y}` through the matrix (ignores translation), returning `{ok, {x, y}}`.
+
+  Examples:
+
+      iex> use Blendend.Draw
+      iex> scale = matrix(do: scale(2, 1))
+      iex> Blendend.Matrix2D.map_vector!(scale, 2, 3)
+      {4.0, 3.0}
+
+      iex> translate = matrix(do: translate(10, 10))
+      iex> Blendend.Matrix2D.map_vector!(translate, 2, 3)
+      {2.0, 3.0}
   """
   @spec map_vector(t(), number(), number()) :: {:ok, {number(), number()}} | {:error, term()}
   def map_vector(m, x, y), do: Native.matrix2d_map_vector(m, x * 1.0, y * 1.0)
@@ -389,23 +444,6 @@ defmodule Blendend.Matrix2D do
     case make_sin_cos(sin, cos, tx, ty) do
       {:ok, m} -> m
       {:error, reason} -> raise Error.new(:matrix2d_make_sin_cos, reason)
-    end
-  end
-
-  @doc """
-  Post-multiplies the matrix by a skew (shear).
-  """
-  @spec post_skew(t(), number(), number()) :: {:ok, t()} | {:error, term()}
-  def post_skew(m, kx, ky), do: Native.matrix2d_post_skew(m, kx * 1.0, ky * 1.0)
-
-  @doc """
-  Same as `post_skew/3`, but returns the skewed matrix directly.
-  """
-  @spec post_skew!(t(), number(), number()) :: t()
-  def post_skew!(m, kx, ky) do
-    case post_skew(m, kx, ky) do
-      {:ok, m2} -> m2
-      {:error, reason} -> raise Error.new(:matrix2d_post_skew, reason)
     end
   end
 end
