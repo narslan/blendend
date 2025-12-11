@@ -89,7 +89,6 @@ defmodule Blendend.Canvas do
         raise Error.new(:canvas_save, reason)
 
       other ->
-        # if to_png ever returns some weird shape, still blow up loudly
         raise Error.new(:canvas_save, other)
     end
   end
@@ -456,7 +455,7 @@ defmodule Blendend.Canvas do
   Blits an image onto the canvas at the given coordinates.
 
   This copies the pixels of `image` so its top-left lands on `{x, y}` without
-  scaling or tiling, using Blend2D's `blit_image/2`.
+  scaling or tiling.
   """
   @spec blit_image(t(), Image.t(), number(), number()) :: :ok | {:error, term()}
   def blit_image(canvas, image, x, y),
@@ -476,8 +475,7 @@ defmodule Blendend.Canvas do
   @doc """
   Blits an image scaled to the rectangle `{x, y, w, h}`.
 
-  The image is resampled to fit the destination rectangle using
-  Blend2D's `blit_image/3` overload (no source sub-rect applied).
+  The image is resampled to fit the destination rectangle.
   """
   @spec blit_image(t(), Image.t(), number(), number(), number(), number()) ::
           :ok | {:error, term()}
@@ -554,10 +552,7 @@ defmodule Blendend.Canvas do
   Encodes the canvas as a QOI image and returns the raw `.qoi` binary.
 
   On success returns `{:ok, binary}` where `binary` is the file contents you
-  could write directly to `"something.qoi"`.
-
-  Note: browsers don’t natively understand QOI, so this is mainly useful for
-  offline assets, tests/benchmarks, or feeding into your own decoder.
+  could write directly to `image.qoi`.
   """
   @spec to_qoi(t()) :: {:ok, binary()} | {:error, term()}
   def to_qoi(canvas), do: Native.canvas_to_qoi(canvas)

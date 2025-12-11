@@ -13,20 +13,18 @@ defmodule Blendend.Effects do
   Examples:
 
       use Blendend.Draw
-      alias Blendend.Path
+      clear(fill: rgb(0x42, 0x4D, 0x8C))
 
-      draw 720, 420, "blur_effect.png" do
-        clear(fill: rgb(100, 14, 18))
-
-        ring =
-          Path.new!()
-          |> Path.add_circle!(220, 210, 96.0)
-
-        blur_path ring, 3,
-          mode: :stroke,
-          stroke: rgb(90, 200, 255),
-          stroke_width: 10.0
-      end
+      ring =
+        path do
+          add_circle(220, 210, 96.0)
+        end
+      
+      blur_path(ring, 4,
+        mode: :stroke,
+        stroke: rgb(90, 200, 255),
+        stroke_width: 10.0
+      )
 
   """
 
@@ -42,7 +40,8 @@ defmodule Blendend.Effects do
     * `:mode` – `:fill`, `:stroke`, or `:both` (alias `:fill_and_stroke`);
       (defaults to fill if none set)
     * `:offset` – `{dx, dy}` translation before compositing (useful for shadows); values are floats
-    * `:resolution` – scale factor `0 < r ≤ 1.0` to render/blur at lower resolution for speed
+    * `:resolution` – scale factor `0 < r ≤ 1.0` to render/blur 
+       (If blurring feels slow, tune this down. Defaults to 1.0)
   """
   @spec blur_path(Canvas.t(), Path.t(), number(), keyword()) :: :ok | {:error, term()}
   def blur_path(canvas, path, sigma, opts \\ []) do
@@ -69,7 +68,6 @@ defmodule Blendend.Effects do
           :ok | {:error, term()}
   def shadow_path(canvas, path, dx, dy, sigma, opts \\ []) do
     opts = Keyword.put(opts, :offset, {dx * 1.0, dy * 1.0})
-    # opts = Keyword.put(opts, :resolution, 0.5)
     blur_path(canvas, path, sigma, opts)
   end
 

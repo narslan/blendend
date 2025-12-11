@@ -88,7 +88,7 @@ defmodule Blendend.CanvasTransformTest do
     m_expected =
       Matrix2D.identity!()
       |> Matrix2D.translate!(10.0, 5.0)
-      |> Matrix2D.compose!(m_scale)
+      |> Matrix2D.transform!(m_scale)
       |> Matrix2D.to_list!()
 
     assert_floats_close(m_ctx, m_expected)

@@ -9,7 +9,7 @@ defmodule Blendend.Matrix2D do
       |  0    0   1  |
 
   Functions in this module either create such a matrix or
-  compose it.
+  combine it with other transforms.
 
   * `m00, m01, m10, m11` – linear part (scale, rotation, skew)
   * `tx, ty`             – translation
@@ -85,6 +85,17 @@ defmodule Blendend.Matrix2D do
   On success, returns `{:ok, list}`.
 
   On failure, returns `{:error, reason}`.
+
+  Examples: 
+    
+      use Blended.Draw
+      m = matrix do
+       rotate :math.pi
+      end
+
+      {:ok, ml} = Blendend.Matrix2D.to_list(m)
+      [-1.0, 0, 0, -1.0, 0.0, 0.0] # floating point noise discarded
+     
   """
   @spec to_list(t()) :: {:ok, [number()]} | {:error, term()}
   def to_list(m), do: Native.matrix2d_to_list(m)
@@ -107,31 +118,6 @@ defmodule Blendend.Matrix2D do
   # ===========================================================================
   # Operations
   # ===========================================================================
-
-  @doc """
-  Composes (multiplies) two matrices and returns a **new** matrix.
-
-  `compose(a, b)` returns `{:ok, c}` where `c = b * a`.
-
-  On failure, returns `{:error, reason}`.
-  """
-  @spec compose(t(), t()) :: {:ok, t()} | {:error, term()}
-  def compose(a, b), do: Native.matrix2d_compose(a, b)
-
-  @doc """
-  Same as `compose/2`, but returns the composed matrix directly.
-
-  On success, returns `matrix`.
-
-  On failure, raises `Blendend.Error`.
-  """
-  @spec compose!(t(), t()) :: t()
-  def compose!(a, b) do
-    case compose(a, b) do
-      {:ok, m} -> m
-      {:error, reason} -> raise Error.new(:matrix2d_compose, reason)
-    end
-  end
 
   @doc """
   Pre-multiplies the matrix by `other` (`other * matrix`) and returns a new matrix.

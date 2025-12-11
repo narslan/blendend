@@ -37,30 +37,30 @@ defmodule Blendend.Matrix2DTest do
     assert_floats_close(M.to_list!(m1), [2.0, 0.0, 0.0, 3.0, 0.0, 0.0])
   end
 
-  test "scale then translate matches using compose" do
+  test "scale then translate matches using transform" do
     # chain using the high-level helpers
     m =
       M.identity!()
       |> M.scale!(2.0, 3.0)
       |> M.translate!(10.0, 5.0)
 
-    # build the same transform explicitly via compose
+    # build the same transform explicitly via transform
     s = M.identity!() |> M.scale!(2.0, 3.0)
     t = M.identity!() |> M.translate!(10.0, 5.0)
 
     expected =
       M.identity!()
-      |> M.compose!(s)
-      |> M.compose!(t)
+      |> M.transform!(s)
+      |> M.transform!(t)
 
     assert_floats_close(M.to_list!(m), M.to_list!(expected))
   end
 
-  test "compose!/2 does not mutate inputs" do
+  test "transform!/2 does not mutate inputs" do
     a = M.scale!(M.identity!(), 2.0, 2.0)
     b = M.translate!(M.identity!(), 5.0, -3.0)
 
-    _ab = M.compose!(a, b)
+    _ab = M.transform!(a, b)
 
     assert_floats_close(M.to_list!(a), [2.0, 0.0, 0.0, 2.0, 0.0, 0.0])
     assert_floats_close(M.to_list!(b), [1.0, 0.0, 0.0, 1.0, 5.0, -3.0])
@@ -85,7 +85,7 @@ defmodule Blendend.Matrix2DTest do
   test "rotation additivity" do
     a = M.rotate!(M.identity!(), :math.pi() / 4)
     b = M.rotate!(M.identity!(), :math.pi() / 6)
-    ab = M.compose!(a, b) |> M.to_list!()
+    ab = M.transform!(a, b) |> M.to_list!()
     sum = M.rotate!(M.identity!(), :math.pi() * (1 / 4 + 1 / 6)) |> M.to_list!()
     assert assert_floats_close(ab, sum)
   end

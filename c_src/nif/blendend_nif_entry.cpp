@@ -113,7 +113,6 @@ MAKE_TERM(image_blur)
 // Styles
 MAKE_TERM(color)
 MAKE_TERM(color_components)
-MAKE_TERM(color_components)
 MAKE_TERM(gradient_linear)
 MAKE_TERM(gradient_radial)
 MAKE_TERM(gradient_conic)
@@ -183,7 +182,6 @@ MAKE_TERM(matrix2d_post_skew)
 MAKE_TERM(matrix2d_rotate)
 MAKE_TERM(matrix2d_rotate_at)
 MAKE_TERM(matrix2d_post_rotate)
-MAKE_TERM(matrix2d_compose)
 MAKE_TERM(matrix2d_transform)
 MAKE_TERM(matrix2d_post_transform)
 MAKE_TERM(matrix2d_invert)
@@ -369,7 +367,6 @@ MAKE_DRAW_GLYPH(stroke_glyph_run)
   X(matrix2d_rotate, 2, 0) \
   X(matrix2d_rotate_at, 4, 0) \
   X(matrix2d_post_rotate, 4, 0) \
-  X(matrix2d_compose, 2, 0) \
   X(matrix2d_transform, 2, 0) \
   X(matrix2d_post_transform, 2, 0) \
   X(matrix2d_invert, 1, 0) \

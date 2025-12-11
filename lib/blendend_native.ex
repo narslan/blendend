@@ -203,7 +203,6 @@ defmodule Blendend.Native do
   def matrix2d_rotate(_matrix, _angle), do: :erlang.nif_error(:nif_not_loaded)
   def matrix2d_rotate_at(_matrix, _angle, _cx, _cy), do: :erlang.nif_error(:nif_not_loaded)
   def matrix2d_post_rotate(_matrix, _angle, _cx, _cy), do: :erlang.nif_error(:nif_not_loaded)
-  def matrix2d_compose(_matrix1, _matrix2), do: :erlang.nif_error(:nif_not_loaded)
   def matrix2d_transform(_matrix1, _matrix2), do: :erlang.nif_error(:nif_not_loaded)
   def matrix2d_post_transform(_matrix1, _matrix2), do: :erlang.nif_error(:nif_not_loaded)
   def matrix2d_invert(_matrix), do: :erlang.nif_error(:nif_not_loaded)

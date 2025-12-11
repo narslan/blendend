@@ -324,51 +324,6 @@ ERL_NIF_TERM matrix2d_post_skew(ErlNifEnv* env, int argc, const ERL_NIF_TERM arg
   return make_result_ok(env, NifResource<Matrix2D>::make(env, dst));
 }
 
-// matrix_compose(matrix_a, matrix_b) :: Matrix2D
-// Returns a new matrix c such that: c = b * a
-// (i.e. `b` is pre-composed with `a`).
-// matrix_compose(a, b) :: Matrix2D
-
-ERL_NIF_TERM matrix2d_compose(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
-{
-  if(argc != 2)
-    return enif_make_badarg(env);
-
-  Matrix2D* a = NifResource<Matrix2D>::get(env, argv[0]);
-  Matrix2D* b = NifResource<Matrix2D>::get(env, argv[1]);
-  if(!a || !b)
-    return make_result_error(env, "matrix_compose_invalid_matrix");
-
-  const BLMatrix2D& ma = a->value;
-  const BLMatrix2D& mb = b->value;
-
-  const double a00 = ma.m00;
-  const double a01 = ma.m01;
-  const double a10 = ma.m10;
-  const double a11 = ma.m11;
-  const double atx = ma.m20;
-  const double aty = ma.m21;
-
-  const double b00 = mb.m00;
-  const double b01 = mb.m01;
-  const double b10 = mb.m10;
-  const double b11 = mb.m11;
-  const double btx = mb.m20;
-  const double bty = mb.m21;
-
-  const double c00 = a00 * b00 + a01 * b10;
-  const double c01 = a00 * b01 + a01 * b11;
-  const double c10 = a10 * b00 + a11 * b10;
-  const double c11 = a10 * b01 + a11 * b11;
-  const double ctx = a00 * btx + a01 * bty + atx;
-  const double cty = a10 * btx + a11 * bty + aty;
-
-  Matrix2D* dst = NifResource<Matrix2D>::alloc();
-  dst->value.reset(c00, c01, c10, c11, ctx, cty);
-
-  return make_result_ok(env, NifResource<Matrix2D>::make(env, dst));
-}
-
 // matrix2d_transform(matrix, other) :: matrix (pre-multiply by other)
 ERL_NIF_TERM matrix2d_transform(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
 {
