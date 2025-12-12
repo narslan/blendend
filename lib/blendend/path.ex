@@ -448,8 +448,6 @@ defmodule Blendend.Path do
   @doc """
   Adds a single 90° arc segment between two points.
 
-  Wraps blend2d's `arcQuadrantTo`.
-
   On success, returns `:ok`.
 
   On failure, returns `{:error, reason}`.
@@ -477,8 +475,7 @@ defmodule Blendend.Path do
   @doc """
   Appends all contours from `src` into `dst`.
 
-  Thin wrapper over `BLPath::addPath(src)`. Mutates `dst` in-place and
-  leaves `src` unchanged.
+  Mutates `dst` in-place and leaves `src` unchanged.
 
   On success, returns `:ok`.
 
@@ -505,7 +502,7 @@ defmodule Blendend.Path do
   @doc """
   Appends `src` into `dst` after applying an affine transform `mtx`.
 
-  Wraps `BLPath::addPath(src, matrix)`. Mutates `dst` in-place.
+  Mutates `dst` in-place and leaves `src` unchanged.
 
   On success, returns `:ok`.
 
@@ -535,23 +532,30 @@ defmodule Blendend.Path do
   geometry to `dst`.
 
   This does **not** draw anything; it converts a stroke into fillable
-  path geometry. Useful for hit-testing, boolean ops, or filling later.
+  path geometry. 
 
-  `stroke_opts` (keyword list) mirrors `BLStrokeOptions`:
+  `stroke_opts` (keyword list) mirrors `Blendend.Canvas.Stroke.path/2`:
 
     * `:width` – stroke width (float, default `1.0`)
     * `:miter_limit` – miter limit (default `4.0`)
     * `:start_cap` / `:end_cap` – `:butt | :round | :square | :round_rev | :triangle | :triangle_rev`
     * `:join` – `:miter_clip | :miter_bevel | :miter_round | :bevel | :round`
     * `:transform_order` – `:after | :before` (default `:after`)
-    * `:dash_offset` – dash phase (float)
-    * `:dash_array` – list of dash lengths `[on, off, ...]`
 
   `approx_opts` (keyword list) maps to `BLApproximationOptions`:
 
     * `:flatten_tolerance`, `:simplify_tolerance`, `:offset_parameter`
     * `:flatten_mode` – `:default | :recursive`
     * `:offset_mode` – `:default | :iterative`
+
+  ## Examples
+
+      iex> alias Blendend.Path
+      iex> src = Path.new!() |> Path.move_to!(20, 20) |> Path.line_to!(80, 20)
+      iex> outline = Path.new!()
+      iex> :ok = Path.add_stroked_path(outline, src, stroke_width: 6.0, join: :round)
+      iex> Path.vertex_count!(outline) > Path.vertex_count!(src)
+      true
 
   On success, returns `:ok`. On failure, returns `{:error, reason}`.
   """
@@ -576,7 +580,7 @@ defmodule Blendend.Path do
   end
 
   @doc """
-  Bang variant of `add_stroked_path/4`.
+  Same as `add_stroked_path/4`, but returns the path directly.
   """
   @spec add_stroked_path!(t(), t(), keyword(), keyword()) :: t()
   def add_stroked_path!(dst, src, stroke_opts \\ [], approx_opts \\ []) do
@@ -587,7 +591,7 @@ defmodule Blendend.Path do
   end
 
   @doc """
-  Bang variant of `add_stroked_path/5`.
+  Same as `add_stroked_path/5`, but returns the path directly.
   """
   @spec add_stroked_path!(
           t(),

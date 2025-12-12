@@ -81,9 +81,9 @@ In `blendend` you describe colors, gradients, shapes, shadows, and transforms di
 #### Colors
 ```elixir
 hsv(0, 1.0, 1.0)        # gives red
-hsv(0, 1.0, 1.0, 0)     # alpha zero, fully transparent
+hsv(0, 1.0, 1.0, 0)     # fully transparent
 rgb(255, 255, 0)        # yellow
-rgb(255, 255, 0, 150)        # shaded yellow
+rgb(255, 255, 0, 150)   # shaded yellow
 ```
 #### Gradient
 ```elixir
