@@ -268,9 +268,6 @@ static bool parse_stroke_options(ErlNifEnv* env, ERL_NIF_TERM term, BLStrokeOpti
     else if(std::strcmp(key, "miter_limit") == 0) {
       ok = enif_get_double(env, tup[1], &opts.miter_limit) && ok;
     }
-    else if(std::strcmp(key, "dash_offset") == 0) {
-      ok = enif_get_double(env, tup[1], &opts.dash_offset) && ok;
-    }
     else if(std::strcmp(key, "start_cap") == 0) {
       ok = parse_cap(env, tup[1], &opts.start_cap) && ok;
     }
@@ -283,28 +280,8 @@ static bool parse_stroke_options(ErlNifEnv* env, ERL_NIF_TERM term, BLStrokeOpti
     else if(std::strcmp(key, "transform_order") == 0) {
       ok = parse_transform_order(env, tup[1], &opts.transform_order) && ok;
     }
-    else if(std::strcmp(key, "dash_array") == 0) {
-      if(!enif_is_list(env, tup[1])) {
-        ok = false;
-      }
-      else {
-        std::vector<double> dashes;
-        ERL_NIF_TERM dash_list = tup[1], dash_head, dash_tail;
-        while(enif_get_list_cell(env, dash_list, &dash_head, &dash_tail)) {
-          double val;
-          if(enif_get_double(env, dash_head, &val)) {
-            dashes.push_back(val);
-          }
-          else {
-            ok = false;
-          }
-          dash_list = dash_tail;
-        }
-        opts.dash_array.assign_data(dashes.data(), dashes.size());
-      }
-    }
     else {
-      // Unknown key -> ignore to be lenient
+      // Unknown key 
     }
 
     list = tail;

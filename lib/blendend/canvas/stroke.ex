@@ -39,8 +39,8 @@ defmodule Blendend.Canvas.Stroke do
       – gradient stroke brush, from `Blendend.Style.Gradient.*`
       – pattern stroke brush, from `Blendend.Style.Pattern.create/1`
       (default is black color)
-    * `:stroke_width` – stroke width as a float (default: 1.0)
-    * `:stroke_cap` – cap style at line ends:
+    * `:width` – stroke width as a float (default: 1.0)
+    * `:cap` – cap style at both ends, or `:start_cap` / `:end_cap` to set independently:
 
         * `:butt` (default)
         * `:square`
@@ -49,16 +49,16 @@ defmodule Blendend.Canvas.Stroke do
         * `:triangle`
         * `:triangle_rev`
 
-    * `:stroke_line_join` – join style between segments:
+    * `:join` – join style between segments:
 
         * `:miter_clip` (default)
         * `:miter_bevel`
         * `:miter_round`
         * `:bevel`
         * `:round`
-    * `:stroke_miter_limit` – miter limit as float (only for `:miter` joins)
+    * `:miter_limit` – miter limit as float (only for `:miter` joins)
     * `:comp_op` – compositing operator atom. See `Blendend.Canvas.Fill.path/3` for viable options.
-    * `:stroke_alpha` - extra opacity multiplier (values are `0.0..1.0`)
+    * `:alpha` - extra stroke opacity multiplier (values are `0.0..1.0`)
   If you omit brush options, default values are set.
 
   ## Examples
@@ -76,8 +76,8 @@ defmodule Blendend.Canvas.Stroke do
       :ok =
         Stroke.path(canvas, path,
           stroke_color: Style.color(0, 0, 0),
-          stroke_width: 2.0,
-          stroke_cap: :round
+          width: 2.0,
+          cap: :round
         )
 
   On success, returns `:ok`.

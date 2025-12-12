@@ -126,6 +126,15 @@ struct Style {
 inline bool
 parse_style(ErlNifEnv* env, const ERL_NIF_TERM argv[], int argc, int opts_index, Style* out)
 {
+  // Track whether any stroke styling was provided so we can disambiguate
+  // unprefixed options (e.g. `alpha` should target stroke when a stroke exists).
+  bool stroke_seen = false;
+
+  // Store a pending `alpha` until we know whether it should apply to stroke
+  // or fill (decided after the loop based on `stroke_seen`).
+  bool alpha_seen = false;
+  double alpha_value = 1.0;
+
   // No opts provided
   if(argc <= opts_index)
     return true;
@@ -136,6 +145,51 @@ parse_style(ErlNifEnv* env, const ERL_NIF_TERM argv[], int argc, int opts_index,
     return false;
 
   bool ok = true; // becomes false if any recognized key has a bad value
+
+  auto parse_cap_atom = [&](ERL_NIF_TERM term, uint8_t* out_cap) -> bool {
+    char cap[32];
+    if(!enif_get_atom(env, term, cap, sizeof(cap), ERL_NIF_UTF8))
+      return false;
+
+    uint8_t mode = BL_STROKE_CAP_BUTT;
+
+    if(!strcmp(cap, "butt"))
+      mode = BL_STROKE_CAP_BUTT;
+    else if(!strcmp(cap, "round"))
+      mode = BL_STROKE_CAP_ROUND;
+    else if(!strcmp(cap, "square"))
+      mode = BL_STROKE_CAP_SQUARE;
+    else if(!strcmp(cap, "round_rev"))
+      mode = BL_STROKE_CAP_ROUND_REV;
+    else if(!strcmp(cap, "triangle"))
+      mode = BL_STROKE_CAP_TRIANGLE;
+    else if(!strcmp(cap, "triangle_rev"))
+      mode = BL_STROKE_CAP_TRIANGLE_REV;
+
+    *out_cap = mode;
+    return true;
+  };
+
+  auto parse_join_atom = [&](ERL_NIF_TERM term, uint8_t* out_join) -> bool {
+    char join[32];
+    if(!enif_get_atom(env, term, join, sizeof(join), ERL_NIF_UTF8))
+      return false;
+
+    uint8_t mode = BL_STROKE_JOIN_MITER_CLIP;
+    if(!strcmp(join, "miter_clip"))
+      mode = BL_STROKE_JOIN_MITER_CLIP;
+    else if(!strcmp(join, "round"))
+      mode = BL_STROKE_JOIN_ROUND;
+    else if(!strcmp(join, "bevel"))
+      mode = BL_STROKE_JOIN_BEVEL;
+    else if(!strcmp(join, "miter_bevel"))
+      mode = BL_STROKE_JOIN_MITER_BEVEL;
+    else if(!strcmp(join, "miter_round"))
+      mode = BL_STROKE_JOIN_MITER_ROUND;
+
+    *out_join = mode;
+    return true;
+  };
 
   while(enif_get_list_cell(env, list, &head, &tail)) {
     const ERL_NIF_TERM* tup;
@@ -176,12 +230,15 @@ parse_style(ErlNifEnv* env, const ERL_NIF_TERM argv[], int argc, int opts_index,
         out->stroke_pattern = p;
       else
         ok = false;
+
+      stroke_seen = stroke_seen || ok;
     }
-    else if(strcmp(key, "stroke_width") == 0) {
+    else if(strcmp(key, "stroke_width") == 0 || strcmp(key, "width") == 0) {
       double w;
       if(enif_get_double(env, tup[1], &w)) {
         out->stroke_opts.width = w;
         out->has_stroke_opts = true;
+        stroke_seen = true;
       }
       else {
         ok = false;
@@ -192,56 +249,60 @@ parse_style(ErlNifEnv* env, const ERL_NIF_TERM argv[], int argc, int opts_index,
         out->stroke_alpha_set = true;
       else
         ok = false;
+
+      stroke_seen = stroke_seen || out->stroke_alpha_set;
     }
 
     // --- Caps / Joins ---
-    else if(strcmp(key, "stroke_cap") == 0) {
-      char cap[32];
-      if(enif_get_atom(env, tup[1], cap, sizeof(cap), ERL_NIF_UTF8)) {
-        uint8_t mode = BL_STROKE_CAP_BUTT;
-        if(!strcmp(cap, "round"))
-          mode = BL_STROKE_CAP_ROUND;
-        else if(!strcmp(cap, "square"))
-          mode = BL_STROKE_CAP_SQUARE;
-        else if(!strcmp(cap, "round_rev"))
-          mode = BL_STROKE_CAP_ROUND_REV;
-        else if(!strcmp(cap, "triangle"))
-          mode = BL_STROKE_CAP_TRIANGLE;
-        else if(!strcmp(cap, "triangle_rev"))
-          mode = BL_STROKE_CAP_TRIANGLE_REV;
+    else if(strcmp(key, "stroke_cap") == 0 || strcmp(key, "cap") == 0) {
+      uint8_t mode = BL_STROKE_CAP_BUTT;
+      if(parse_cap_atom(tup[1], &mode)) {
         out->stroke_opts.start_cap = mode;
         out->stroke_opts.end_cap = mode;
         out->has_stroke_opts = true;
+        stroke_seen = true;
       }
       else {
         ok = false;
       }
     }
-    else if(strcmp(key, "stroke_join") == 0) {
-      char join[32];
-      if(enif_get_atom(env, tup[1], join, sizeof(join), ERL_NIF_UTF8)) {
-        uint8_t mode = BL_STROKE_JOIN_MITER_CLIP;
-        if(!strcmp(join, "miter_clip"))
-          mode = BL_STROKE_JOIN_MITER_CLIP;
-        else if(!strcmp(join, "round"))
-          mode = BL_STROKE_JOIN_ROUND;
-        else if(!strcmp(join, "bevel"))
-          mode = BL_STROKE_JOIN_BEVEL;
-        else if(!strcmp(join, "miter_bevel"))
-          mode = BL_STROKE_JOIN_MITER_BEVEL;
-        else if(!strcmp(join, "miter_round"))
-          mode = BL_STROKE_JOIN_MITER_ROUND;
-        // unknown join name → keep default (MITER_CLIP)
+    else if(strcmp(key, "start_cap") == 0) {
+      uint8_t mode = BL_STROKE_CAP_BUTT;
+      if(parse_cap_atom(tup[1], &mode)) {
+        out->stroke_opts.start_cap = mode;
+        out->has_stroke_opts = true;
+        stroke_seen = true;
+      }
+      else {
+        ok = false;
+      }
+    }
+    else if(strcmp(key, "end_cap") == 0) {
+      uint8_t mode = BL_STROKE_CAP_BUTT;
+      if(parse_cap_atom(tup[1], &mode)) {
+        out->stroke_opts.end_cap = mode;
+        out->has_stroke_opts = true;
+        stroke_seen = true;
+      }
+      else {
+        ok = false;
+      }
+    }
+    else if(strcmp(key, "stroke_join") == 0 || strcmp(key, "join") == 0) {
+      uint8_t mode = BL_STROKE_JOIN_MITER_CLIP;
+      if(parse_join_atom(tup[1], &mode)) {
         out->stroke_opts.join = mode;
         out->has_stroke_opts = true;
+        stroke_seen = true;
       }
       else {
         ok = false;
       }
     }
-    else if(strcmp(key, "stroke_miter_limit") == 0) {
+    else if(strcmp(key, "stroke_miter_limit") == 0 || strcmp(key, "miter_limit") == 0) {
       if(enif_get_double(env, tup[1], &out->stroke_opts.miter_limit)) {
         out->has_stroke_opts = true;
+        stroke_seen = true;
       }
       else {
         ok = false;
@@ -250,7 +311,9 @@ parse_style(ErlNifEnv* env, const ERL_NIF_TERM argv[], int argc, int opts_index,
 
     // --- General ---
     else if(strcmp(key, "alpha") == 0) {
-      if(!enif_get_double(env, tup[1], &out->alpha))
+      if(enif_get_double(env, tup[1], &alpha_value))
+        alpha_seen = true;
+      else
         ok = false;
     }
     else if(strcmp(key, "comp_op") == 0) {
@@ -297,6 +360,17 @@ parse_style(ErlNifEnv* env, const ERL_NIF_TERM argv[], int argc, int opts_index,
 
     // Unknown key
     list = tail;
+  }
+
+  // Apply deferred `alpha` once we know whether stroke styling was provided.
+  if(alpha_seen) {
+    if(stroke_seen && !out->stroke_alpha_set) {
+      out->stroke_alpha = alpha_value;
+      out->stroke_alpha_set = true;
+    }
+    else if(!stroke_seen) {
+      out->alpha = alpha_value;
+    }
   }
 
   return ok;

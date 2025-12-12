@@ -553,7 +553,7 @@ defmodule Blendend.Path do
       iex> alias Blendend.Path
       iex> src = Path.new!() |> Path.move_to!(20, 20) |> Path.line_to!(80, 20)
       iex> outline = Path.new!()
-      iex> :ok = Path.add_stroked_path(outline, src, stroke_width: 6.0, join: :round)
+      iex> :ok = Path.add_stroked_path(outline, src, width: 6.0, join: :round)
       iex> Path.vertex_count!(outline) > Path.vertex_count!(src)
       true
 
