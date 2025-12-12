@@ -4,7 +4,7 @@ defmodule Blendend.MixProject do
   def project do
     [
       app: :blendend,
-      version: "0.1.0",
+      version: "0.2.0",
       elixir: "~> 1.19",
       description: "Blend2D bindings for Elixir",
       source_url: "https://github.com/narslan/blendend",
@@ -35,7 +35,7 @@ defmodule Blendend.MixProject do
 
   defp deps do
     [
-      {:ex_doc, "~> 0.39.2", only: :dev, runtime: false, warn_if_outdated: true},
+      {:ex_doc, "~> 0.39", only: :dev, runtime: false, warn_if_outdated: true},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:elixir_make, "~> 0.9.0"}
     ]
