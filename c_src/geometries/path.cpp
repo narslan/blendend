@@ -15,8 +15,7 @@
 // -----------------------------------------------------------------------------
 
 ERL_NIF_TERM
-path_new(ErlNifEnv* env, int argc, [[maybe_unused]] const ERL_NIF_TERM argv[])
-{
+path_new(ErlNifEnv* env, int argc, [[maybe_unused]] const ERL_NIF_TERM argv[]) {
   if(argc != 0) {
     return enif_make_badarg(env);
   }
@@ -27,8 +26,7 @@ path_new(ErlNifEnv* env, int argc, [[maybe_unused]] const ERL_NIF_TERM argv[])
   return make_result_ok(env, NifResource<Path>::make(env, res));
 }
 
-bool cmd_from_term(ErlNifEnv* env, ERL_NIF_TERM term, uint32_t* out)
-{
+bool cmd_from_term(ErlNifEnv* env, ERL_NIF_TERM term, uint32_t* out) {
   char atom[32];
   if(!enif_get_atom(env, term, atom, sizeof(atom), ERL_NIF_UTF8)) {
     return false;
@@ -70,8 +68,7 @@ bool cmd_from_term(ErlNifEnv* env, ERL_NIF_TERM term, uint32_t* out)
   return false;
 }
 
-static bool parse_geometry_direction(ErlNifEnv* env, ERL_NIF_TERM term, BLGeometryDirection* out)
-{
+static bool parse_geometry_direction(ErlNifEnv* env, ERL_NIF_TERM term, BLGeometryDirection* out) {
   char atom[16];
   if(!enif_get_atom(env, term, atom, sizeof(atom), ERL_NIF_UTF8)) {
     return false;
@@ -93,12 +90,12 @@ static bool parse_geometry_direction(ErlNifEnv* env, ERL_NIF_TERM term, BLGeomet
   return false;
 }
 
-static bool parse_optional_matrix(ErlNifEnv* env, ERL_NIF_TERM term, const Matrix2D** out)
-{
+static bool parse_optional_matrix(ErlNifEnv* env, ERL_NIF_TERM term, const Matrix2D** out) {
   // Treat :nil as "no matrix"
   if(enif_is_atom(env, term)) {
     char atom[8];
-    if(enif_get_atom(env, term, atom, sizeof(atom), ERL_NIF_UTF8) && std::strcmp(atom, "nil") == 0) {
+    if(enif_get_atom(env, term, atom, sizeof(atom), ERL_NIF_UTF8) &&
+       std::strcmp(atom, "nil") == 0) {
       *out = nullptr;
       return true;
     }
@@ -113,8 +110,7 @@ static bool parse_optional_matrix(ErlNifEnv* env, ERL_NIF_TERM term, const Matri
   return true;
 }
 
-static bool parse_size_t(ErlNifEnv* env, ERL_NIF_TERM term, size_t* out)
-{
+static bool parse_size_t(ErlNifEnv* env, ERL_NIF_TERM term, size_t* out) {
   unsigned long v;
   if(enif_get_ulong(env, term, &v)) {
     *out = static_cast<size_t>(v);
@@ -124,8 +120,7 @@ static bool parse_size_t(ErlNifEnv* env, ERL_NIF_TERM term, size_t* out)
   return false;
 }
 
-static bool parse_bl_range(ErlNifEnv* env, ERL_NIF_TERM term, BLRange* out)
-{
+static bool parse_bl_range(ErlNifEnv* env, ERL_NIF_TERM term, BLRange* out) {
   // Accept either {start, end} or a Range struct/map with :first and :last.
   const ERL_NIF_TERM* tuple;
   int arity;
@@ -151,8 +146,7 @@ static bool parse_bl_range(ErlNifEnv* env, ERL_NIF_TERM term, BLRange* out)
   return false;
 }
 
-static BLStrokeOptions default_stroke_opts()
-{
+static BLStrokeOptions default_stroke_opts() {
   BLStrokeOptions opts;
   bl_stroke_options_init(&opts);
   opts.width = 1.0;
@@ -165,8 +159,7 @@ static BLStrokeOptions default_stroke_opts()
   return opts;
 }
 
-static bool parse_cap(ErlNifEnv* env, ERL_NIF_TERM term, uint8_t* out)
-{
+static bool parse_cap(ErlNifEnv* env, ERL_NIF_TERM term, uint8_t* out) {
   char cap[32];
   if(!enif_get_atom(env, term, cap, sizeof(cap), ERL_NIF_UTF8))
     return false;
@@ -189,8 +182,7 @@ static bool parse_cap(ErlNifEnv* env, ERL_NIF_TERM term, uint8_t* out)
   return true;
 }
 
-static bool parse_join(ErlNifEnv* env, ERL_NIF_TERM term, uint8_t* out)
-{
+static bool parse_join(ErlNifEnv* env, ERL_NIF_TERM term, uint8_t* out) {
   char join[32];
   if(!enif_get_atom(env, term, join, sizeof(join), ERL_NIF_UTF8))
     return false;
@@ -211,8 +203,7 @@ static bool parse_join(ErlNifEnv* env, ERL_NIF_TERM term, uint8_t* out)
   return true;
 }
 
-static bool parse_transform_order(ErlNifEnv* env, ERL_NIF_TERM term, uint8_t* out)
-{
+static bool parse_transform_order(ErlNifEnv* env, ERL_NIF_TERM term, uint8_t* out) {
   char atom[32];
   if(!enif_get_atom(env, term, atom, sizeof(atom), ERL_NIF_UTF8))
     return false;
@@ -229,11 +220,11 @@ static bool parse_transform_order(ErlNifEnv* env, ERL_NIF_TERM term, uint8_t* ou
   return false;
 }
 
-static bool parse_stroke_options(ErlNifEnv* env, ERL_NIF_TERM term, BLStrokeOptions* out)
-{
+static bool parse_stroke_options(ErlNifEnv* env, ERL_NIF_TERM term, BLStrokeOptions* out) {
   if(enif_is_atom(env, term)) {
     char atom[8];
-    if(enif_get_atom(env, term, atom, sizeof(atom), ERL_NIF_UTF8) && std::strcmp(atom, "nil") == 0) {
+    if(enif_get_atom(env, term, atom, sizeof(atom), ERL_NIF_UTF8) &&
+       std::strcmp(atom, "nil") == 0) {
       *out = default_stroke_opts();
       return true;
     }
@@ -281,7 +272,7 @@ static bool parse_stroke_options(ErlNifEnv* env, ERL_NIF_TERM term, BLStrokeOpti
       ok = parse_transform_order(env, tup[1], &opts.transform_order) && ok;
     }
     else {
-      // Unknown key 
+      // Unknown key
     }
 
     list = tail;
@@ -292,16 +283,16 @@ static bool parse_stroke_options(ErlNifEnv* env, ERL_NIF_TERM term, BLStrokeOpti
   return ok;
 }
 
-static BLApproximationOptions default_approx_opts()
-{
+static BLApproximationOptions default_approx_opts() {
   return bl_default_approximation_options;
 }
 
-static bool parse_approximation_options(ErlNifEnv* env, ERL_NIF_TERM term, BLApproximationOptions* out)
-{
+static bool
+parse_approximation_options(ErlNifEnv* env, ERL_NIF_TERM term, BLApproximationOptions* out) {
   if(enif_is_atom(env, term)) {
     char atom[8];
-    if(enif_get_atom(env, term, atom, sizeof(atom), ERL_NIF_UTF8) && std::strcmp(atom, "nil") == 0) {
+    if(enif_get_atom(env, term, atom, sizeof(atom), ERL_NIF_UTF8) &&
+       std::strcmp(atom, "nil") == 0) {
       *out = default_approx_opts();
       return true;
     }
@@ -384,12 +375,8 @@ struct GeometryExtras {
   BLGeometryDirection dir;
 };
 
-static bool parse_geometry_extras(ErlNifEnv* env,
-                                  int argc,
-                                  const ERL_NIF_TERM argv[],
-                                  int extras_start,
-                                  GeometryExtras* extras)
-{
+static bool parse_geometry_extras(
+    ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[], int extras_start, GeometryExtras* extras) {
   extras->matrix = nullptr;
   extras->dir = BL_GEOMETRY_DIRECTION_CW;
 
@@ -413,8 +400,7 @@ static bool parse_geometry_extras(ErlNifEnv* env,
   return true;
 }
 
-static std::vector<BLPoint> parse_point_list(ErlNifEnv* env, ERL_NIF_TERM list)
-{
+static std::vector<BLPoint> parse_point_list(ErlNifEnv* env, ERL_NIF_TERM list) {
   std::vector<BLPoint> out;
   unsigned int len;
   if(!enif_get_list_length(env, list, &len)) {
@@ -446,8 +432,7 @@ static std::vector<BLPoint> parse_point_list(ErlNifEnv* env, ERL_NIF_TERM list)
 // 4) path_vertex_count(path) → integer
 // -----------------------------------------------------------------------------
 
-ERL_NIF_TERM path_vertex_count(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
-{
+ERL_NIF_TERM path_vertex_count(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
   if(argc != 1) {
     return enif_make_badarg(env);
   }
@@ -464,8 +449,7 @@ ERL_NIF_TERM path_vertex_count(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv
 // 5) path_set_vertex_at(path, index, cmd, x, y)
 // -----------------------------------------------------------------------------
 
-ERL_NIF_TERM path_set_vertex_at(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
-{
+ERL_NIF_TERM path_set_vertex_at(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
   if(argc != 5) {
     return enif_make_badarg(env);
   }
@@ -498,8 +482,7 @@ ERL_NIF_TERM path_set_vertex_at(ErlNifEnv* env, int argc, const ERL_NIF_TERM arg
 }
 
 // path_shrink(path) -> :ok | {:error, reason}
-ERL_NIF_TERM path_shrink(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
-{
+ERL_NIF_TERM path_shrink(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
   if(argc != 1) {
     return enif_make_badarg(env);
   }
@@ -516,8 +499,7 @@ ERL_NIF_TERM path_shrink(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
   return enif_make_atom(env, "ok");
 }
 
-ERL_NIF_TERM canvas_fill_path(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
-{
+ERL_NIF_TERM canvas_fill_path(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
 
   if(argc < 2) {
     return enif_make_badarg(env);
@@ -555,8 +537,7 @@ ERL_NIF_TERM canvas_fill_path(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[
   }
 }
 
-ERL_NIF_TERM canvas_stroke_path(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
-{
+ERL_NIF_TERM canvas_stroke_path(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
 
   if(argc < 2) {
     return enif_make_badarg(env);
@@ -599,8 +580,7 @@ ERL_NIF_TERM canvas_stroke_path(ErlNifEnv* env, int argc, const ERL_NIF_TERM arg
   }
 }
 
-ERL_NIF_TERM path_debug_dump(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
-{
+ERL_NIF_TERM path_debug_dump(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
 
   if(argc != 1) {
     return enif_make_badarg(env);
@@ -624,8 +604,7 @@ ERL_NIF_TERM path_debug_dump(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]
   return enif_make_atom(env, "ok");
 }
 
-ERL_NIF_TERM path_vertex_at(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
-{
+ERL_NIF_TERM path_vertex_at(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
   if(argc != 2)
     return enif_make_badarg(env);
 
@@ -718,8 +697,7 @@ ERL_NIF_TERM path_vertex_at(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
   return make_result_ok(env, enif_make_tuple3(env, cmd_term, x_term, y_term));
 }
 
-ERL_NIF_TERM path_move_to(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
-{
+ERL_NIF_TERM path_move_to(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
 
   if(argc != 3)
     return enif_make_badarg(env);
@@ -742,8 +720,7 @@ ERL_NIF_TERM path_move_to(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
   return enif_make_atom(env, "ok");
 }
 
-ERL_NIF_TERM path_line_to(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
-{
+ERL_NIF_TERM path_line_to(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
 
   if(argc != 3) {
     return enif_make_badarg(env);
@@ -767,8 +744,7 @@ ERL_NIF_TERM path_line_to(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
   return enif_make_atom(env, "ok");
 }
 
-ERL_NIF_TERM path_arc_quadrant_to(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
-{
+ERL_NIF_TERM path_arc_quadrant_to(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
   if(argc != 5) {
     return enif_make_badarg(env);
   }
@@ -792,8 +768,7 @@ ERL_NIF_TERM path_arc_quadrant_to(ErlNifEnv* env, int argc, const ERL_NIF_TERM a
   return enif_make_atom(env, "ok");
 }
 
-ERL_NIF_TERM path_add_box(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
-{
+ERL_NIF_TERM path_add_box(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
   if(argc != 5 && argc != 7) {
     return enif_make_badarg(env);
   }
@@ -815,8 +790,10 @@ ERL_NIF_TERM path_add_box(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
   }
 
   BLBox box(x0, y0, x1, y1);
-  BLResult rc = extras.matrix ? path->value.add_geometry(BL_GEOMETRY_TYPE_BOXD, &box, &extras.matrix->value, extras.dir)
-                              : path->value.add_box(box, extras.dir);
+  BLResult rc =
+      extras.matrix
+          ? path->value.add_geometry(BL_GEOMETRY_TYPE_BOXD, &box, &extras.matrix->value, extras.dir)
+          : path->value.add_box(box, extras.dir);
 
   if(rc != BL_SUCCESS)
     return make_result_error(env, "path_add_box_failed");
@@ -824,8 +801,7 @@ ERL_NIF_TERM path_add_box(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
   return enif_make_atom(env, "ok");
 }
 
-ERL_NIF_TERM path_add_rect(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
-{
+ERL_NIF_TERM path_add_rect(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
   if(argc != 5 && argc != 7) {
     return enif_make_badarg(env);
   }
@@ -847,9 +823,10 @@ ERL_NIF_TERM path_add_rect(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
   }
 
   BLRect rect(x, y, w, h);
-  BLResult rc =
-    extras.matrix ? path->value.add_geometry(BL_GEOMETRY_TYPE_RECTD, &rect, &extras.matrix->value, extras.dir)
-                  : path->value.add_rect(rect, extras.dir);
+  BLResult rc = extras.matrix
+                    ? path->value.add_geometry(
+                          BL_GEOMETRY_TYPE_RECTD, &rect, &extras.matrix->value, extras.dir)
+                    : path->value.add_rect(rect, extras.dir);
 
   if(rc != BL_SUCCESS)
     return make_result_error(env, "path_add_rect_failed");
@@ -857,8 +834,7 @@ ERL_NIF_TERM path_add_rect(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
   return enif_make_atom(env, "ok");
 }
 
-ERL_NIF_TERM path_add_circle(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
-{
+ERL_NIF_TERM path_add_circle(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
   if(argc != 4 && argc != 6) {
     return enif_make_badarg(env);
   }
@@ -890,8 +866,7 @@ ERL_NIF_TERM path_add_circle(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]
   return enif_make_atom(env, "ok");
 }
 
-ERL_NIF_TERM path_add_ellipse(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
-{
+ERL_NIF_TERM path_add_ellipse(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
   if(argc != 5 && argc != 7) {
     return enif_make_badarg(env);
   }
@@ -922,8 +897,7 @@ ERL_NIF_TERM path_add_ellipse(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[
   return enif_make_atom(env, "ok");
 }
 
-ERL_NIF_TERM path_add_round_rect(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
-{
+ERL_NIF_TERM path_add_round_rect(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
   if(argc != 7 && argc != 9) {
     return enif_make_badarg(env);
   }
@@ -955,8 +929,7 @@ ERL_NIF_TERM path_add_round_rect(ErlNifEnv* env, int argc, const ERL_NIF_TERM ar
   return enif_make_atom(env, "ok");
 }
 
-ERL_NIF_TERM path_add_arc(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
-{
+ERL_NIF_TERM path_add_arc(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
   if(argc != 7 && argc != 9) {
     return enif_make_badarg(env);
   }
@@ -988,8 +961,7 @@ ERL_NIF_TERM path_add_arc(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
   return enif_make_atom(env, "ok");
 }
 
-ERL_NIF_TERM path_add_chord(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
-{
+ERL_NIF_TERM path_add_chord(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
   if(argc != 7 && argc != 9) {
     return enif_make_badarg(env);
   }
@@ -1021,8 +993,7 @@ ERL_NIF_TERM path_add_chord(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
   return enif_make_atom(env, "ok");
 }
 
-ERL_NIF_TERM path_add_line(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
-{
+ERL_NIF_TERM path_add_line(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
   if(argc != 5 && argc != 7) {
     return enif_make_badarg(env);
   }
@@ -1053,8 +1024,7 @@ ERL_NIF_TERM path_add_line(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
   return enif_make_atom(env, "ok");
 }
 
-ERL_NIF_TERM path_add_triangle(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
-{
+ERL_NIF_TERM path_add_triangle(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
   if(argc != 7 && argc != 9) {
     return enif_make_badarg(env);
   }
@@ -1086,8 +1056,7 @@ ERL_NIF_TERM path_add_triangle(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv
   return enif_make_atom(env, "ok");
 }
 
-ERL_NIF_TERM path_add_polyline(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
-{
+ERL_NIF_TERM path_add_polyline(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
   if(argc != 2 && argc != 4) {
     return enif_make_badarg(env);
   }
@@ -1116,8 +1085,7 @@ ERL_NIF_TERM path_add_polyline(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv
   return enif_make_atom(env, "ok");
 }
 
-ERL_NIF_TERM path_add_polygon(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
-{
+ERL_NIF_TERM path_add_polygon(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
   if(argc != 2 && argc != 4) {
     return enif_make_badarg(env);
   }
@@ -1146,8 +1114,7 @@ ERL_NIF_TERM path_add_polygon(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[
   return enif_make_atom(env, "ok");
 }
 
-ERL_NIF_TERM path_close(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
-{
+ERL_NIF_TERM path_close(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
 
   if(argc != 1) {
     return enif_make_badarg(env);
@@ -1166,8 +1133,7 @@ ERL_NIF_TERM path_close(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
 }
 
 // path_quad_to(PathRes, x1, y1, x2, y2)
-ERL_NIF_TERM path_quad_to(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
-{
+ERL_NIF_TERM path_quad_to(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
   if(argc != 5) {
     return enif_make_badarg(env);
   }
@@ -1194,8 +1160,7 @@ ERL_NIF_TERM path_quad_to(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
 // -----------------------------------------------------------------------------
 // conic_to(path, x1, y1, x2, y2, w)
 // -----------------------------------------------------------------------------
-ERL_NIF_TERM path_conic_to(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
-{
+ERL_NIF_TERM path_conic_to(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
 
   if(argc != 6)
     return enif_make_badarg(env);
@@ -1223,8 +1188,7 @@ ERL_NIF_TERM path_conic_to(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
 // -----------------------------------------------------------------------------
 // smooth_quad_to(path, x2, y2)
 // -----------------------------------------------------------------------------
-ERL_NIF_TERM path_smooth_quad_to(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
-{
+ERL_NIF_TERM path_smooth_quad_to(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
 
   if(argc != 3)
     return enif_make_badarg(env);
@@ -1249,8 +1213,7 @@ ERL_NIF_TERM path_smooth_quad_to(ErlNifEnv* env, int argc, const ERL_NIF_TERM ar
 // -----------------------------------------------------------------------------
 // smooth_cubic_to(path, x2, y2, x3, y3)
 // -----------------------------------------------------------------------------
-ERL_NIF_TERM path_smooth_cubic_to(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
-{
+ERL_NIF_TERM path_smooth_cubic_to(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
 
   if(argc != 5)
     return enif_make_badarg(env);
@@ -1276,8 +1239,7 @@ ERL_NIF_TERM path_smooth_cubic_to(ErlNifEnv* env, int argc, const ERL_NIF_TERM a
 // -----------------------------------------------------------------------------
 // arc_to(path, cx, cy, rx, ry, start, sweep, force_move_to)
 // -----------------------------------------------------------------------------
-ERL_NIF_TERM path_arc_to(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
-{
+ERL_NIF_TERM path_arc_to(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
 
   if(argc != 8)
     return enif_make_badarg(env);
@@ -1317,8 +1279,7 @@ ERL_NIF_TERM path_arc_to(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
 // elliptic_arc_to(path, rx, ry, xAxisRotation, large_arc_flag, sweep_flag, x1, y1)
 // SVG-style endpoint-based elliptical arc.
 // -----------------------------------------------------------------------------
-ERL_NIF_TERM path_elliptic_arc_to(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
-{
+ERL_NIF_TERM path_elliptic_arc_to(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
   if(argc != 8)
     return enif_make_badarg(env);
 
@@ -1363,8 +1324,7 @@ ERL_NIF_TERM path_elliptic_arc_to(ErlNifEnv* env, int argc, const ERL_NIF_TERM a
 }
 
 // path_cubic_to(PathRes, x1, y1, x2, y2, x3, y3)
-ERL_NIF_TERM path_cubic_to(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
-{
+ERL_NIF_TERM path_cubic_to(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
 
   if(argc != 7) {
     return enif_make_badarg(env);
@@ -1391,8 +1351,7 @@ ERL_NIF_TERM path_cubic_to(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
 
 // path_hit_test(PathRes, x, y)
 // path_hit_test(PathRes, x, y, FillRule)
-ERL_NIF_TERM path_hit_test(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
-{
+ERL_NIF_TERM path_hit_test(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
 
   if(argc < 3) {
     return enif_make_badarg(env);
@@ -1431,26 +1390,17 @@ ERL_NIF_TERM path_hit_test(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
 
   ERL_NIF_TERM res_atom;
   switch(ht) {
-  case BL_HIT_TEST_IN:
-    res_atom = enif_make_atom(env, "in");
-    break;
-  case BL_HIT_TEST_PART:
-    res_atom = enif_make_atom(env, "part");
-    break;
-  case BL_HIT_TEST_OUT:
-    res_atom = enif_make_atom(env, "out");
-    break;
+  case BL_HIT_TEST_IN: res_atom = enif_make_atom(env, "in"); break;
+  case BL_HIT_TEST_PART: res_atom = enif_make_atom(env, "part"); break;
+  case BL_HIT_TEST_OUT: res_atom = enif_make_atom(env, "out"); break;
   case BL_HIT_TEST_INVALID:
-  default:
-    res_atom = enif_make_atom(env, "invalid");
-    break;
+  default: res_atom = enif_make_atom(env, "invalid"); break;
   }
 
   return make_result_ok(env, res_atom);
 }
 
-ERL_NIF_TERM path_clear(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
-{
+ERL_NIF_TERM path_clear(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
   if(argc != 1) {
     return enif_make_badarg(env);
   }
@@ -1464,8 +1414,7 @@ ERL_NIF_TERM path_clear(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
   return enif_make_atom(env, "ok");
 }
 
-ERL_NIF_TERM path_equals(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
-{
+ERL_NIF_TERM path_equals(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
   if(argc != 2) {
     return enif_make_badarg(env);
   }
@@ -1480,8 +1429,7 @@ ERL_NIF_TERM path_equals(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
   return eq ? enif_make_atom(env, "true") : enif_make_atom(env, "false");
 }
 
-ERL_NIF_TERM path_fit_to(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
-{
+ERL_NIF_TERM path_fit_to(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
   if(argc != 2) {
     return enif_make_badarg(env);
   }
@@ -1515,8 +1463,7 @@ ERL_NIF_TERM path_fit_to(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
 }
 
 // path_add_path(dst, src)
-ERL_NIF_TERM path_add_path(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
-{
+ERL_NIF_TERM path_add_path(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
   if(argc != 2)
     return enif_make_badarg(env);
 
@@ -1534,8 +1481,7 @@ ERL_NIF_TERM path_add_path(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
 }
 
 // path_add_path_transform(dst, src, matrix)
-ERL_NIF_TERM path_add_path_transform(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
-{
+ERL_NIF_TERM path_add_path_transform(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
 
   if(argc != 3)
     return enif_make_badarg(env);
@@ -1557,8 +1503,7 @@ ERL_NIF_TERM path_add_path_transform(ErlNifEnv* env, int argc, const ERL_NIF_TER
 
 // path_translate(path, dx, dy)
 // path_translate(path, {start, end} | %Range{}, dx, dy)
-ERL_NIF_TERM path_translate(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
-{
+ERL_NIF_TERM path_translate(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
   if(argc != 3 && argc != 4) {
     return enif_make_badarg(env);
   }
@@ -1595,8 +1540,7 @@ ERL_NIF_TERM path_translate(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
 
 // path_transform(path, matrix)
 // path_transform(path, {start, end} | %Range{}, matrix)
-ERL_NIF_TERM path_transform(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
-{
+ERL_NIF_TERM path_transform(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
   if(argc != 2 && argc != 3) {
     return enif_make_badarg(env);
   }
@@ -1640,8 +1584,7 @@ ERL_NIF_TERM path_transform(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
 
 // path_add_stroked_path(dst, src, stroke_opts, approx_opts)
 // path_add_stroked_path(dst, src, range, stroke_opts, approx_opts)
-ERL_NIF_TERM path_add_stroked_path(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
-{
+ERL_NIF_TERM path_add_stroked_path(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
   if(argc < 3 || argc > 5)
     return enif_make_badarg(env);
 
@@ -1690,13 +1633,11 @@ ERL_NIF_TERM path_add_stroked_path(ErlNifEnv* env, int argc, const ERL_NIF_TERM 
 }
 
 // Path flatten
-static BL_INLINE BLPoint mix(const BLPoint& a, const BLPoint& b, double t) noexcept
-{
+static BL_INLINE BLPoint mix(const BLPoint& a, const BLPoint& b, double t) noexcept {
   return BLPoint(a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t);
 }
 
-static double quadFlatness(const BLPoint& p0, const BLPoint& p1, const BLPoint& p2) noexcept
-{
+static double quadFlatness(const BLPoint& p0, const BLPoint& p1, const BLPoint& p2) noexcept {
   // distance of control point from line p0-p2
   double ux = p2.x - p0.x;
   double uy = p2.y - p0.y;
@@ -1709,8 +1650,7 @@ static double quadFlatness(const BLPoint& p0, const BLPoint& p1, const BLPoint& 
 }
 
 static double
-cubicFlatness(const BLPoint& p0, const BLPoint& p1, const BLPoint& p2, const BLPoint& p3) noexcept
-{
+cubicFlatness(const BLPoint& p0, const BLPoint& p1, const BLPoint& p2, const BLPoint& p3) noexcept {
   double ux = p3.x - p0.x;
   double uy = p3.y - p0.y;
   double len = std::sqrt(ux * ux + uy * uy);
@@ -1728,8 +1668,7 @@ cubicFlatness(const BLPoint& p0, const BLPoint& p1, const BLPoint& p2, const BLP
 }
 
 static void flattenQuadRecursive(
-    BLPath& dst, const BLPoint& p0, const BLPoint& p1, const BLPoint& p2, double tol)
-{
+    BLPath& dst, const BLPoint& p0, const BLPoint& p1, const BLPoint& p2, double tol) {
   if(quadFlatness(p0, p1, p2) <= tol) {
     dst.line_to(p2);
     return;
@@ -1748,8 +1687,7 @@ static void flattenCubicRecursive(BLPath& dst,
                                   const BLPoint& p1,
                                   const BLPoint& p2,
                                   const BLPoint& p3,
-                                  double tol)
-{
+                                  double tol) {
   if(cubicFlatness(p0, p1, p2, p3) <= tol) {
     dst.line_to(p3);
     return;
@@ -1767,8 +1705,7 @@ static void flattenCubicRecursive(BLPath& dst,
   flattenCubicRecursive(dst, p0123, p123, p23, p3, tol);
 }
 
-static BLResult flattenPath(const BLPath& src, BLPath& dst, double tol)
-{
+static BLResult flattenPath(const BLPath& src, BLPath& dst, double tol) {
   dst.clear();
 
   size_t n = src.size();
@@ -1833,16 +1770,14 @@ static BLResult flattenPath(const BLPath& src, BLPath& dst, double tol)
       break;
     }
 
-    default:
-      break;
+    default: break;
     }
   }
 
   return BL_SUCCESS;
 }
 
-ERL_NIF_TERM path_flatten(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
-{
+ERL_NIF_TERM path_flatten(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
   if(argc != 2)
     return make_result_error(env, "bad_arity");
 

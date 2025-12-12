@@ -8,8 +8,7 @@
 struct Color {
   BLRgba32 value;
 
-  void destroy() noexcept
-  {
+  void destroy() noexcept {
     // Nothing to do; BLRgba32 has no dynamic resources.
   }
 };
@@ -17,8 +16,7 @@ struct Color {
 struct Gradient {
   BLGradient value;
 
-  void destroy() noexcept
-  {
+  void destroy() noexcept {
     value.reset();
   }
 };
@@ -26,8 +24,7 @@ struct Gradient {
 struct Pattern {
   BLPattern value;
 
-  void destroy() noexcept
-  {
+  void destroy() noexcept {
     value.reset();
   }
 };
@@ -52,8 +49,7 @@ struct Style {
   double alpha = 1.0;
   BLCompOp comp_op = BL_COMP_OP_SRC_OVER;
 
-  Style() noexcept
-  {
+  Style() noexcept {
     stroke_opts.width = 1.0;
     stroke_opts.miter_limit = 4.0;
     stroke_opts.start_cap = BL_STROKE_CAP_BUTT;
@@ -61,13 +57,11 @@ struct Style {
     stroke_opts.join = BL_STROKE_JOIN_MITER_CLIP;
   }
 
-  bool has_fill() const noexcept
-  {
+  bool has_fill() const noexcept {
     return pattern || gradient || color;
   }
 
-  bool has_stroke() const noexcept
-  {
+  bool has_stroke() const noexcept {
     // “there is stroke info here” if we either explicitly set
     // some stroke options or we set a stroke style (color/gradient).
     if(stroke_color || stroke_gradient || stroke_pattern)
@@ -78,8 +72,7 @@ struct Style {
   }
 
   // --- Apply Fill ---
-  void apply_fill(BLContext* ctx) const noexcept
-  {
+  void apply_fill(BLContext* ctx) const noexcept {
     // precedence: pattern > gradient > color
     if(pattern) {
       ctx->set_fill_style(pattern->value);
@@ -93,8 +86,7 @@ struct Style {
   }
 
   // --- Apply Stroke ---
-  void apply_stroke(BLContext* ctx) const noexcept
-  {
+  void apply_stroke(BLContext* ctx) const noexcept {
     if(has_stroke_opts)
       ctx->set_stroke_options(stroke_opts);
 
@@ -109,8 +101,7 @@ struct Style {
       ctx->set_stroke_style(stroke_gradient->value);
   }
 
-  void apply(BLContext* ctx) const noexcept
-  {
+  void apply(BLContext* ctx) const noexcept {
     if(has_comp_op)
       ctx->set_comp_op(comp_op);
     if(alpha != 1.0)
@@ -124,8 +115,7 @@ struct Style {
 };
 
 inline bool
-parse_style(ErlNifEnv* env, const ERL_NIF_TERM argv[], int argc, int opts_index, Style* out)
-{
+parse_style(ErlNifEnv* env, const ERL_NIF_TERM argv[], int argc, int opts_index, Style* out) {
   // Track whether any stroke styling was provided so we can disambiguate
   // unprefixed options (e.g. `alpha` should target stroke when a stroke exists).
   bool stroke_seen = false;
