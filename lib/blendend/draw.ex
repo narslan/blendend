@@ -132,19 +132,14 @@ defmodule Blendend.Draw do
   Forms:
 
     * `rgb(r, g, b, a \\ 255)`
+    * `rgb({r, g, b})` (alpha defaults to `255`)
+    * `rgb({r, g, b, a})`
     * `rgb(:random)` for an opaque random color
   """
-  defmacro rgb(:random) do
-    quote do
-      Blendend.Style.Color.random()
-    end
-  end
-
-  defmacro rgb(r, g, b, a \\ 255) do
-    quote bind_quoted: [r: r, g: g, b: b, a: a] do
-      Blendend.Style.Color.rgb!(r, g, b, a)
-    end
-  end
+  def rgb(:random), do: Blendend.Style.Color.random()
+  def rgb({r, g, b}), do: Blendend.Style.Color.rgb!(r, g, b, 255)
+  def rgb({r, g, b, a}), do: Blendend.Style.Color.rgb!(r, g, b, a)
+  def rgb(r, g, b, a \\ 255), do: Blendend.Style.Color.rgb!(r, g, b, a)
 
   @doc """
   Creates a color from HSV components plus alpha (0–255).
@@ -154,13 +149,13 @@ defmodule Blendend.Draw do
 
   Forms:
 
+    * `hsv({h, s, v})` (alpha defaults to `255`)
+    * `hsv({h, s, v, a})`
     * `hsv(h, s, v, a \\ 255)`
   """
-  defmacro hsv(h, s, v, a \\ 255) do
-    quote bind_quoted: [h: h, s: s, v: v, a: a] do
-      Blendend.Style.Color.from_hsv(h, s, v, a)
-    end
-  end
+  def hsv({h, s, v}), do: Blendend.Style.Color.from_hsv(h, s, v, 255)
+  def hsv({h, s, v, a}), do: Blendend.Style.Color.from_hsv(h, s, v, a)
+  def hsv(h, s, v, a \\ 255), do: Blendend.Style.Color.from_hsv(h, s, v, a)
 
   @doc """
   Top–level entry point for Blendend drawings.
