@@ -68,8 +68,6 @@ static int load(ErlNifEnv* env, void**, ERL_NIF_TERM)
 MAKE_TERM(canvas_new)
 MAKE_TERM(canvas_save_state)
 MAKE_TERM(canvas_restore_state)
-MAKE_TERM(canvas_set_stroke_width)
-MAKE_TERM(canvas_set_stroke_style)
 // Canvas transform
 MAKE_TERM(canvas_set_transform)
 MAKE_TERM(canvas_reset_transform)
@@ -87,16 +85,11 @@ MAKE_TERM(canvas_apply_transform)
 MAKE_TERM(canvas_user_transform)
 MAKE_TERM(canvas_set_fill_rule)
 MAKE_TERM(canvas_clear)
-MAKE_TERM(canvas_set_comp_op)
-MAKE_TERM(canvas_set_global_alpha)
-MAKE_TERM(canvas_set_style_alpha)
-MAKE_TERM(canvas_disable_style)
 MAKE_TERM(canvas_clip_to_rect)
 MAKE_TERM(canvas_blit_image)
 MAKE_TERM(canvas_blit_image_scaled)
 MAKE_TERM(canvas_fill_mask)
 MAKE_TERM(canvas_blur_path)
-MAKE_TERM(canvas_set_fill_style)
 
 MAKE_TERM(canvas_to_png_base64)
 MAKE_TERM(canvas_to_png)
@@ -188,7 +181,6 @@ MAKE_TERM(matrix2d_invert)
 MAKE_TERM(matrix2d_map_point)
 MAKE_TERM(matrix2d_map_vector)
 MAKE_TERM(matrix2d_make_sin_cos)
-MAKE_TERM(canvas_set_stroke_join)
 // Fill Geometry
 MAKE_DRAW_NIF(canvas_fill_box, BLBox, fill_box)
 MAKE_DRAW_NIF(canvas_fill_rect, BLRect, fill_rect)
@@ -267,20 +259,12 @@ MAKE_DRAW_GLYPH(stroke_glyph_run)
   X(canvas_post_rotate, 2, 0) \
   X(canvas_post_rotate_at, 4, 0) \
   X(canvas_skew, 3, 0) \
-  X(canvas_set_stroke_join, 2, 0) \
   X(canvas_clip_to_rect, 5, 0) \
   X(canvas_fill_mask, 4, 0) \
   X(canvas_fill_mask, 5, 0) \
   X(canvas_blur_path, 3, ERL_NIF_DIRTY_JOB_CPU_BOUND) \
   X(canvas_blur_path, 4, ERL_NIF_DIRTY_JOB_CPU_BOUND) \
-  X(canvas_set_fill_style, 2, 0) \
-  X(canvas_set_stroke_width, 2, 0) \
-  X(canvas_set_stroke_style, 2, 0) \
-  X(canvas_disable_style, 2, 0) \
   X(canvas_set_fill_rule, 2, 0) \
-  X(canvas_set_comp_op, 2, 0) \
-  X(canvas_set_global_alpha, 2, 0) \
-  X(canvas_set_style_alpha, 3, 0) \
   X(canvas_blit_image, 4, 0) \
   X(canvas_blit_image_scaled, 6, 0) \
   X(canvas_to_png_base64, 1, ERL_NIF_DIRTY_JOB_CPU_BOUND) \

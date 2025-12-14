@@ -4,7 +4,7 @@ defmodule Blendend.MixProject do
   def project do
     [
       app: :blendend,
-      version: "0.2.0",
+      version: "0.3.0",
       elixir: "~> 1.19",
       description: "Blend2D bindings for Elixir",
       source_url: "https://github.com/narslan/blendend",

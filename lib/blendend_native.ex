@@ -21,10 +21,6 @@ defmodule Blendend.Native do
   def canvas_set_transform(_canvas, _matrix), do: :erlang.nif_error(:nif_not_loaded)
   def canvas_reset_transform(_canvas), do: :erlang.nif_error(:nif_not_loaded)
 
-  def canvas_set_stroke_width(_canvas, _width), do: :erlang.nif_error(:nif_not_loaded)
-  def canvas_set_stroke_style(_canvas, _style), do: :erlang.nif_error(:nif_not_loaded)
-  def canvas_set_stroke_join(_canvas, _join), do: :erlang.nif_error(:nif_not_loaded)
-
   def canvas_translate(_canvas, _x, _y), do: :erlang.nif_error(:nif_not_loaded)
   def canvas_post_translate(_canvas, _x, _y), do: :erlang.nif_error(:nif_not_loaded)
 
@@ -51,12 +47,7 @@ defmodule Blendend.Native do
   def canvas_fill_mask(_c, _img, _x, _y, _opts), do: :erlang.nif_error(:nif_not_loaded)
   def canvas_blur_path(_canvas, _path, _sigma), do: :erlang.nif_error(:nif_not_loaded)
   def canvas_blur_path(_canvas, _path, _sigma, _opts), do: :erlang.nif_error(:nif_not_loaded)
-  def canvas_set_fill_style(_canvas, _style), do: :erlang.nif_error(:nif_not_loaded)
   def canvas_set_fill_rule(_canvas, _rule), do: :erlang.nif_error(:nif_not_loaded)
-  def canvas_set_comp_op(_canvas, _op), do: :erlang.nif_error(:nif_not_loaded)
-  def canvas_set_global_alpha(_canvas, _alpha), do: :erlang.nif_error(:nif_not_loaded)
-  def canvas_set_style_alpha(_canvas, _slot, _alpha), do: :erlang.nif_error(:nif_not_loaded)
-  def canvas_disable_style(_canvas, _slot), do: :erlang.nif_error(:nif_not_loaded)
 
   def canvas_to_png_base64(_canvas), do: :erlang.nif_error(:nif_not_loaded)
   def canvas_to_png(_canvas), do: :erlang.nif_error(:nif_not_loaded)

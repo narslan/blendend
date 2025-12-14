@@ -39,7 +39,7 @@ sudo make install
 ```elixir
 def deps do
   [
-    {:blendend, "~> 0.1.0"}
+    {:blendend, "~> 0.3"}
   ]
 end
 ```

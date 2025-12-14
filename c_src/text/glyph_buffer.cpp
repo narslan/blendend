@@ -3,7 +3,7 @@
 #include "../nif/nif_util.h"
 
 #include "erl_nif.h"
-#include <blend2d/core/glyphrun.h>
+#include <blend2d/blend2d.h>
 
 ERL_NIF_TERM glyph_buffer_new(ErlNifEnv* env,
                               [[maybe_unused]] int argc,
