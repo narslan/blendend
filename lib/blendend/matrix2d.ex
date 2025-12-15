@@ -386,6 +386,18 @@ defmodule Blendend.Matrix2D do
 
   @doc """
   Maps a point `{x, y}` through the matrix, returning `{ok, {x, y}}`.
+
+  Use this for *positions* (path vertices, control points, anchor points, etc.).
+
+  If you want to transform a *direction/delta* (tangent, normal, offset vector),
+  use `map_vector/3` instead, which ignores translation (`tx/ty`).
+
+  Examples:
+
+      iex> use Blendend.Draw
+      iex> translate = matrix(do: translate(10, 10))
+      iex> Blendend.Matrix2D.map_point!(translate, 2, 3)
+      {12.0, 13.0}
   """
   @spec map_point(t(), number(), number()) :: {:ok, {number(), number()}} | {:error, term()}
   def map_point(m, x, y), do: Native.matrix2d_map_point(m, x * 1.0, y * 1.0)
@@ -403,6 +415,11 @@ defmodule Blendend.Matrix2D do
 
   @doc """
   Maps a vector `{x, y}` through the matrix (ignores translation), returning `{ok, {x, y}}`.
+
+  Use this for *directions/deltas* (tangents, normals, offsets). If you want to
+  transform a *position*, use `map_point/3` instead.
+  With a pure translation matrix `{tx, ty}`, map_point moves `{x, y}` to `{x+tx, y+ty}`,   
+  while map_vector keeps `{x, y}` unchanged.
 
   Examples:
 
