@@ -68,7 +68,6 @@ end
 
 Most of Blend2D's functionality is exposed. Remaining work:
 - Multi-threaded drawing pipelines are not supported yet; rendering runs single-threaded for now.
-- Gradient transformations and extend modes are planned so gradients can be positioned and repeated more flexibly.
 - More documentation and examples (the [blendend_playground](https://github.com/narslan/blendend_playground) covers many cases).
 
 ## Playground
