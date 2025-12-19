@@ -646,6 +646,39 @@ defmodule Blendend.Draw do
   end
 
   @doc """
+  Loads an image from `path`.
+
+  Convenience for `Blendend.Image.from_file!/1`.
+
+  ## Examples
+
+      png_image = image "path/to/image.png"
+  """
+  def image(path), do: Blendend.Image.from_file!(path)
+
+  @doc """
+  Loads an image from `path` and converts it to A8 using the given channel.
+
+  Convenience for `Blendend.Image.from_file_a8!/2`.
+
+  ## Examples
+
+      mask = image_a8 "path/to/mask.png", :luma
+  """
+  def image_a8(path, channel \\ :red), do: Blendend.Image.from_file_a8!(path, channel)
+
+  @doc """
+  Returns a blurred copy of `image`.
+
+  Convenience for `Blendend.Image.blur!/2`.
+
+  ## Examples
+
+      blurred = blur_image png_image, 6.0
+  """
+  def blur_image(image, sigma), do: Blendend.Image.blur!(image, sigma)
+
+  @doc """
   Loads a font face from the given path and creates a font at the specified size.
 
   Returns the font or raises on error.
