@@ -456,6 +456,12 @@ defmodule Blendend.Canvas do
 
   This copies the pixels of `image` so its top-left lands on `{x, y}` without
   scaling or tiling.
+
+  ## Examples
+
+      {:ok, canvas} = Blendend.Canvas.new(200, 200)
+      {:ok, image} = Blendend.Image.from_file("path/to/image.png")
+      :ok = Blendend.Canvas.blit_image(canvas, image, 24, 32)
   """
   @spec blit_image(t(), Image.t(), number(), number()) :: :ok | {:error, term()}
   def blit_image(canvas, image, x, y),
@@ -476,6 +482,12 @@ defmodule Blendend.Canvas do
   Blits an image scaled to the rectangle `{x, y, w, h}`.
 
   The image is resampled to fit the destination rectangle.
+
+  ## Examples
+
+      {:ok, canvas} = Blendend.Canvas.new(200, 200)
+      {:ok, image} = Blendend.Image.from_file("path/to/image.png")
+      :ok = Blendend.Canvas.blit_image(canvas, image, 10, 10, 80, 40)
   """
   @spec blit_image(t(), Image.t(), number(), number(), number(), number()) ::
           :ok | {:error, term()}
