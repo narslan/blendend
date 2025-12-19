@@ -24,7 +24,7 @@ defmodule Blendend.DrawImageTest do
     on_exit(fn -> File.rm(path) end)
     write_png!(path)
 
-    png_image = image path
+    png_image = image(path)
 
     assert {2, 3} == Image.size!(png_image)
   end
@@ -34,7 +34,7 @@ defmodule Blendend.DrawImageTest do
     on_exit(fn -> File.rm(path) end)
     write_png!(path)
 
-    mask = image_a8 path, :luma
+    mask = image_a8(path, :luma)
 
     assert {2, 3} == Image.size!(mask)
   end
@@ -44,7 +44,7 @@ defmodule Blendend.DrawImageTest do
     on_exit(fn -> File.rm(path) end)
     write_png!(path)
 
-    png_image = image path
+    png_image = image(path)
     blurred = blur_image(png_image, 4.0)
 
     assert {2, 3} == Image.size!(blurred)
