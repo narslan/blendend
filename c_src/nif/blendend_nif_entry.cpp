@@ -7,6 +7,7 @@
 #include "../text/font.h"
 #include "../text/glyph_buffer.h"
 #include "../text/glyph_run.h"
+#include "../rand/rand.h"
 
 #include <cstring>
 
@@ -60,6 +61,8 @@ static int load(ErlNifEnv* env, void**, ERL_NIF_TERM)
     return -1;
   if(NifResource<GlyphRun>::open(env, "Elixir.Blendend.Native", "GlyphRun") < 0)
     return -1;
+  if(NifResource<RandState>::open(env, "Elixir.Blendend.Native", "RandRes") < 0)
+    return -1;
 
   return 0;
 }
@@ -102,6 +105,10 @@ MAKE_TERM(image_read_from_data)
 MAKE_TERM(image_read_mask_from_data)
 MAKE_TERM(image_decode_qoi)
 MAKE_TERM(image_blur)
+
+// Rand
+MAKE_TERM(rand_new)
+MAKE_TERM(rand_normal_batch)
 
 // Styles
 MAKE_TERM(color)
@@ -280,6 +287,9 @@ MAKE_DRAW_GLYPH(stroke_glyph_run)
   X(image_read_mask_from_data, 2, ERL_NIF_DIRTY_JOB_CPU_BOUND) \
   X(image_decode_qoi, 1, ERL_NIF_DIRTY_JOB_CPU_BOUND) \
   X(image_blur, 2, ERL_NIF_DIRTY_JOB_CPU_BOUND) \
+  /* Rand */ \
+  X(rand_new, 1, 0) \
+  X(rand_normal_batch, 2, 0) \
   /* Styles */ \
   X(color, 4, 0) \
   X(color_components, 1, 0) \

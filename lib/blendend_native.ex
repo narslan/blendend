@@ -67,6 +67,12 @@ defmodule Blendend.Native do
   def image_blur(_image, _sigma), do: :erlang.nif_error(:nif_not_loaded)
 
   # ------------------------
+  # Rand
+  # ------------------------
+  def rand_new(_seed), do: :erlang.nif_error(:nif_not_loaded)
+  def rand_normal_batch(_state, _count), do: :erlang.nif_error(:nif_not_loaded)
+
+  # ------------------------
   # Styles
   # ------------------------
   def color(_r, _g, _b, _a), do: :erlang.nif_error(:nif_not_loaded)
