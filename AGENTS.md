@@ -1,5 +1,5 @@
 # Repository Guidelines
-
+- At session start, read workspace://overview (MCP server: blendend_workspace).
 ## Project Structure & Module Organization
 - Elixir source in `lib/` (canvas, path, text, style modules); tests in `test/` with helpers in `test/support/`.
 - Native NIF C++17 code lives in `c_src/`; builds to `priv/blendend.so`.
@@ -17,7 +17,7 @@
 - Modules are CamelCase; functions/vars snake_case; tests named `*_test.exs`.
 - Keep NIF wrappers thin and return updated structs for piping.
 - C++ builds with `-std=c++17 -Wall -Wextra -fPIC`; keep files scoped to a domain.
-- Use the snak_case convention of latest `blend2d`
+- Use the snake_case convention of latest `blend2d`
 ## Testing Guidelines
 - ExUnit only; `test/support/` is already on the test path.
 - Use descriptive strings in `describe` blocks; add regressions for NIF safety (see `test/nif_*_test.exs`).
