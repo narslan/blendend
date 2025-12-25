@@ -68,10 +68,10 @@ end
 
 Most of Blend2D's functionality is exposed. Remaining work:
 - Multi-threaded drawing pipelines are not supported yet; rendering runs single-threaded for now.
-- More documentation and examples (the [blendend_playground](https://github.com/narslan/blendend_playground) covers many cases).
+- More documentation and examples (the [blendend_playground](https://github.com/narslan/blendend_playground_phx) covers many cases).
 
 ## Playground
-For a richer starting point, clone the [blendend_playground](https://github.com/narslan/blendend_playground) repo and run it to browse and tweak the bundled examples in the browser.
+For a richer starting point, clone the [blendend_playground](https://github.com/narslan/blendend_playground_phx) repo and run it to browse and tweak the bundled examples in the browser.
 
 ## Overview
 
