@@ -1380,4 +1380,11 @@ defmodule Blendend.Draw do
     Blendend.Effects.shadow_path!(canvas, path, dx, dy, sigma, opts)
     canvas
   end
+
+  @doc "Apply a watercolor-like fill effect for a path on the current canvas."
+  def watercolor_fill_path(path, opts \\ []) do
+    canvas = get_canvas()
+    Blendend.Effects.watercolor_fill_path!(canvas, path, opts)
+    canvas
+  end
 end

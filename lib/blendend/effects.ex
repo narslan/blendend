@@ -81,4 +81,38 @@ defmodule Blendend.Effects do
       {:error, reason} -> raise Error.new(:canvas_blur_path, reason)
     end
   end
+
+  @doc """
+  Apply a watercolor-like fill effect to `path` and composite it onto `canvas`.
+
+  This rasterizes `path` into an A8 mask, applies a bleed blur, adds a simple
+  deterministic value-noise granulation, then composites the result back.
+
+  Options:
+
+  - `:bleed_sigma` (float, default `6.0`) – blur strength in pixels (roughly `radius = 3 * sigma`)
+  - `:granulation` (0..1, default `0.18`) – grain amount (higher = more texture / separation)
+  - `:noise_scale` (float, default `0.02`) – noise frequency in the offscreen patch (higher = smaller features)
+  - `:noise_octaves` (1..8, default `2`) – layered noise detail
+  - `:seed` (integer, default `1337`) – deterministic seed
+  - `:strength` (float ≥ 0, default `1.0`) – overall mask multiplier
+  - `:resolution` (0 < r ≤ 1, default `1.0`) – render/blur scale factor for performance
+
+  Style options like `:fill`, `:alpha`, and `:comp_op` are also accepted.
+  """
+  @spec watercolor_fill_path(Canvas.t(), Path.t(), keyword()) :: :ok | {:error, term()}
+  def watercolor_fill_path(canvas, path, opts \\ []) do
+    Native.canvas_watercolor_fill_path(canvas, path, opts)
+  end
+
+  @doc """
+  Same as `watercolor_fill_path/3`, but raises on failure and returns the canvas.
+  """
+  @spec watercolor_fill_path!(Canvas.t(), Path.t(), keyword()) :: Canvas.t()
+  def watercolor_fill_path!(canvas, path, opts \\ []) do
+    case watercolor_fill_path(canvas, path, opts) do
+      :ok -> canvas
+      {:error, reason} -> raise Error.new(:canvas_watercolor_fill_path, reason)
+    end
+  end
 end

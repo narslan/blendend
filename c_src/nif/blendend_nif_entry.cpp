@@ -93,6 +93,7 @@ MAKE_TERM(canvas_blit_image)
 MAKE_TERM(canvas_blit_image_scaled)
 MAKE_TERM(canvas_fill_mask)
 MAKE_TERM(canvas_blur_path)
+MAKE_TERM(canvas_watercolor_fill_path)
 
 MAKE_TERM(canvas_to_png_base64)
 MAKE_TERM(canvas_to_png)
@@ -271,6 +272,8 @@ MAKE_DRAW_GLYPH(stroke_glyph_run)
   X(canvas_fill_mask, 5, 0) \
   X(canvas_blur_path, 3, ERL_NIF_DIRTY_JOB_CPU_BOUND) \
   X(canvas_blur_path, 4, ERL_NIF_DIRTY_JOB_CPU_BOUND) \
+  X(canvas_watercolor_fill_path, 2, ERL_NIF_DIRTY_JOB_CPU_BOUND) \
+  X(canvas_watercolor_fill_path, 3, ERL_NIF_DIRTY_JOB_CPU_BOUND) \
   X(canvas_set_fill_rule, 2, 0) \
   X(canvas_blit_image, 4, 0) \
   X(canvas_blit_image_scaled, 6, 0) \

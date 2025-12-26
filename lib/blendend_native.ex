@@ -47,6 +47,8 @@ defmodule Blendend.Native do
   def canvas_fill_mask(_c, _img, _x, _y, _opts), do: :erlang.nif_error(:nif_not_loaded)
   def canvas_blur_path(_canvas, _path, _sigma), do: :erlang.nif_error(:nif_not_loaded)
   def canvas_blur_path(_canvas, _path, _sigma, _opts), do: :erlang.nif_error(:nif_not_loaded)
+  def canvas_watercolor_fill_path(_canvas, _path), do: :erlang.nif_error(:nif_not_loaded)
+  def canvas_watercolor_fill_path(_canvas, _path, _opts), do: :erlang.nif_error(:nif_not_loaded)
   def canvas_set_fill_rule(_canvas, _rule), do: :erlang.nif_error(:nif_not_loaded)
 
   def canvas_to_png_base64(_canvas), do: :erlang.nif_error(:nif_not_loaded)
