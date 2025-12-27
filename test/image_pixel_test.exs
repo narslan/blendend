@@ -7,7 +7,7 @@ defmodule Blendend.ImagePixelTest do
 
   test "pixel_at!/3 reads RGBA from a decoded PNG image" do
     {:ok, canvas} = Canvas.new(2, 2)
-    :ok = Canvas.clear(canvas, fill: Color.rgb!(0, 0, 0, 0))
+    :ok = Canvas.clear(canvas)
 
     :ok = Canvas.Fill.rect(canvas, 0, 0, 1, 1, fill: Color.rgb!(255, 0, 0, 128))
     :ok = Canvas.Fill.rect(canvas, 1, 1, 1, 1, fill: Color.rgb!(0, 255, 0, 255))

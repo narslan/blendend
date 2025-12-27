@@ -141,10 +141,17 @@ defmodule Blendend.Canvas do
   default (transparent black).
 
   With options, the call behaves like a full–canvas fill using the given
-  style (for example a solid background color):
+  style (for example a solid background color).
+
+  Note: `fill:` goes through the normal Blend2D compositing pipeline (default
+  `comp_op: :src_over`). This means `fill: Color.rgb!(..., 0)` (fully
+  transparent) will not necessarily overwrite existing pixels. If you want a
+  deterministic "wipe" with a specific color (including alpha 0), either call
+  `clear/1` with no options or use `comp_op: :src_copy`:
 
       iex> c = Blendend.Canvas.new!(100, 100)
       iex> :ok = Blendend.Canvas.clear(c, fill: Blendend.Style.Color.rgb!(255, 255, 255))
+      iex> :ok = Blendend.Canvas.clear(c, fill: Blendend.Style.Color.rgb!(0, 0, 0, 0), comp_op: :src_copy)
 
   The exact shape of the options is the same as the shape–drawing functions in
   `Blendend.Canvas.Fill.path/3`.
