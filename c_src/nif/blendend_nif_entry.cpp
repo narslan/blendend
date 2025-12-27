@@ -100,6 +100,7 @@ MAKE_TERM(image_size)
 MAKE_TERM(image_read_from_file)
 MAKE_TERM(image_read_from_data)
 MAKE_TERM(image_read_mask_from_data)
+MAKE_TERM(image_get_pixel)
 MAKE_TERM(image_decode_qoi)
 MAKE_TERM(image_blur)
 
@@ -278,6 +279,7 @@ MAKE_DRAW_GLYPH(stroke_glyph_run)
   X(image_size, 1, 0) \
   X(image_read_from_data, 1, ERL_NIF_DIRTY_JOB_CPU_BOUND) \
   X(image_read_mask_from_data, 2, ERL_NIF_DIRTY_JOB_CPU_BOUND) \
+  X(image_get_pixel, 3, 0) \
   X(image_decode_qoi, 1, ERL_NIF_DIRTY_JOB_CPU_BOUND) \
   X(image_blur, 2, ERL_NIF_DIRTY_JOB_CPU_BOUND) \
   /* Styles */ \

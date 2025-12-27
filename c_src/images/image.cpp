@@ -140,6 +140,68 @@ ERL_NIF_TERM image_size(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
   return make_result_ok(env, enif_make_tuple2(env, width, height));
 }
 
+// image_get_pixel(Image, X, Y) -> {:ok, {R, G, B, A}} | {:error, reason}
+ERL_NIF_TERM image_get_pixel(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
+{
+  if(argc != 3) {
+    return enif_make_badarg(env);
+  }
+
+  auto img = NifResource<Image>::get(env, argv[0]);
+  if(img == nullptr) {
+    return make_result_error(env, "invalid_image_resource");
+  }
+
+  int x;
+  int y;
+  if(!enif_get_int(env, argv[1], &x) || !enif_get_int(env, argv[2], &y)) {
+    return make_result_error(env, "image_get_pixel_invalid_coordinates");
+  }
+  if(x < 0 || y < 0) {
+    return make_result_error(env, "image_get_pixel_out_of_bounds");
+  }
+
+  BLSizeI sz = img->value.size();
+  if(x >= sz.w || y >= sz.h) {
+    return make_result_error(env, "image_get_pixel_out_of_bounds");
+  }
+
+  uint32_t fmt = img->value.format();
+  if(fmt != BL_FORMAT_PRGB32 && fmt != BL_FORMAT_XRGB32) {
+    return make_result_error(env, "image_get_pixel_unsupported_format");
+  }
+
+  BLImageData data{};
+  if(img->value.get_data(&data) != BL_SUCCESS) {
+    return make_result_error(env, "image_get_pixel_data_failed");
+  }
+
+  const uint8_t* pixels = static_cast<const uint8_t*>(data.pixel_data);
+  const uint8_t* row = pixels + static_cast<size_t>(y) * static_cast<size_t>(data.stride);
+  const uint8_t* p = row + static_cast<size_t>(x) * 4;
+
+  // Blend2D stores PRGB32/XRGB32 as BGRA on little-endian.
+  uint8_t b = p[0];
+  uint8_t g = p[1];
+  uint8_t r8 = p[2];
+  uint8_t a = (fmt == BL_FORMAT_XRGB32) ? 255 : p[3];
+
+  // Convert premultiplied -> straight alpha .
+  if(fmt == BL_FORMAT_PRGB32 && a != 0 && a != 255) {
+    r8 = static_cast<uint8_t>((static_cast<uint32_t>(r8) * 255u + static_cast<uint32_t>(a) / 2u) /
+                              static_cast<uint32_t>(a));
+    g = static_cast<uint8_t>((static_cast<uint32_t>(g) * 255u + static_cast<uint32_t>(a) / 2u) /
+                             static_cast<uint32_t>(a));
+    b = static_cast<uint8_t>((static_cast<uint32_t>(b) * 255u + static_cast<uint32_t>(a) / 2u) /
+                             static_cast<uint32_t>(a));
+  }
+
+  ERL_NIF_TERM tup =
+      enif_make_tuple4(env, enif_make_int(env, r8), enif_make_int(env, g), enif_make_int(env, b),
+                       enif_make_int(env, a));
+  return make_result_ok(env, tup);
+}
+
 // image_decode_qoi(Binary) -> {:ok, {Width, Height, RGBA_Binary}} | {:error, reason}
 ERL_NIF_TERM image_decode_qoi(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
 {

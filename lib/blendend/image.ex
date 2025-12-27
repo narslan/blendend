@@ -73,6 +73,29 @@ defmodule Blendend.Image do
   def size(image), do: Native.image_size(image)
 
   @doc """
+  Reads a single pixel from `image` at `{x, y}`.
+
+  Returns the color as `{r, g, b, a}` (0..255), with **straight alpha**
+  (Blend2D stores PRGB32 in premultiplied form).
+  """
+  @spec pixel_at(t(), non_neg_integer(), non_neg_integer()) ::
+          {:ok, {0..255, 0..255, 0..255, 0..255}} | {:error, term()}
+  def pixel_at(image, x, y) when is_integer(x) and is_integer(y) and x >= 0 and y >= 0 do
+    Native.image_get_pixel(image, x, y)
+  end
+
+  @doc """
+  Same as `pixel_at/3`, but returns the pixel tuple directly and raises on failure.
+  """
+  @spec pixel_at!(t(), non_neg_integer(), non_neg_integer()) :: {0..255, 0..255, 0..255, 0..255}
+  def pixel_at!(image, x, y) do
+    case pixel_at(image, x, y) do
+      {:ok, rgba} -> rgba
+      {:error, reason} -> raise Error.new(:image_get_pixel, reason)
+    end
+  end
+
+  @doc """
   Same as `size/1`, but returns the `{width, height}` tuple directly.
 
   On success, returns `{width, height}`.

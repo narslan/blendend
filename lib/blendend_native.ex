@@ -63,6 +63,7 @@ defmodule Blendend.Native do
   def image_size(_image), do: :erlang.nif_error(:nif_not_loaded)
   def image_read_from_data(_binary), do: :erlang.nif_error(:nif_not_loaded)
   def image_read_mask_from_data(_binary, _channel), do: :erlang.nif_error(:nif_not_loaded)
+  def image_get_pixel(_image, _x, _y), do: :erlang.nif_error(:nif_not_loaded)
   def image_decode_qoi(_binary), do: :erlang.nif_error(:nif_not_loaded)
   def image_blur(_image, _sigma), do: :erlang.nif_error(:nif_not_loaded)
 
