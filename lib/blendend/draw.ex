@@ -74,6 +74,17 @@ defmodule Blendend.Draw do
       raise "No active canvas. Use draw/3 first."
   end
 
+  @doc """
+  Returns the current canvas dimensions as `{width, height}`.
+
+  Intended for use inside a `draw ... do` block.
+  """
+  @spec canvas_size() :: {non_neg_integer(), non_neg_integer()}
+  def canvas_size do
+    get_canvas()
+    |> Blendend.Canvas.size!()
+  end
+
   # ------------------------------------------------------------------
   # helpers: floatification
   # ------------------------------------------------------------------

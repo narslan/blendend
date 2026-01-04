@@ -63,6 +63,25 @@ ERL_NIF_TERM canvas_clear(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
   return enif_make_atom(env, "ok");
 }
 
+// canvas_size(Canvas) -> {:ok, {Width, Height}} | {:error, reason}
+ERL_NIF_TERM canvas_size(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
+{
+  if(argc != 1) {
+    return enif_make_badarg(env);
+  }
+
+  auto canvas = NifResource<Canvas>::get(env, argv[0]);
+  if(canvas == nullptr) {
+    return make_result_error(env, "invalid_canvas_resource");
+  }
+
+  BLSizeI sz = canvas->img.size();
+
+  ERL_NIF_TERM width = enif_make_int(env, sz.w);
+  ERL_NIF_TERM height = enif_make_int(env, sz.h);
+  return make_result_ok(env, enif_make_tuple2(env, width, height));
+}
+
 ERL_NIF_TERM canvas_save_state(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
 {
   if(argc != 1)

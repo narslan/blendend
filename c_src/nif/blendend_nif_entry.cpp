@@ -66,6 +66,7 @@ static int load(ErlNifEnv* env, void**, ERL_NIF_TERM)
 
 // Canvas
 MAKE_TERM(canvas_new)
+MAKE_TERM(canvas_size)
 MAKE_TERM(canvas_save_state)
 MAKE_TERM(canvas_restore_state)
 // Canvas transform
@@ -243,6 +244,7 @@ MAKE_DRAW_GLYPH(stroke_glyph_run)
 #define NIF_LIST(X) \
   /* Canvas */ \
   X(canvas_new, 2, 0) \
+  X(canvas_size, 1, 0) \
   X(canvas_clear, 2, 0) \
   /* Canvas state */ \
   X(canvas_save_state, 1, 0) \

@@ -37,6 +37,29 @@ defmodule Blendend.Canvas do
   def new(w, h), do: Native.canvas_new(w, h)
 
   @doc """
+  Returns the canvas size in pixels.
+
+  On success, returns `{:ok, {width, height}}`.
+
+  On failure, returns `{:error, reason}`.
+  """
+  @spec size(t()) :: {:ok, {non_neg_integer(), non_neg_integer()}} | {:error, term()}
+  def size(canvas), do: Native.canvas_size(canvas)
+
+  @doc """
+  Same as `size/1`, but returns the `{width, height}` tuple directly.
+
+  On failure, raises `Blendend.Error`.
+  """
+  @spec size!(t()) :: {non_neg_integer(), non_neg_integer()}
+  def size!(canvas) do
+    case size(canvas) do
+      {:ok, dimensions} -> dimensions
+      {:error, reason} -> raise Error.new(:canvas_size, reason)
+    end
+  end
+
+  @doc """
   Same as `new/2`, but returns the canvas directly.
 
   On success, returns `canvas`.

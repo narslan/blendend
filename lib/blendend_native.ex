@@ -10,6 +10,8 @@ defmodule Blendend.Native do
   def canvas_new(_w, _h), do: :erlang.nif_error(:nif_not_loaded)
   def canvas_save(_canvas, _path), do: :erlang.nif_error(:nif_not_loaded)
 
+  def canvas_size(_canvas), do: :erlang.nif_error(:nif_not_loaded)
+
   def canvas_clear(_canvas, _opts), do: :erlang.nif_error(:nif_not_loaded)
 
   def canvas_save_state(_canvas), do: :erlang.nif_error(:nif_not_loaded)
