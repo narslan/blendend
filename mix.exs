@@ -4,7 +4,7 @@ defmodule Blendend.MixProject do
   def project do
     [
       app: :blendend,
-      version: "0.3.3",
+      version: "0.3.4",
       elixir: "~> 1.19",
       description: "Blend2D bindings for Elixir",
       source_url: "https://github.com/narslan/blendend",
@@ -43,7 +43,7 @@ defmodule Blendend.MixProject do
 
   defp package do
     [
-      files: ~w(lib c_src priv docs/images notebooks Makefile mix.exs README.md LICENSE),
+      files: ~w(lib c_src priv/fonts docs/images notebooks Makefile mix.exs README.md LICENSE),
       licenses: ["MIT"],
       links: %{"GitHub" => "https://github.com/narslan/blendend"}
     ]
